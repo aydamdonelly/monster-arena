@@ -1,4 +1,4 @@
-import { useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import type { FunctionReturnType } from 'convex/server';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
@@ -8,6 +8,7 @@ import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, Vi
 import Svg, { Path } from 'react-native-svg';
 
 import Egg from '@/components/Egg';
+import GoldenEggSheet from '@/components/GoldenEggSheet';
 import SourceChips, { useSource } from '@/components/SourceChips';
 import ShareButton from '@/components/ShareButton';
 import TrainerRow from '@/components/TrainerRow';
@@ -42,6 +43,10 @@ export default function EggScreen({
   const golden = !!entry && 'golden' in entry && !!entry.golden;
   const { source, pick, loaded } = useSource();
   const [answered, setAnswered] = useState(false);
+  const [now] = useState(() => Date.now());
+  const me = useQuery(api.players.me, { deviceId, now });
+  const [sheet, setSheet] = useState(false);
+  const offer = !!me && me.hatchesLeft === 0 && me.canGolden && me.goldenEggs === 0;
 
   if (entry?.status === 'rejected') {
     return (
@@ -109,18 +114,51 @@ export default function EggScreen({
           {royaleLocalNote() ? `That is ${royaleLocalNote()}. ` : ''}Come back to watch it fight.
         </Text>
       </Appear>
-      <Appear delay={layIn ? 1000 : 80} style={styles.trainer}>
+      {offer ? (
+        <Appear delay={layIn ? 1000 : 80} style={styles.offerLane}>
+          <GoldenOffer onPress={() => setSheet(true)} />
+        </Appear>
+      ) : null}
+      <Appear delay={layIn ? 1050 : 120} style={styles.trainer}>
         <TrainerRow />
       </Appear>
       <Appear delay={layIn ? 1100 : 160} style={styles.actions}>
-        {SMS_NUMBER ? <TextMe deviceId={deviceId} /> : null}
-        <ShareButton variant={SMS_NUMBER ? 'outline' : 'primary'} style={SMS_NUMBER ? styles.share : undefined} labelStyle={SMS_NUMBER ? styles.shareLabel : undefined} />
+        {SMS_NUMBER ? <TextMe deviceId={deviceId} quiet={offer} /> : null}
+        <ShareButton
+          variant={SMS_NUMBER || offer ? 'outline' : 'primary'}
+          style={SMS_NUMBER || offer ? styles.share : undefined}
+          labelStyle={SMS_NUMBER || offer ? styles.shareLabel : undefined}
+        />
       </Appear>
+      <GoldenEggSheet visible={sheet} from="egg" onClose={() => setSheet(false)} />
     </Shell>
   );
 }
 
-function TextMe({ deviceId }: { deviceId: string }) {
+function GoldenOffer({ onPress }: { onPress: () => void }) {
+  return (
+    <View style={styles.offer}>
+      <View style={styles.offerTop}>
+        <Image source={require('@/assets/images/renders/bp-golden-capyboogey.png')} style={styles.offerRender} contentFit="contain" />
+        <View style={styles.offerText}>
+          <Text style={styles.offerTitle}>Golden Egg</Text>
+          <Text style={styles.offerLine}>A second egg in the fight. Hatches golden.</Text>
+        </View>
+      </View>
+      <PrimaryButton
+        label="Golden Egg · $1"
+        icon={
+          <Svg width={18} height={22} viewBox="0 0 18 22">
+            <Path d="M9 1.5C5 1.5 1.5 8.5 1.5 13.2c0 4.3 3.3 7.3 7.5 7.3s7.5-3 7.5-7.3C16.5 8.5 13 1.5 9 1.5z" fill={Palette.ground} stroke={Palette.ink} strokeWidth={2.2} />
+          </Svg>
+        }
+        onPress={onPress}
+      />
+    </View>
+  );
+}
+
+function TextMe({ deviceId, quiet }: { deviceId: string; quiet: boolean }) {
   const [asked, setAsked] = useState(false);
   const icon = (
     <Svg width={20} height={20} viewBox="0 0 24 24">
@@ -134,8 +172,9 @@ function TextMe({ deviceId }: { deviceId: string }) {
     </Svg>
   );
   if (asked) return <OutlineButton label={`We'll text you at ${royaleHour()}`} icon={icon} onPress={() => {}} disabled />;
+  const Button = quiet ? OutlineButton : PrimaryButton;
   return (
-    <PrimaryButton
+    <Button
       label="Text me when it hatches"
       icon={icon}
       onPress={() => {
@@ -225,7 +264,7 @@ function EggStage({ seed, photo, golden, layIn }: { seed: string; photo: string 
           />
           {layIn && photo ? (
             <Animated.View style={[styles.landed, { opacity: pop.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 0, 1] }) }]}>
-              <Egg seed={seed} width={168} photoUrl={photo} caption="Your snap" crack="none" rotate={0} />
+              <Egg seed={seed} width={168} golden={golden} photoUrl={photo} caption="Your snap" crack="none" rotate={0} />
             </Animated.View>
           ) : null}
         </Animated.View>
@@ -268,6 +307,13 @@ const styles = StyleSheet.create({
   muted: { color: Palette.muted },
   toGo: { paddingBottom: 9 },
   clock: { fontFamily: Fonts.black, fontSize: 56, lineHeight: 54, letterSpacing: -1.7, color: Palette.ink, fontVariant: ['tabular-nums'] },
+  offerLane: { paddingHorizontal: 20, paddingTop: 18 },
+  offer: { gap: 14, borderWidth: 2, borderColor: Palette.ink, borderRadius: Radii.card, padding: 16 },
+  offerTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  offerRender: { width: 84, height: 84, marginVertical: -6 },
+  offerText: { flex: 1, gap: 2 },
+  offerTitle: { fontFamily: Fonts.black, fontSize: 26, lineHeight: 28, letterSpacing: -0.8, color: Palette.ink },
+  offerLine: { fontFamily: Fonts.medium, fontSize: 16, lineHeight: 21, color: Palette.ink },
   trainer: { paddingHorizontal: 24, paddingTop: 16 },
   gate: { gap: 16, paddingHorizontal: 24, paddingTop: 18 },
   gateTitle: { fontFamily: Fonts.black, fontSize: 30, lineHeight: 32, letterSpacing: -1, color: Palette.ink },

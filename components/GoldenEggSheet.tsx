@@ -1,21 +1,29 @@
+import { useMutation } from 'convex/react';
 import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Animated, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { InkSticker, PrimaryButton } from '@/components/ui';
+import { api } from '@/convex/_generated/api';
 import { useDeviceId } from '@/lib/device';
-import { buyGoldenEgg } from '@/lib/golden';
+import { buyGoldenEgg, checkoutMessage } from '@/lib/golden';
 import { Fonts, Palette } from '@/lib/theme';
 
 const PERKS = ["A second egg in today's royale", 'Hatches golden, crown included', 'Same stats. Just fancier.'];
 
-export default function GoldenEggSheet({ visible, onClose: close }: { visible: boolean; onClose: () => void }) {
+export default function GoldenEggSheet({ visible, from, onClose: close }: { visible: boolean; from: 'egg' | 'home'; onClose: () => void }) {
   const deviceId = useDeviceId();
+  const log = useMutation(api.events.log);
   const insets = useSafeAreaInsets();
   const rise = useState(() => new Animated.Value(0))[0];
   const [busy, setBusy] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!visible) return;
+    log({ deviceId, type: 'golden_view', meta: { from } }).catch(() => {});
+  }, [visible, deviceId, from, log]);
 
   useEffect(() => {
     if (!visible) return;
@@ -24,19 +32,24 @@ export default function GoldenEggSheet({ visible, onClose: close }: { visible: b
   }, [visible, rise]);
 
   const onClose = () => {
-    setFailed(false);
+    if (busy) return;
+    setError(null);
     close();
   };
 
   const buy = async () => {
     setBusy(true);
-    setFailed(false);
+    setError(null);
+    log({ deviceId, type: 'golden_click', meta: { from } }).catch(() => {});
     try {
       await buyGoldenEgg(deviceId);
+      if (Platform.OS !== 'web') {
+        setBusy(false);
+        close();
+      }
     } catch (e) {
       console.warn('golden egg checkout failed', e);
-      setFailed(true);
-    } finally {
+      setError(checkoutMessage(e));
       setBusy(false);
     }
   };
@@ -71,10 +84,13 @@ export default function GoldenEggSheet({ visible, onClose: close }: { visible: b
         </View>
         <View style={styles.actions}>
           <PrimaryButton label="Crack one open · $1" onPress={buy} busy={busy} style={styles.buy} buttonStyle={styles.buyButton} />
-          {failed ? <Text style={styles.failed}>The egg shop opens in a few minutes.</Text> : null}
-          <Pressable accessibilityRole="button" onPress={onClose} hitSlop={12}>
-            <Text style={styles.later}>Maybe tomorrow</Text>
-          </Pressable>
+          {busy ? <Text style={styles.note}>Opening secure checkout…</Text> : null}
+          {error ? <Text style={styles.failed}>{error}</Text> : null}
+          {busy ? null : (
+            <Pressable accessibilityRole="button" onPress={onClose} hitSlop={12}>
+              <Text style={styles.later}>Maybe tomorrow</Text>
+            </Pressable>
+          )}
         </View>
       </Animated.View>
     </Modal>
@@ -120,6 +136,7 @@ const styles = StyleSheet.create({
   actions: { alignItems: 'center', gap: 14, paddingHorizontal: 20, paddingTop: 22 },
   buy: { alignSelf: 'stretch' },
   buyButton: { height: 58 },
+  note: { fontFamily: Fonts.semibold, fontSize: 15, lineHeight: 20, color: Palette.muted, textAlign: 'center' },
   failed: { fontFamily: Fonts.semibold, fontSize: 15, lineHeight: 20, color: Palette.ink, textAlign: 'center' },
   later: { fontFamily: Fonts.semibold, fontSize: 15, lineHeight: 20, color: Palette.muted, textDecorationLine: 'underline' },
 });

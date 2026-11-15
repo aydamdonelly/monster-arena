@@ -81,7 +81,7 @@ async function wildPool(ctx: QueryCtx): Promise<Doc<"monsters">[]> {
   return pool.filter((m) => !!m.genome);
 }
 
-type RunArgs = { title: string; mode: "live" | "test"; minEntrants: number; force: boolean };
+type RunArgs = { title: string; mode: "live" | "test"; minEntrants: number; force: boolean; onlyPlayer?: Id<"players"> };
 
 async function runNow(ctx: MutationCtx, a: RunArgs) {
   const now = Date.now();
@@ -107,6 +107,7 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
     const owner = owners.get(m.playerId);
     if (!owner || owner.deviceId === WILD_DEVICE) continue;
     if (a.mode === "live" ? owner.isTest : !owner.isTest) continue;
+    if (a.onlyPlayer && m.playerId !== a.onlyPlayer) continue;
     hatching.push(m);
   }
   // Ohne ein einziges echtes Ei gibt es keine echte Royale (sonst würde eine zweite Auslösung das Ergebnis des Tages verdrängen)
@@ -206,6 +207,64 @@ export const start = mutation({
       throw new ConvexError({ code: "too_few", message: "No eggs are ready yet." });
     }
     return res;
+  },
+});
+
+// ---------- Vorführmodus (für Jury und Bühne) ----------
+// Ein Vorführgerät ist ein Testgerät: Seine Eier schlüpfen auf Knopfdruck sofort und kämpfen gegen wilde Monster.
+// Das läuft als Probe-Royale, rührt kein echtes Ei an und ist öffentlich nicht sichtbar. Schlüssel = DEMO_KEY (oder ADMIN_KEY).
+function checkDemoKey(key: string) {
+  const ok = (process.env.DEMO_KEY && key === process.env.DEMO_KEY) || (process.env.ADMIN_KEY && key === process.env.ADMIN_KEY);
+  if (!ok) throw new ConvexError({ code: "forbidden", message: "Wrong demo key." });
+}
+
+// Gerät zum Vorführgerät machen. Wird verweigert, solange auf dem Gerät ein echtes Ei auf die Royale wartet.
+export const demoEnter = mutation({
+  args: { key: v.string(), deviceId: v.string() },
+  returns: v.null(),
+  handler: async (ctx, a) => {
+    checkDemoKey(a.key);
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_deviceId", (q) => q.eq("deviceId", a.deviceId))
+      .unique();
+    if (!player) throw new ConvexError({ code: "no_player", message: "Open the app first." });
+    if (player.isTest) return null;
+    const mine = await ctx.db
+      .query("monsters")
+      .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
+      .order("desc")
+      .take(20);
+    if (mine.some((m) => m.status === "egg")) {
+      throw new ConvexError({ code: "real_egg", message: "This device has a real egg waiting for the royale. Use a private tab for demo mode." });
+    }
+    await ctx.db.patch("players", player._id, { isTest: true });
+    return null;
+  },
+});
+
+// Das neueste Ei dieses Vorführgeräts sofort schlüpfen lassen. Ist das Monster noch im Bau, kommt started: false zurück
+// und das Gerät fragt nach zwei Sekunden einfach erneut.
+export const demo = mutation({
+  args: { key: v.string(), deviceId: v.string() },
+  handler: async (ctx, a) => {
+    checkDemoKey(a.key);
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_deviceId", (q) => q.eq("deviceId", a.deviceId))
+      .unique();
+    if (!player) throw new ConvexError({ code: "no_player", message: "Open the app first." });
+    if (!player.isTest) throw new ConvexError({ code: "not_demo", message: "This is not a demo device. Open the demo link in a private tab." });
+    const mine = await ctx.db
+      .query("monsters")
+      .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
+      .order("desc")
+      .take(10);
+    const egg = mine.find((m) => m.status === "egg");
+    if (!egg) throw new ConvexError({ code: "no_egg", message: "Snap something first." });
+    if (!egg.ready || !egg.genome) return { started: false, reason: "building" };
+    const res = await runNow(ctx, { title: "Royale", mode: "test", minEntrants: MIN_ENTRANTS, force: true, onlyPlayer: player._id });
+    return { started: res.skipped === null, reason: res.skipped ?? "ok" };
   },
 });
 

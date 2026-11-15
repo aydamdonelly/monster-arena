@@ -25,7 +25,8 @@ export const log = mutation({
       // Automatisierte Browser (Probeläufe der Agenten) und ?s=qa zählen nicht als echte Nutzer
       // Dazu Cloud-Rechner der Agenten: Linux-Browser mit Zeitzone UTC (so laufen die Testumgebungen von Capy und Revyl).
       const cloud = m.tz === "UTC" && m.dev === "other";
-      if (!player.isTest && (m.wd === "1" || m.s === "qa" || cloud)) patch.isTest = true;
+      // Wer schon ein Ei gelegt hat, bleibt echt: Ein versehentlich geöffneter Test-Link darf kein echtes Ei aus der Royale nehmen.
+      if (!player.isTest && !(player.eggs ?? 0) && (m.wd === "1" || m.s === "qa" || cloud)) patch.isTest = true;
       await ctx.db.patch("players", player._id, patch);
     }
     return null;

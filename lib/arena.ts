@@ -77,5 +77,5 @@ export function useNow(intervalMs = 1000) {
 
 export function bornFrom(genome: unknown) {
   const object = (genome as { object?: string } | null)?.object;
-  return object ? `born from ${object.toLowerCase().replace(/^an? /, 'a ')}` : null;
+  return object ? `born from ${object.toLowerCase()}` : null; // der Artikel (a/an) kommt schon richtig von der KI
 }

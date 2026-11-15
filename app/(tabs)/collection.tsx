@@ -9,7 +9,7 @@ import MonsterSnapshots from '@/components/MonsterSnapshots';
 import Egg from '@/components/Egg';
 import { Appear, HardShadow, InkSticker, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
-import { clock, royaleHour, royaleTimeToday, useNow } from '@/lib/arena';
+import { clock, royaleHour, royaleIsToday, royaleTimeToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
 import { useSnapshots } from '@/lib/snapshots';
 import { elementColor, Fonts, Palette, Radii, Type } from '@/lib/theme';
@@ -41,7 +41,7 @@ export default function CollectionScreen() {
                 </Text>
               ) : null}
             </View>
-            {monsters?.length === 0 ? <Text style={Type.muted}>{`Nothing here yet. Your first snap lays an egg that hatches at ${royaleHour()}.`}</Text> : null}
+            {monsters?.length === 0 ? <Text style={Type.muted}>{`Nothing here yet. Your first snap lays an egg that hatches ${royaleIsToday() ? `at ${royaleHour()}` : "in tomorrow's royale"}.`}</Text> : null}
           </View>
         }
         ListEmptyComponent={<ActivityIndicator color={Palette.ink} style={styles.loading} />}
@@ -107,7 +107,7 @@ export default function CollectionScreen() {
                     </View>
                   ) : null}
                   <InkSticker
-                    label={item.status === 'rejected' ? "Can't hatch" : royaleHour()}
+                    label={item.status === 'rejected' ? "Can't hatch" : royaleIsToday() ? royaleHour() : 'Tomorrow'}
                     light={item.status === 'rejected'}
                     fontSize={12}
                     rotate={-5}
@@ -131,6 +131,7 @@ export default function CollectionScreen() {
 
 function EggClock() {
   const left = royaleTimeToday() - useNow();
+  if (!royaleIsToday()) return <Text style={styles.eggClock}>TOMORROW · the time is a surprise</Text>;
   return <Text style={styles.eggClock}>{left > 0 ? clock(left) : 'hatching now'}</Text>;
 }
 

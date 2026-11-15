@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CameraButton from '@/components/CameraButton';
 import { Appear, InkSticker } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
-import { royaleHour } from '@/lib/arena';
+import { royaleHour, royaleIsToday } from '@/lib/arena';
 import { Fonts, Palette } from '@/lib/theme';
 
 const PEEKERS = [
@@ -31,12 +31,12 @@ export default function Landing({ onCatch }: { onCatch: () => void }) {
     <View style={[styles.root, { paddingTop: insets.top + 6, paddingBottom: insets.bottom + 18 }]}>
       <View style={styles.header}>
         <Text style={styles.wordmark}>snappymon</Text>
-        <InkSticker label={`Royale ${royaleHour()}`} rotate={4} />
+        <InkSticker label={royaleIsToday() ? `Today's royale · ${royaleHour()}` : "Tomorrow's royale"} rotate={4} />
       </View>
       <Appear style={styles.pitch}>
         <Text style={styles.pitchLine}>Snap anything.</Text>
         <Text style={styles.pitchLine}>Get an egg.</Text>
-        <Text style={styles.pitchLine}>It hatches at {royaleHour()}.</Text>
+        <Text style={styles.pitchLine}>{royaleIsToday() ? `It hatches at ${royaleHour()}.` : 'It hatches tomorrow.'}</Text>
       </Appear>
       <View style={styles.stage} onLayout={(e) => setStage(e.nativeEvent.layout.height)}>
         {PEEKERS.map(({ source, size, rotate, ...edge }, i) => (
@@ -61,7 +61,7 @@ export default function Landing({ onCatch }: { onCatch: () => void }) {
           <>
             <View style={styles.dot} />
             <Text style={styles.proofText}>
-              {waiting >= 10 ? `${waiting.toLocaleString('en-US')} eggs waiting for ${royaleHour()}` : 'Be one of the first eggs today'}
+              {waiting >= 10 ? `${waiting.toLocaleString('en-US')} eggs waiting for ${royaleIsToday() ? royaleHour() : 'tomorrow'}` : 'Be one of the first eggs today'}
             </Text>
           </>
         ) : null}

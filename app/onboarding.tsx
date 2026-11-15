@@ -45,7 +45,7 @@ export default function OnboardingScreen() {
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <View style={styles.hero}>
-            <Image source={require('@/assets/images/bananaconda.png')} style={styles.mascot} contentFit="contain" />
+            <Image source={require('@/assets/images/renders/bananaconda.png')} style={styles.mascot} contentFit="contain" />
             <Appear style={styles.heroText}>
               <Text style={styles.title}>Pick a trainer name</Text>
               <Text style={styles.subtitle}>Your monsters need someone to blame.</Text>

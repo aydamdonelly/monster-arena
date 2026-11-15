@@ -48,7 +48,8 @@
           "cameraPermission": "Snappymon uses your camera to snap things and hatch monsters.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

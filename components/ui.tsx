@@ -1,6 +1,17 @@
 import { Image } from 'expo-image';
 import { useEffect, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Animated, Platform, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 
 import { elementColor, Fonts, Palette, Radii, Type } from '@/lib/theme';
 
@@ -30,10 +41,13 @@ type ButtonProps = {
   onPress: () => void;
   busy?: boolean;
   disabled?: boolean;
+  icon?: ReactNode;
   style?: StyleProp<ViewStyle>;
+  buttonStyle?: StyleProp<ViewStyle>;
+  labelStyle?: StyleProp<TextStyle>;
 };
 
-export function PrimaryButton({ label, onPress, busy, disabled, style }: ButtonProps) {
+export function PrimaryButton({ label, onPress, busy, disabled, icon, style, buttonStyle, labelStyle }: ButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -43,8 +57,17 @@ export function PrimaryButton({ label, onPress, busy, disabled, style }: ButtonP
       style={[style, disabled && styles.disabled]}>
       {({ pressed }) => (
         <HardShadow offset={4} radius={Radii.button}>
-          <View style={[styles.button, styles.primary, pressed && styles.pressedPrimary]}>
-            {busy ? <ActivityIndicator color={Palette.ink} /> : <Text style={styles.primaryLabel}>{label}</Text>}
+          <View style={[styles.button, styles.primary, buttonStyle, pressed && styles.pressedPrimary]}>
+            {busy ? (
+              <ActivityIndicator color={Palette.ink} />
+            ) : (
+              <>
+                {icon}
+                <Text style={[styles.primaryLabel, labelStyle]} numberOfLines={1}>
+                  {label}
+                </Text>
+              </>
+            )}
           </View>
         </HardShadow>
       )}
@@ -52,7 +75,7 @@ export function PrimaryButton({ label, onPress, busy, disabled, style }: ButtonP
   );
 }
 
-export function OutlineButton({ label, onPress, busy, disabled, small, style }: ButtonProps & { small?: boolean }) {
+export function OutlineButton({ label, onPress, busy, disabled, small, icon, style, labelStyle }: ButtonProps & { small?: boolean }) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -70,7 +93,12 @@ export function OutlineButton({ label, onPress, busy, disabled, small, style }: 
       {busy ? (
         <ActivityIndicator color={Palette.ink} />
       ) : (
-        <Text style={[styles.outlineLabel, small && styles.smallLabel]}>{label}</Text>
+        <>
+          {icon}
+          <Text style={[styles.outlineLabel, small && styles.smallLabel, labelStyle]} numberOfLines={1}>
+            {label}
+          </Text>
+        </>
       )}
     </Pressable>
   );
@@ -81,6 +109,28 @@ export function ElementChip({ element, rotate = -3, style }: { element: string; 
     <HardShadow offset={2} radius={Radii.chip} rotate={rotate} style={[styles.selfStart, style]}>
       <View style={[styles.chip, { backgroundColor: elementColor(element) }]}>
         <Text style={styles.chipLabel}>{element}</Text>
+      </View>
+    </HardShadow>
+  );
+}
+
+export function InkSticker({
+  label,
+  rotate = -3,
+  light,
+  fontSize = 13,
+  style,
+}: {
+  label: string;
+  rotate?: number;
+  light?: boolean;
+  fontSize?: number;
+  style?: StyleProp<ViewStyle>;
+}) {
+  return (
+    <HardShadow offset={2} radius={Radii.chip} rotate={rotate} style={[styles.selfStart, style]}>
+      <View style={[styles.chip, { backgroundColor: light ? Palette.ground : Palette.ink }]}>
+        <Text style={[styles.chipLabel, { fontSize, color: light ? Palette.ink : Palette.ground }]}>{label}</Text>
       </View>
     </HardShadow>
   );
@@ -162,6 +212,8 @@ const styles = StyleSheet.create({
     borderRadius: Radii.button,
     borderWidth: 2,
     borderColor: Palette.ink,
+    flexDirection: 'row',
+    gap: 10,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 18,

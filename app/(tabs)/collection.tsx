@@ -1,31 +1,22 @@
 import { useQuery } from 'convex/react';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import MonsterSnapshots from '@/components/MonsterSnapshots';
-import { Appear, HardShadow, StageBlock } from '@/components/ui';
+import EggArt from '@/components/EggArt';
+import { Appear, HardShadow, InkSticker, Polaroid, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import { useDeviceId } from '@/lib/device';
+import { useSnapshots } from '@/lib/snapshots';
 import { elementColor, Fonts, Palette, Radii, Type } from '@/lib/theme';
-
-const snapshots = new Map<string, string>();
 
 export default function CollectionScreen() {
   const deviceId = useDeviceId();
   const monsters = useQuery(api.monsters.listMine, { deviceId });
-  const [, setVersion] = useState(0);
-  const pending = useMemo(
-    () => (monsters ?? []).filter((m) => !snapshots.has(m._id)).map((m) => ({ id: m._id, genome: m.genome })),
-    [monsters],
-  );
-  const onSnapshot = async (id: string, uri: string) => {
-    snapshots.set(id, uri);
-    setVersion((v) => v + 1);
-  };
+  const { pending, onSnapshot, snapshot } = useSnapshots(monsters?.flatMap((m) => (m.status === 'hatched' ? [m] : [])));
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -43,11 +34,11 @@ export default function CollectionScreen() {
               <Text style={Type.display}>Collection</Text>
               {monsters?.length ? (
                 <Text style={[Type.label, styles.count]}>
-                  {monsters.length} {monsters.length === 1 ? 'monster' : 'monsters'}
+                  {monsters.length} {monsters.length === 1 ? 'snap' : 'snaps'}
                 </Text>
               ) : null}
             </View>
-            {monsters?.length === 0 ? <Text style={Type.muted}>Nothing here yet. Your first snap hatches in 5 seconds.</Text> : null}
+            {monsters?.length === 0 ? <Text style={Type.muted}>Nothing here yet. Your first snap lays an egg that hatches at 5 PM.</Text> : null}
           </View>
         }
         ListEmptyComponent={<ActivityIndicator color={Palette.ink} style={styles.loading} />}
@@ -65,7 +56,7 @@ export default function CollectionScreen() {
                 <Text style={styles.newText}>Snap something new</Text>
               </Pressable>
             </Appear>
-          ) : (
+          ) : item.status === 'hatched' ? (
             <Appear delay={Math.min(index, 8) * 50} style={styles.cell}>
               <Pressable
                 accessibilityRole="button"
@@ -73,8 +64,8 @@ export default function CollectionScreen() {
                 onPress={() => router.push({ pathname: '/monster/[id]', params: { id: item._id } })}
                 style={({ pressed }) => [styles.tile, pressed && styles.tilePressed]}>
                 <StageBlock radius={Radii.tile} style={styles.thumb}>
-                  {snapshots.has(item._id) ? (
-                    <Image source={{ uri: snapshots.get(item._id) }} style={styles.render} contentFit="cover" transition={200} />
+                  {snapshot(item._id) ? (
+                    <Image source={{ uri: snapshot(item._id) }} style={styles.render} contentFit="cover" transition={200} />
                   ) : null}
                   {index === 0 ? (
                     <HardShadow offset={2} radius={Radii.chip} rotate={-6} style={styles.newTag}>
@@ -89,6 +80,31 @@ export default function CollectionScreen() {
                     {item.name}
                   </Text>
                   <View style={[styles.dot, { backgroundColor: elementColor(item.element) }]} />
+                </View>
+              </Pressable>
+            </Appear>
+          ) : (
+            <Appear delay={Math.min(index, 8) * 50} style={styles.cell}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={item.status === 'rejected' ? "Egg that can't hatch" : 'Your egg'}
+                onPress={() => router.push({ pathname: '/egg/[id]', params: { id: item._id } })}
+                style={({ pressed }) => [styles.tile, pressed && styles.tilePressed]}>
+                <StageBlock radius={Radii.tile} style={styles.thumb}>
+                  <View style={item.status === 'rejected' && styles.rejected}>
+                    <EggArt width={72} golden={item.status === 'egg' && item.golden} />
+                  </View>
+                  {item.status === 'egg' && item.photoUrl ? (
+                    <View style={styles.eggPhoto}>
+                      <Polaroid uri={item.photoUrl} size={34} rotate={8} shadow={2} />
+                    </View>
+                  ) : null}
+                  <InkSticker label={item.status === 'rejected' ? "Can't hatch" : 'Hatches 5 PM'} light={item.status === 'rejected'} rotate={-6} style={styles.eggTag} />
+                </StageBlock>
+                <View style={styles.meta}>
+                  <Text style={[styles.name, styles.mutedName]} numberOfLines={1}>
+                    {item.status === 'rejected' ? 'No egg' : 'Your egg'}
+                  </Text>
                 </View>
               </Pressable>
             </Appear>
@@ -114,6 +130,10 @@ const styles = StyleSheet.create({
   thumb: { aspectRatio: 168 / 156, alignItems: 'center', justifyContent: 'center' },
   render: { width: '98%', aspectRatio: 1 },
   newTag: { position: 'absolute', top: 10, left: 10 },
+  eggTag: { position: 'absolute', top: 10, left: 10 },
+  eggPhoto: { position: 'absolute', right: 12, bottom: 12 },
+  rejected: { opacity: 0.35 },
+  mutedName: { color: Palette.muted },
   newTagBody: {
     backgroundColor: Palette.primary,
     borderWidth: 2,

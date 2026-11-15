@@ -1,27 +1,31 @@
 import { useState } from 'react';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 import { OutlineButton, PrimaryButton } from '@/components/ui';
-import { shareMonster } from '@/lib/share';
+import { shareEgg, shareMonster } from '@/lib/share';
 
 export default function ShareButton({
   id,
   name,
+  label: idleLabel = 'Share',
   variant = 'primary',
   style,
+  labelStyle,
 }: {
-  id: string;
-  name: string;
+  id?: string;
+  name?: string;
+  label?: string;
   variant?: 'primary' | 'outline';
   style?: StyleProp<ViewStyle>;
+  labelStyle?: StyleProp<TextStyle>;
 }) {
-  const [label, setLabel] = useState('Share');
+  const [label, setLabel] = useState(idleLabel);
   const onPress = async () => {
-    const outcome = await shareMonster(id, name);
+    const outcome = id && name ? await shareMonster(id, name) : await shareEgg();
     if (outcome === 'shared') return;
     setLabel(outcome === 'copied' ? 'Link copied!' : 'Could not share');
-    setTimeout(() => setLabel('Share'), 2000);
+    setTimeout(() => setLabel(idleLabel), 2000);
   };
   const Button = variant === 'primary' ? PrimaryButton : OutlineButton;
-  return <Button label={label} onPress={onPress} style={style} />;
+  return <Button label={label} onPress={onPress} style={style} labelStyle={labelStyle} />;
 }

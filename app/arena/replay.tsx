@@ -1,5 +1,5 @@
 import { useQuery } from 'convex/react';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 
@@ -7,7 +7,7 @@ import ArenaStage, { closeArena, ResultPanel } from '@/components/ArenaStage';
 import { api } from '@/convex/_generated/api';
 import type { ArenaResult } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
-import { Palette } from '@/lib/theme';
+import { Palette, Type } from '@/lib/theme';
 
 export default function ReplayScreen() {
   const deviceId = useDeviceId();
@@ -20,8 +20,8 @@ export default function ReplayScreen() {
 
   if (!round) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#cfeaf0', gap: 12 }}>
-        {round === null ? <Text style={{ fontSize: 16, fontWeight: '700', color: Palette.ink }}>This round is not available.</Text> : <ActivityIndicator color={Palette.ink} />}
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Palette.ground, gap: 12 }}>
+        {round === null ? <Text style={Type.heading}>This round is not available.</Text> : <ActivityIndicator color={Palette.ink} />}
       </View>
     );
   }
@@ -48,14 +48,16 @@ export default function ReplayScreen() {
           detail={myPlace ? `You finished #${myPlace} of ${round.entrants.length}` : undefined}
           actions={[
             { label: 'Close', onPress: closeArena },
-            {
-              label: 'Watch again',
-              primary: true,
-              onPress: () => {
-                setResult(null);
-                setTake((t) => t + 1);
-              },
-            },
+            round.isFinal
+              ? {
+                  label: 'Watch again',
+                  primary: true,
+                  onPress: () => {
+                    setResult(null);
+                    setTake((t) => t + 1);
+                  },
+                }
+              : { label: 'Watch the final', primary: true, onPress: () => router.replace({ pathname: '/arena/replay', params: { round: '-1' } }) },
           ]}
         />
       ) : null}

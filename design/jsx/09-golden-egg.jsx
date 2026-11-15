@@ -34,7 +34,7 @@ export default function GoldenEggScreen() {
               Today's drop
             </div>
             <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '26px', fontWeight: 900, letterSpacing: '-0.03em', lineHeight: '28px', whiteSpace: 'pre' }}>
-              Something red
+              Anything
             </div>
           </div>
           <div style={{ alignItems: 'center', backgroundColor: 'var(--color-ink)', borderColor: 'var(--color-ink)', borderRadius: '8px', borderStyle: 'solid', borderWidth: '2px', boxShadow: 'var(--color-ink) 2px 2px 0px', boxSizing: 'border-box', display: 'flex', paddingBlock: '4px', paddingInline: '10px', rotate: '3deg', transformOrigin: '50% 50%' }}>
@@ -62,7 +62,7 @@ export default function GoldenEggScreen() {
           <div style={{ borderBottomLeftRadius: '7px', borderBottomRightRadius: '7px', borderColor: 'var(--color-ink)', borderStyle: 'solid', borderTopLeftRadius: '6px', borderTopRightRadius: '6px', borderWidth: '2px', boxSizing: 'border-box', flexShrink: '0', height: '15px', width: '12px' }} />
         </div>
         <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em', lineHeight: '16px', textTransform: 'uppercase' }}>
-          0 of 3 hatches left today
+          0 of 3 eggs left today
         </div>
       </div>
       <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '8px', paddingInline: '24px', paddingTop: '22px' }}>
@@ -134,11 +134,11 @@ export default function GoldenEggScreen() {
         </div>
         <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', paddingInline: '20px', paddingTop: '72px' }}>
           <div style={{ backgroundColor: 'var(--color-stage)', borderRadius: '24px', boxSizing: 'border-box', display: 'flex', flexShrink: 0, height: '138px', position: 'relative' }}>
-            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/71TJNVDDA8ZWDFKK231RPR05VJ.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '214px', left: '68px', position: 'absolute', top: '-78px', width: '214px' }} />
+            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/42Y5W5ZZHD6KDPMPA0WWK1BZ03.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '214px', left: '68px', position: 'absolute', top: '-78px', width: '214px' }} />
             <div style={{ boxSizing: 'border-box', display: 'flex', left: '14px', position: 'absolute', top: '14px' }}>
               <div style={{ alignItems: 'center', backgroundColor: 'var(--color-ink)', borderColor: 'var(--color-ink)', borderRadius: '8px', borderStyle: 'solid', borderWidth: '2px', boxShadow: 'var(--color-ink) 2px 2px 0px', boxSizing: 'border-box', display: 'flex', paddingBlock: '4px', paddingInline: '10px', rotate: '-5deg', transformOrigin: '50% 50%' }}>
                 <div style={{ boxSizing: 'border-box', color: '#FFFFFF', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', lineHeight: '16px', textTransform: 'uppercase', whiteSpace: 'pre' }}>
-                  +1 hatch
+                  +1 egg
                 </div>
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function GoldenEggScreen() {
           <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', gap: '10px' }}>
             <div style={{ backgroundColor: 'var(--color-ink)', borderBottomLeftRadius: '6px', borderBottomRightRadius: '6px', borderTopLeftRadius: '5px', borderTopRightRadius: '5px', boxSizing: 'border-box', flexShrink: '0', height: '13px', width: '10px' }} />
             <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '17px', fontWeight: 500, lineHeight: '24px' }}>
-              One more hatch today
+              One more egg today
             </div>
           </div>
           <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', gap: '10px' }}>

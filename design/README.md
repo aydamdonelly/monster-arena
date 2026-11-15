@@ -111,3 +111,59 @@ The flow: land on **07** → tap the camera → **02** hatching → **08** revea
 7. **Buttons on 08**: one primary (`Watch it fight`, bolt icon), then the two outline buttons side by side at height 48 with 15px labels (`Text me the result` takes about 63 % of the row).
 8. **TV sizes** (12): title 128/112 at weight 900 uppercase, timer 190/176, URL 66, roster names 22, outlines 4px, hard shadows 8 to 10px, outer padding 72 top and bottom, 96 left and right. The arena block is where the live `monster-kit/arena.js` view goes; the QR is a placeholder for a real code to `https://snappymon.com`.
 9. Changed in round 1 screens: outlined renders everywhere (01 mascot, 03 stage, 04 tiles, 05 arena and thumb, 06 mascot), names updated to Duckzilla, Phone Phantom and Toadstooloom, and 05 Arena now says `TODAY 5:00 PM`.
+
+## Round 3: egg first
+
+The founder's rule: everybody snaps a photo, everybody gets an **egg**, and every egg hatches **in the arena at 5:00 PM sharp**, where the monsters fight. Nobody sees a monster before that. Keep the app this simple.
+
+The flow:
+1. Land on `snappymon.com` (**07**), tap the camera, snap anything.
+2. The **02** hatching screen is now only the short upload wait. Then **13 Egg**: your egg with your photo on it and the countdown to 5 PM.
+3. Until 5 PM: **14 Home** (Catch tab, up to three eggs a day, the daily task is always "Anything"), **15 Arena waiting** (all eggs, one countdown), **17 Collection** (eggs next to yesterday's monsters).
+4. 5:00 PM: **16 Arena live**. All eggs appear in the 3D arena, hatch together and fight (free-for-all).
+5. Afterwards: **18 Result** in the Arena tab, the monster sits in **17 Collection**, the fight is a replay.
+
+| Screen | File | Route / state |
+| --- | --- | --- |
+| 13 Egg | `13-egg` | right after the snap, and whenever an egg is tapped (Home row, Collection, Arena grid). |
+| 14 Home | `14-home` | Catch tab, `app/(tabs)/index.tsx`, returning player before 5 PM. Replaces 01 Catch (01 only got the new copy). |
+| 15 Arena waiting | `15-arena-waiting` | Arena tab before 5 PM. |
+| 16 Arena live | `16-arena-live` | the live royale at 5 PM and the frame for every replay. Full screen, no tab bar. |
+| 17 Collection | `17-collection` | Collection tab. Replaces 04. |
+| 18 Result | `18-result` | Arena tab after the royale. Replaces 10 (10's champion view shrinks to the strip at the bottom of 18). |
+| retired | `08-reveal`, `10-royale-result`, `03-monster` as a reveal | there is no reveal after hatching and **no practice arena** anymore. 03 stays as the detail screen of a hatched monster. 06 Onboarding stays retired; the trainer name is asked inline on 13. |
+
+Still valid: 07 Landing (new pitch), 09 Golden Egg (an extra **egg** beyond the three per day; it hatches golden at 5 PM), 11 Limit (wording should say eggs, see below), 12 TV (now shows eggs).
+
+### Copy, exactly
+
+- **07 Landing**: sticker `ROYALE TODAY 5 PM` · pitch `Snap anything.` / `Get an egg.` / `It hatches at 5 PM.` · `No app. No signup. Five seconds.` · proof `148 eggs waiting for 5 PM` (live count).
+- **13 Egg**: sticker `YOUR EGG IS IN` · polaroid caption `YOUR SNAP` · headline `It hatches at 5 PM sharp.` · countdown `03:12:44` with `TO GO` · `Live in the royale. Come back to watch it hatch and fight.` · label `NAME YOUR TRAINER`, placeholder `Trainer name`, button `Enter` · primary `Text me when it hatches` (speech-bubble icon) · outline `Share`.
+- **14 Home**: `TODAY'S DROP` · `royale in 03:12:44` · title `Anything` · `Snap it. Get an egg. It hatches at 5 PM.` · `2 OF 3 EGGS LEFT TODAY` · section `YOUR EGGS`, egg tiles with sticker `5 PM`, empty slot `1 more`.
+- **15 Arena waiting**: title `Royale` · sticker `TODAY 5 PM SHARP` · yellow block `HATCHING IN` `03:12:44` · `148 eggs waiting` · `nobody knows what's inside` · the player's egg is marked `YOU` · `At 5:00 every egg hatches and they all fight. Last monster standing wins.`
+- **16 Arena live**: sticker `LIVE` (red) · `5:00 PM · 16 EGGS` · banner `HATCHING…` (later `FIGHT!`, `FINAL TWO`, `<NAME> WINS!`) · caption `Your egg: <Name>` with sticker `YOU` · camera chips `Auto` `3D` `Top` `Follow`.
+- **17 Collection**: title `Collection` · `3 MONSTERS · 1 EGG` · egg tile: sticker `HATCHES 5 PM`, name `Mystery egg`, countdown `03:12:44` · golden tile: sticker `GOLDEN` · empty slot `Snap something new`.
+- **18 Result**: sticker `YOUR EGG HATCHED!` · `ROYALE · 5:00 PM` · element chip · monster name · attack stickers (`Stuffing Stampede` / `DASH`, `Capy Nap Wave` / `SPECIAL · BURST`) · `YOU FINISHED` `#4 of 16` · `2 knockouts` · primary `Watch the replay` · outline `Share` · strip `Champion: Voltgoblin` / `trainer Mia`.
+- **09 Golden Egg**: stickers `+1 EGG`, `CROWN INCLUDED` · `Golden Egg` · `$0.99` · `One more egg today`, `Hatches golden, crown included`, `Same stats. Just fancier.` · `Crack one open · $0.99` · `Maybe tomorrow`.
+- **11 Limit** (not redrawn, change the words when implementing): `0 OF 3 EGGS LEFT TODAY` · `That's three for today.` · `Come back tomorrow, or crack a Golden Egg.` · `Golden Egg · $0.99` · `Watch the arena`. The three thumbs show today's eggs, not monsters.
+- **12 TV**: `SNAPPYMON ROYALE` · `148 eggs waiting` · `STARTS IN` `12:44` · QR plus `snap an object at` / `snappymon.com` / `to enter` · arena block: sticker `HATCHING AT 5 PM SHARP`, a ring of eggs, `Every egg hatches at once. Last monster standing wins.`
+
+### The egg (new component)
+
+- One SVG shape (path in `jsx/13-egg.jsx`, viewBox 212 x 262): fill = a very light tint, 5 speckles in a darker shade of the same hue, 2 to 3px ink outline, hard shadow = the same shape in ink offset by 9 units. Tilt it 3 to 8 degrees.
+- Tint pairs used (fill / speckles): `#F4F2EB` / `#9B6545`, `#DCEBF7` / `#3D9DF3`, `#F9E1EE` / `#E98BC4`, `#FFE3D6` / `#FF6B4A`, `#DDF0DC` / `#4CB867`, `#E9E1FB` / `#9A7BF0`, `#E9ECEF` / `#8C97A6`. Derive the tint from the photo's dominant color (or hash the egg id) so every egg looks different. The tint must not reveal the element.
+- The photo always travels with the egg as a small tilted polaroid stuck on its lower right (about 40 % of the egg's width, 2px ink border, hard shadow). This is how people recognize their own egg in the arena.
+- Crack: a short zigzag at the top for "waiting", a zigzag across the middle for "about to hatch" (last minute and in the arena). On 13 the egg wobbles (rotate between -5 and +5 degrees) and two small arc marks sit beside it.
+- A Golden Egg uses the same shape with fill `#FFE9A6`, speckles `#E0A800` and a small crown sticker; it is the only egg that may hint at what is special about it.
+
+### What an implementer must know
+
+1. **Never show a monster, its name, element, stats or attacks before 5 PM.** The hatch call may already create the monster on the server, but every client view of today's entry is the egg. Yesterday's monsters stay visible in Collection.
+2. **One countdown, one time.** Every screen counts down to the same 5:00 PM (`royale in`, `HATCHING IN`, `TO GO`, the egg tile). Show hours, minutes and seconds with tabular numbers, and switch to `LIVE` at zero.
+3. **Yellow moments**: 13 = the primary button, 14 = the drop card, 15 = the countdown block, 16 = the starburst behind a hatching monster, 17 = the `GOLDEN` sticker, 18 = `Watch the replay`.
+4. **16 is a frame, not a mockup to rebuild in views**: the area between the roster strip and the caption is the live `monster-kit/arena.js` canvas (sky `#CFEAF0`, island, zone ring). Roster, `LIVE` sticker, banner, caption and camera chips are overlays. At 5 PM the eggs stand where the monsters will spawn, crack, and each monster pops out with a starburst and shell pieces.
+5. **Trainer name** is asked inline on 13 (not before the snap). Without a name the egg still enters the royale as "anon".
+6. **`Text me when it hatches`** is the reminder (iMessage). After opting in, the button becomes an outline state `We'll text you at 5 PM`.
+7. **Tapping an egg** anywhere opens 13 for that egg. Tapping a hatched monster opens 03.
+8. **New monsters**: the block-built renders are `renders/bp-*.png` (capybara plush, car, e-scooter, parking pay station, plus `bp-golden-*`). `bp-voltgoblin.png` is cropped at the frame edge, so use it only small or peeking.
+9. Changed older screens in this round: 01 (drop title `Anything`, egg wording, capybara mascot), 07 (three-line pitch, bp monsters, egg proof line), 09 (golden capybara, `+1 EGG`, `One more egg today`), 12 (eggs instead of monsters, no roster).

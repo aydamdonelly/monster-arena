@@ -38,7 +38,7 @@ export const setProfile = mutation({
     const patch: { name?: string; source?: string; isTest?: boolean } = {};
     if (args.name !== undefined) patch.name = args.name.trim().slice(0, 24);
     if (/^qa\b/i.test(args.name ?? "")) patch.isTest = true; // Testläufe der Agenten heißen "QA …" und zählen nicht mit
-    if (args.source !== undefined) patch.source = args.source.slice(0, 24);
+    if (args.source !== undefined) patch.source = args.source.slice(0, 80); // z. B. "Some guy approached me on the street about it"
     await ctx.db.patch("players", player._id, patch);
     return null;
   },

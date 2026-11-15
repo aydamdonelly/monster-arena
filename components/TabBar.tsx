@@ -15,6 +15,11 @@ function TabIcon({ name, color }: { name: string; color: string }) {
         </>
       ) : name === 'arena' ? (
         <Path d="M14.5 3 6 14.5h6L10.5 23 20 11h-6z" {...stroke} />
+      ) : name === 'profile' ? (
+        <>
+          <Circle cx={13} cy={9} r={4.5} {...stroke} />
+          <Path d="M4.5 22.5c0-4.7 3.8-8 8.5-8s8.5 3.3 8.5 8" {...stroke} strokeLinecap="round" />
+        </>
       ) : (
         <>
           <Rect x={4} y={4} width={7.5} height={7.5} rx={2} {...stroke} />
@@ -65,10 +70,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 2,
     borderTopColor: Palette.ink,
     paddingTop: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 6,
   },
   tab: { flex: 1, alignItems: 'center', gap: 5 },
-  label: { fontSize: 12, lineHeight: 14, letterSpacing: 1, textTransform: 'uppercase' },
+  label: { fontSize: 12, lineHeight: 14, letterSpacing: 0.4, textTransform: 'uppercase' },
   indicator: { width: 22, height: 4, borderRadius: 2 },
   indicatorActive: { backgroundColor: Palette.ink },
 });

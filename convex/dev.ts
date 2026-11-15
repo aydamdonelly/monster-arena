@@ -20,6 +20,7 @@ export const seedTest = internalMutation({
         existing?._id ??
         (await ctx.db.insert("players", { deviceId, name: `Test ${r.title.replace(/_/g, " ")}`, source: "seed", isTest: true }));
       const genome = { ...genomeFromAI(r.genome, 5000 + i), photoUrl: r.image };
+      // Als fertiges Ei anlegen: schlüpft bei der nächsten Royale mit includeTest
       await ctx.db.insert("monsters", {
         playerId,
         genome,
@@ -27,6 +28,8 @@ export const seedTest = internalMutation({
         element: genome.element,
         stats: statsFromTraits(genome.traits),
         stage: 1,
+        status: "egg",
+        ready: true,
       });
       n++;
     }

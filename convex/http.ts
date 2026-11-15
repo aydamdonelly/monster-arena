@@ -33,6 +33,13 @@ async function verify(secret: string, id: string, timestamp: string, body: strin
   });
 }
 
+// Whop liefert Beträge je nach API-Version als Zahl oder als { amount: "1.00", currency, decimals }.
+function usd(value: unknown) {
+  const raw = typeof value === "object" && value !== null ? (value as { amount?: unknown }).amount : value;
+  const n = typeof raw === "string" ? Number(raw) : raw;
+  return typeof n === "number" && Number.isFinite(n) ? n : undefined;
+}
+
 http.route({
   path: "/whop",
   method: "POST",
@@ -56,7 +63,7 @@ http.route({
     if (e.type === "payment.succeeded" && typeof e.data?.id === "string") {
       const meta = e.data.metadata ?? {};
       if (meta.kind === "golden_egg" && typeof meta.playerId === "string") {
-        const amount = typeof e.data.usd_total === "number" ? e.data.usd_total : typeof e.data.total === "number" ? e.data.total : 0;
+        const amount = usd(e.data.usd_total) ?? usd(e.data.total) ?? 0;
         const result = await ctx.runMutation(internal.golden.credit, {
           playerId: meta.playerId,
           paymentId: e.data.id,

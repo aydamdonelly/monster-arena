@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><title>monster-kit · Render</title>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }</script></head>
+<body style="margin:0;background:#888">
+<div id="log" style="font:14px system-ui;color:#fff;padding:8px"></div>
+<script type="module">
+  // Rendert jedes Test-Monster als PNG mit transparentem Hintergrund und schickt es an prep/render_server.py (Port 5174).
+  import * as THREE from 'three';
+  import { buildMonster, updateMonster, genomeFromAI } from './monster.js';
+  const SIZE = 720; const log = document.getElementById('log');
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(1); renderer.setSize(SIZE, SIZE); renderer.setClearColor(0x000000, 0); document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+  scene.add(new THREE.HemisphereLight('#ffffff', '#cfdcd4', 1.5));
+  const sun = new THREE.DirectionalLight('#ffffff', 2.0); sun.position.set(-3, 5, 4); scene.add(sun);
+  const fill = new THREE.DirectionalLight('#fff4ec', 0.9); fill.position.set(1.5, 1.5, 6); scene.add(fill);
+  const rows = await (await fetch('./test-genomes.json')).json(); const done = [];
+  for (let i = 0; i < rows.length; i++) {
+    const g = genomeFromAI(rows[i].genome, 3000 + i); const m = buildMonster(g); m.rotation.y = -0.3; scene.add(m); updateMonster(m, 0.4);
+    const h = m.userData.monster.height; const tan = Math.tan((camera.fov * Math.PI) / 360); const d = Math.max((h * 1.25) / (2 * tan), 3.3 / (2 * tan));
+    camera.position.set(0, h * 0.62, d); camera.lookAt(0, h * 0.47, 0); camera.updateProjectionMatrix();
+    renderer.render(scene, camera);
+    const blob = await new Promise((r) => renderer.domElement.toBlob(r, 'image/png'));
+    const name = g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const res = await fetch(`http://127.0.0.1:5174/save?name=${name}`, { method: 'POST', body: blob });
+    done.push(`${name}:${res.status}`); log.textContent = done.join(' '); scene.remove(m);
+  }
+  window.__done = done; console.log('[render] done', done.join(' '));
+</script></body></html>

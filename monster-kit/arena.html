@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Snappymon · Arena</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    html, body { margin: 0; height: 100%; background: #1b1f1d; overflow: hidden; }
+    #stage { position: absolute; inset: 0; }
+    #stage.portrait { left: 50%; right: auto; transform: translateX(-50%); aspect-ratio: 9 / 16; height: 100%; }
+    #hint { position: fixed; left: 10px; top: 50%; color: #8a9; font: 12px system-ui; max-width: 180px; }
+  </style>
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }</script>
+</head>
+<body>
+  <div id="stage"></div>
+  <div id="hint"></div>
+  <script type="module">
+    // Parameter: ?src=test|today  n=16  seed=7  cam=auto|tilt|top|follow  follow=<id>  speed=1  intro=3  stage=9x16
+    import { createArena } from './arena.js';
+    import { genomeFromAI } from './genome-spec.js';
+    import { statsFromTraits } from './battle.js';
+
+    const P = new URLSearchParams(location.search);
+    const CONVEX = P.get('convex') || 'https://superb-buzzard-616.convex.cloud';
+    const N = Number(P.get('n') || 16);
+    const stage = document.getElementById('stage');
+    if (P.get('stage') === '9x16') stage.className = 'portrait'; else document.getElementById('hint').remove();
+
+    async function loadEntrants() {
+      if (P.get('src') === 'today') { // echte Monster der letzten 24 h aus Convex
+        const res = await fetch(`${CONVEX}/api/query`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: 'monsters:listToday', args: { since: Date.now() - 24 * 3600 * 1000, includeTest: P.get('test') === '1' }, format: 'json' }) });
+        const j = await res.json();
+        return (j.value || []).slice(0, N).reverse().map((m) => ({ id: m._id, name: m.name, element: m.element, stats: m.stats, traits: m.genome?.traits, moves: m.genome?.moves, genome: m.genome, photoUrl: m.photoUrl, ownerName: m.ownerName }));
+      }
+      const rows = await (await fetch('./test-genomes.json')).json();
+      const out = [];
+      for (let i = 0; i < N; i++) { const r = rows[i % rows.length]; const g = genomeFromAI(r.genome, 3000 + i); const twin = i >= rows.length; out.push({ id: 't' + i, name: twin ? g.name + ' II' : g.name, element: g.element, stats: statsFromTraits(g.traits), traits: g.traits, moves: g.moves, genome: g, photoUrl: r.image }); }
+      return out;
+    }
+
+    const entrants = await loadEntrants();
+    const arena = createArena(stage, {
+      entrants, seed: Number(P.get('seed') || 7), camera: P.get('cam') || 'auto', followId: P.get('follow') || null,
+      speed: Number(P.get('speed') || 1), intro: Number(P.get('intro') ?? 3), title: P.get('title') || undefined,
+      onEnd: (r) => console.log('[arena] end', JSON.stringify(r)),
+    });
+    window.arena = arena;
+    addEventListener('keydown', (e) => { if (e.code === 'Space') arena.restart(); if (e.key >= '1' && e.key <= '4') arena.setCamera(['auto', 'tilt', 'top', 'follow'][Number(e.key) - 1]); });
+    addEventListener('error', (e) => console.log('[arena] error', e.message));
+    console.log('[arena] ready', entrants.length);
+  </script>
+</body>
+</html>

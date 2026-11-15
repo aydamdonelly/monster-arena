@@ -8,11 +8,13 @@
  * @module
  */
 
+import type * as dev from "../dev.js";
 import type * as drops from "../drops.js";
 import type * as events from "../events.js";
 import type * as hatch from "../hatch.js";
 import type * as monsters from "../monsters.js";
 import type * as players from "../players.js";
+import type * as royale from "../royale.js";
 
 import type {
   ApiFromModules,
@@ -21,11 +23,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  dev: typeof dev;
   drops: typeof drops;
   events: typeof events;
   hatch: typeof hatch;
   monsters: typeof monsters;
   players: typeof players;
+  royale: typeof royale;
 }>;
 
 /**

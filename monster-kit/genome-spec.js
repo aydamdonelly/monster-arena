@@ -56,7 +56,7 @@ Look at the MAIN object in the photo. The monster must be instantly recognizable
 - element: fire (red, hot, spicy), water (blue, liquid, glass, drinks), plant (green, natural, fruit, veggies), metal (electronics, metal, hard tools), fluff (soft, fabric, plush), spirit (old, strange, sentimental).
 - traits: numbers from 0 to 1 for hard, sharp, fast, big, soft, judged from the real object.
 - move1 (basic attack) and move2 (special attack): two unique attacks that only THIS object could have. name: punchy, 1 to 3 words, a pun on what the object does (mug: "Espresso Splash" and "Handle Hook"; banana: "Peel Slip" and "Potassium Beam"; laptop: "Ctrl Alt Delete" and "Blue Screen").
-  kind: melee (hits, bites, slaps at close range), shot (throws or spits one projectile), beam (laser, ray or stream in a long line), burst (explosion, splash or shockwave around itself), dash (charges or leaps at the target). move1 and move2 must have different kinds.
+  kind: melee (hits, bites, slaps at close range), shot (throws or spits one projectile), beam (laser, ray or stream in a long line), burst (explosion, splash or shockwave around itself), dash (charges or leaps at the target). move1 and move2 must have different kinds. Use the full variety: shot, beam and dash are as welcome as melee and burst; let the name decide (a "Beam" or "Ray" is a beam, a "Splash" or "Pop" is a burst, a "Spit" or "Toss" is a shot, a "Slide" or "Rush" is a dash).
   element: usually the monster's own element; the special may use another fitting element.
 - safe: false if the photo mainly shows a human person or face, nudity, weapons, drugs or anything inappropriate; otherwise true.
 - matchesPrompt: 0 to 1, how well the object fits today's drop task: "${dropPrompt}".`;

@@ -18,7 +18,7 @@
   <div id="stage"></div>
   <div id="hint"></div>
   <script type="module">
-    // Parameter: ?src=test|today  n=16  seed=7  cam=auto|tilt|top|follow  follow=<id>  speed=1  intro=3  stage=9x16
+    // Parameter: ?src=test|today|royale (round=-1 Finale, 0.. Vorrunde)  n=16  seed=7  cam=auto|tilt|top|follow  follow=<id>  speed=1  intro=3  stage=9x16
     import { createArena } from './arena.js';
     import { genomeFromAI } from './genome-spec.js';
     import { statsFromTraits } from './battle.js';
@@ -29,7 +29,18 @@
     const stage = document.getElementById('stage');
     if (P.get('stage') === '9x16') stage.className = 'portrait'; else document.getElementById('hint').remove();
 
+    let SEED = Number(P.get('seed') || 7); let DAY = P.get('day') || undefined; let TITLE = P.get('title') || undefined;
+    async function convexQuery(path, args) {
+      const res = await fetch(`${CONVEX}/api/query`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path, args, format: 'json' }) });
+      return (await res.json()).value;
+    }
     async function loadEntrants() {
+      if (P.get('src') === 'royale') { // gespeicherte Runde der letzten Royale: round=-1 ist das Finale, sonst die Vorrunde
+        const r = await convexQuery('royale:round', { index: Number(P.get('round') ?? -1) });
+        if (!r) return [];
+        SEED = r.seed; DAY = r.dayElement || undefined; TITLE = TITLE || (r.isFinal ? `${r.title} · FINAL` : `${r.title} · HEAT ${r.index + 1}`);
+        return r.entrants;
+      }
       if (P.get('src') === 'today') { // echte Monster der letzten 24 h aus Convex
         const res = await fetch(`${CONVEX}/api/query`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: 'monsters:listToday', args: { since: Date.now() - 24 * 3600 * 1000, includeTest: P.get('test') === '1' }, format: 'json' }) });
         const j = await res.json();
@@ -43,8 +54,8 @@
 
     const entrants = await loadEntrants();
     const arena = createArena(stage, {
-      entrants, seed: Number(P.get('seed') || 7), camera: P.get('cam') || 'auto', followId: P.get('follow') || null,
-      speed: Number(P.get('speed') || 1), intro: Number(P.get('intro') ?? 3), title: P.get('title') || undefined,
+      entrants, seed: SEED, dayElement: DAY, camera: P.get('cam') || 'auto', followId: P.get('follow') || null,
+      speed: Number(P.get('speed') || 1), intro: Number(P.get('intro') ?? 3), title: TITLE,
       onEnd: (r) => console.log('[arena] end', JSON.stringify(r)),
     });
     window.arena = arena;

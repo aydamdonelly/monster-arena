@@ -24,9 +24,12 @@ export function useSource() {
   const deviceId = useDeviceId();
   const setProfile = useMutation(api.players.setProfile);
   const [source, setSource] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    getItem(KEY).then((v) => v && setSource(v));
+    getItem(KEY)
+      .then((v) => v && setSource(v))
+      .finally(() => setLoaded(true));
   }, []);
 
   const pick = (s: string) => {
@@ -36,13 +39,13 @@ export function useSource() {
     setProfile({ deviceId, source: s }).catch((e) => console.warn('setProfile failed', e));
   };
 
-  return { source, pick };
+  return { source, pick, loaded };
 }
 
-export default function SourceChips({ value, onPick }: { value: string | null; onPick: (s: string) => void }) {
+export default function SourceChips({ value, onPick, label = true }: { value: string | null; onPick: (s: string) => void; label?: boolean }) {
   return (
     <View style={styles.wrap}>
-      <Text style={Type.label}>How did you get here?</Text>
+      {label ? <Text style={Type.label}>How did you get here?</Text> : null}
       <View style={styles.chips}>
         {SOURCES.map((s) => {
           const active = s === value;

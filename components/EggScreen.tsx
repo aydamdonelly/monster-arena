@@ -40,6 +40,8 @@ export default function EggScreen({
   const remove = useMutation(api.eggs.remove);
   const photo = photoUri ?? (entry && 'photoUrl' in entry ? entry.photoUrl : null) ?? null;
   const golden = !!entry && 'golden' in entry && !!entry.golden;
+  const { source, pick, loaded } = useSource();
+  const [answered, setAnswered] = useState(false);
 
   if (entry?.status === 'rejected') {
     return (
@@ -76,9 +78,30 @@ export default function EggScreen({
     );
   }
 
+  if (!loaded || !source) {
+    return (
+      <Shell sticker={golden ? 'Your golden egg is in' : 'Your egg is in'}>
+        <EggStage seed={eggId || 'new'} photo={photo} golden={golden} layIn={layIn} />
+        {loaded ? (
+          <Appear delay={layIn ? 900 : 0} style={styles.gate}>
+            <Text style={styles.gateTitle}>One tap to finish: how did you get here?</Text>
+            <SourceChips
+              value={null}
+              label={false}
+              onPick={(s) => {
+                setAnswered(true);
+                pick(s);
+              }}
+            />
+          </Appear>
+        ) : null}
+      </Shell>
+    );
+  }
+
   return (
     <Shell onClose={onClose} sticker={golden ? 'Your golden egg is in' : 'Your egg is in'}>
-      <EggStage seed={eggId || 'new'} photo={photo} golden={golden} layIn={layIn} />
+      <EggStage seed={eggId || 'new'} photo={photo} golden={golden} layIn={layIn && !answered} />
       <Appear delay={layIn ? 900 : 0} style={styles.copy}>
         <Text style={styles.headline}>It hatches at 5 PM sharp.</Text>
         <Countdown />
@@ -86,7 +109,6 @@ export default function EggScreen({
       </Appear>
       <Appear delay={layIn ? 1000 : 80} style={styles.trainer}>
         <TrainerRow />
-        <Source />
       </Appear>
       <Appear delay={layIn ? 1100 : 160} style={styles.actions}>
         {SMS_NUMBER ? <TextMe deviceId={deviceId} /> : null}
@@ -94,11 +116,6 @@ export default function EggScreen({
       </Appear>
     </Shell>
   );
-}
-
-function Source() {
-  const { source, pick } = useSource();
-  return <SourceChips value={source} onPick={pick} />;
 }
 
 function TextMe({ deviceId }: { deviceId: string }) {
@@ -127,16 +144,18 @@ function TextMe({ deviceId }: { deviceId: string }) {
   );
 }
 
-function Shell({ sticker, onClose, children }: { sticker: string; onClose: () => void; children: ReactNode }) {
+function Shell({ sticker, onClose, children }: { sticker: string; onClose?: () => void; children: ReactNode }) {
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
       <View style={styles.top}>
         <InkSticker label={sticker} fontSize={14} />
-        <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={onClose} hitSlop={12}>
-          <Svg width={28} height={28} viewBox="0 0 28 28">
-            <Path d="M7 7l14 14M21 7L7 21" fill="none" stroke={Palette.ink} strokeWidth={2.8} strokeLinecap="round" />
-          </Svg>
-        </Pressable>
+        {onClose ? (
+          <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={onClose} hitSlop={12}>
+            <Svg width={28} height={28} viewBox="0 0 28 28">
+              <Path d="M7 7l14 14M21 7L7 21" fill="none" stroke={Palette.ink} strokeWidth={2.8} strokeLinecap="round" />
+            </Svg>
+          </Pressable>
+        ) : null}
       </View>
       {children}
     </ScrollView>
@@ -247,7 +266,9 @@ const styles = StyleSheet.create({
   muted: { color: Palette.muted },
   toGo: { paddingBottom: 9 },
   clock: { fontFamily: Fonts.black, fontSize: 56, lineHeight: 54, letterSpacing: -1.7, color: Palette.ink, fontVariant: ['tabular-nums'] },
-  trainer: { gap: 18, paddingHorizontal: 24, paddingTop: 16 },
+  trainer: { paddingHorizontal: 24, paddingTop: 16 },
+  gate: { gap: 16, paddingHorizontal: 24, paddingTop: 18 },
+  gateTitle: { fontFamily: Fonts.black, fontSize: 30, lineHeight: 32, letterSpacing: -1, color: Palette.ink },
   actions: { gap: 12, paddingHorizontal: 20, paddingTop: 18 },
   share: { height: 52 },
   shareLabel: { fontSize: 17, lineHeight: 20 },

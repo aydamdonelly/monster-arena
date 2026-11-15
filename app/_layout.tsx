@@ -3,17 +3,14 @@ import { Rubik_600SemiBold } from '@expo-google-fonts/rubik/600SemiBold';
 import { Rubik_700Bold } from '@expo-google-fonts/rubik/700Bold';
 import { Rubik_800ExtraBold } from '@expo-google-fonts/rubik/800ExtraBold';
 import { Rubik_900Black } from '@expo-google-fonts/rubik/900Black';
-import { ConvexProvider, ConvexReactClient } from 'convex/react';
+import { ConvexProvider } from 'convex/react';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
+import { convex } from '@/lib/convex';
 import { DeviceProvider } from '@/lib/device';
 import { Palette } from '@/lib/theme';
-
-const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
-  unsavedChangesWarning: false,
-});
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -30,7 +27,7 @@ export default function RootLayout() {
       <DeviceProvider>
         <StatusBar style="dark" />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Palette.bg } }}>
-          <Stack.Screen name="onboarding" options={{ gestureEnabled: false, animation: 'fade' }} />
+          <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
         </Stack>
       </DeviceProvider>
     </ConvexProvider>

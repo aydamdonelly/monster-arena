@@ -7,14 +7,16 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import ArenaView from '@/components/ArenaView';
+import Egg from '@/components/Egg';
+import { HardShadow, InkSticker } from '@/components/ui';
 import MonsterView from '@/components/MonsterView';
 import QrCode from '@/components/QrCode';
 import { api } from '@/convex/_generated/api';
 import { bornFrom, formatCountdown, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
-import { ElementColors, Fonts, Palette, webUrl } from '@/lib/theme';
-
+import { Fonts, Palette, webUrl } from '@/lib/theme';
 
 const HOLD_AFTER_ROUND_MS = 6000;
+const TV_EGGS = 24;
 
 function useUnit() {
   const { width, height } = useWindowDimensions();
@@ -43,44 +45,89 @@ function Lobby({ since, includeTest, adminKey }: { since: number; includeTest: b
   const now = useNow();
   const monsters = useQuery(api.monsters.listToday, { since, includeTest });
   const startsAt = royaleTimeToday();
+  const left = startsAt - now;
 
   return (
-    <View style={[styles.root, { flexDirection: 'row', padding: 56 * u, gap: 56 * u }]}>
-      <View style={{ width: 720 * u, justifyContent: 'space-between' }}>
-        <View style={{ gap: 10 * u }}>
-          <Text style={[styles.title, { fontSize: 92 * u, lineHeight: 96 * u }]} numberOfLines={2}>
+    <View style={[styles.root, { flexDirection: 'row' }]}>
+      <View style={{ width: 960 * u, paddingVertical: 72 * u, paddingLeft: 96 * u, paddingRight: 40 * u, justifyContent: 'space-between' }}>
+        <View style={{ gap: 18 * u }}>
+          <Text style={[styles.black, { fontSize: 40 * u, lineHeight: 44 * u, letterSpacing: -1.6 * u }]}>snappymon</Text>
+          <Text style={[styles.black, { fontSize: 128 * u, lineHeight: 112 * u, letterSpacing: -5.76 * u, paddingTop: 12 * u }]}>
             SNAPPYMON{'\n'}ROYALE
           </Text>
-          <Text style={[styles.kicker, { fontSize: 26 * u, marginTop: 12 * u }]}>TODAY · 5:00 PM</Text>
-          <Text style={[styles.countdown, { fontSize: (startsAt > now ? 112 : 64) * u }]} numberOfLines={1}>
-            {formatCountdown(startsAt - now)}
+          <Text style={[styles.extrabold, { fontSize: 44 * u, lineHeight: 50 * u, letterSpacing: -0.88 * u, paddingTop: 6 * u }]}>
+            {monsters ? `${monsters.length.toLocaleString('en-US')} ${monsters.length === 1 ? 'egg' : 'eggs'} waiting` : ' '}
           </Text>
-          <Text style={[styles.big, { fontSize: 40 * u }]}>{monsters ? `${monsters.length} ${monsters.length === 1 ? 'monster' : 'monsters'} entered` : '…'}</Text>
         </View>
+        <HardShadow offset={10 * u} radius={36 * u} style={{ alignSelf: 'flex-start' }}>
+          <View style={[styles.countdownBlock, { borderWidth: 4 * u, borderRadius: 36 * u, paddingTop: 22 * u, paddingBottom: 26 * u, paddingHorizontal: 40 * u }]}>
+            <Text style={[styles.caps, { fontSize: 28 * u, lineHeight: 32 * u, letterSpacing: 2.24 * u }]}>{left > 0 ? 'Starts in' : 'Today 5:00 PM'}</Text>
+            <Text style={[styles.black, styles.tnum, { fontSize: (left > 0 ? (left >= 3600000 ? 150 : 190) : 96) * u, lineHeight: (left > 0 ? (left >= 3600000 ? 150 : 176) : 104) * u, letterSpacing: -7.6 * u }]}>
+              {formatCountdown(left).replace('any moment now', 'Any minute')}
+            </Text>
+          </View>
+        </HardShadow>
         <View style={{ gap: 24 * u }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 28 * u }}>
-            <View style={{ borderRadius: 20 * u, overflow: 'hidden' }}>
-              <QrCode value={webUrl} size={200 * u} />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 36 * u }}>
+            <HardShadow offset={8 * u} radius={24 * u}>
+              <View style={[styles.qr, { borderWidth: 4 * u, borderRadius: 24 * u, padding: 10 * u }]}>
+                <QrCode value={webUrl} size={220 * u} color={Palette.ink} />
+              </View>
+            </HardShadow>
+            <View style={{ gap: 4 * u, flexShrink: 1 }}>
+              <Text style={[styles.semibold, { fontSize: 34 * u, lineHeight: 40 * u }]}>snap an object at</Text>
+              <Text style={[styles.black, { fontSize: 66 * u, lineHeight: 66 * u, letterSpacing: -2.3 * u }]} numberOfLines={1}>
+                {webUrl.replace(/^https?:\/\//, '')}
+              </Text>
+              <Text style={[styles.semibold, { fontSize: 34 * u, lineHeight: 40 * u }]}>to enter</Text>
             </View>
-            <Text style={[styles.big, { fontSize: 36 * u, flex: 1 }]}>snap an object at {webUrl.replace(/^https?:\/\//, '')} to enter</Text>
           </View>
           {adminKey ? <AdminStart adminKey={adminKey} includeTest={includeTest} u={u} /> : null}
         </View>
       </View>
-      <View style={[styles.grid, { gap: 16 * u }]}>
-        {(monsters ?? []).slice(0, 40).map((m) => (
-          <View key={m._id} style={[styles.tile, { width: 176 * u, borderRadius: 24 * u, padding: 10 * u, gap: 8 * u }]}>
-            {m.photoUrl ? (
-              <Image source={{ uri: m.photoUrl }} style={{ width: '100%', aspectRatio: 1, borderRadius: 16 * u }} contentFit="cover" />
-            ) : (
-              <View style={[styles.placeholder, { borderRadius: 16 * u, backgroundColor: ElementColors[m.element] ?? ElementColors.normal }]}>
-                <Text style={[styles.title, { fontSize: 72 * u, color: '#fff' }]}>{m.name.slice(0, 1)}</Text>
-              </View>
-            )}
-            <Text numberOfLines={1} style={[styles.tileName, { fontSize: 22 * u }]}>{m.name}</Text>
-            {m.ownerName ? <Text numberOfLines={1} style={[styles.tileOwner, { fontSize: 18 * u }]}>{m.ownerName}</Text> : null}
+      <View style={{ flex: 1, paddingVertical: 72 * u, paddingLeft: 24 * u, paddingRight: 96 * u }}>
+        <View style={[styles.arena, { borderWidth: 4 * u, borderRadius: 48 * u }]}>
+          <InkSticker label="Hatching at 5 PM sharp" fontSize={26 * u} rotate={-3} style={{ position: 'absolute', top: 36 * u, left: 36 * u, zIndex: 1 }} />
+          <EggRing eggs={monsters ?? []} u={u} />
+          <Text style={[styles.extrabold, styles.ringCaption, { fontSize: 30 * u, lineHeight: 36 * u, bottom: 36 * u, left: 36 * u, right: 36 * u }]}>
+            Every egg hatches at once. Last monster standing wins.
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function EggRing({ eggs, u }: { eggs: FunctionReturnType<typeof api.monsters.listToday>; u: number }) {
+  const shown = eggs.slice(0, TV_EGGS);
+  const radius = 300 * u;
+  const tile = 128 * u;
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width: radius * 2 + tile, height: radius * 2 + tile }}>
+        {shown.map((m, i) => {
+          const angle = (i / Math.max(shown.length, 1)) * Math.PI * 2 - Math.PI / 2;
+          return (
+            <View
+              key={m._id}
+              style={{
+                position: 'absolute',
+                left: radius + Math.cos(angle) * radius,
+                top: radius + Math.sin(angle) * radius,
+                width: tile,
+                height: tile,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Egg seed={m._id} width={78 * u} golden={m.golden} photoUrl={m.photoUrl} rotate={(i % 3) * 4 - 4} />
+            </View>
+          );
+        })}
+        {eggs.length > TV_EGGS ? (
+          <View style={[styles.more, { position: 'absolute', left: radius, top: radius, width: tile, height: tile, borderRadius: tile / 2 }]}>
+            <Text style={[styles.black, { color: Palette.ground, fontSize: 40 * u }]}>+{(eggs.length - TV_EGGS).toLocaleString('en-US')}</Text>
           </View>
-        ))}
+        ) : null}
       </View>
     </View>
   );
@@ -106,7 +153,7 @@ function AdminStart({ adminKey, includeTest, u }: { adminKey: string; includeTes
       <Pressable accessibilityRole="button" onPress={onPress} disabled={busy} style={[styles.admin, { paddingHorizontal: 32 * u, paddingVertical: 16 * u }]}>
         {busy ? <ActivityIndicator color="#fff" /> : <Text style={[styles.adminText, { fontSize: 28 * u }]}>Start royale</Text>}
       </Pressable>
-      {error ? <Text style={{ color: Palette.accent, fontSize: 20 * u, fontFamily: Fonts.bold }}>{error}</Text> : null}
+      {error ? <Text style={{ color: Palette.ink, fontSize: 20 * u, fontFamily: Fonts.bold }}>{error}</Text> : null}
     </View>
   );
 }
@@ -138,7 +185,7 @@ function Show({ summary, adminKey, includeTest }: { summary: Summary; adminKey?:
     );
   }
   return (
-    <View style={[styles.root, { backgroundColor: '#cfeaf0' }]}>
+    <View style={styles.root}>
       <ArenaView
         key={step}
         entrants={round.entrants}
@@ -159,28 +206,38 @@ function Champion({ summary, adminKey, includeTest, onReplay }: { summary: Summa
   const champ = summary.champion;
   const born = champ ? bornFrom(champ.genome) : null;
   return (
-    <View style={[styles.root, { flexDirection: 'row', alignItems: 'center', padding: 72 * u, gap: 64 * u }]}>
+    <View style={[styles.root, { flexDirection: 'row', alignItems: 'center', paddingVertical: 72 * u, paddingHorizontal: 96 * u, gap: 64 * u }]}>
       <View style={{ flex: 1, gap: 20 * u }}>
-        <Text style={[styles.kicker, { fontSize: 32 * u }]}>{summary.title.toUpperCase()} · CHAMPION</Text>
-        <Text style={[styles.title, { fontSize: 150 * u, lineHeight: 160 * u }]} numberOfLines={2}>
+        <Text style={[styles.caps, { fontSize: 32 * u, lineHeight: 36 * u, letterSpacing: 2.56 * u }]}>{summary.title} · champion</Text>
+        <Text style={[styles.black, { fontSize: 150 * u, lineHeight: 140 * u, letterSpacing: -6 * u }]} numberOfLines={2}>
           {champ?.name ?? 'Nobody'}
         </Text>
-        {champ?.ownerName ? <Text style={[styles.big, { fontSize: 52 * u }]}>trainer {champ.ownerName}</Text> : null}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 28 * u }}>
+        {champ?.ownerName ? (
+          <Text style={[styles.medium, { fontSize: 52 * u, lineHeight: 60 * u, color: Palette.muted }]}>
+            trainer <Text style={styles.extrabold}>{champ.ownerName}</Text>
+          </Text>
+        ) : null}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 32 * u, paddingTop: 8 * u }}>
           {champ?.photoUrl ? (
-            <Image source={{ uri: champ.photoUrl }} style={{ width: 220 * u, height: 220 * u, borderRadius: 24 * u, transform: [{ rotate: '-4deg' }] }} contentFit="cover" />
+            <HardShadow offset={8 * u} radius={12 * u} rotate={-5}>
+              <View style={[styles.qr, { borderWidth: 4 * u, borderRadius: 12 * u, padding: 10 * u }]}>
+                <Image source={{ uri: champ.photoUrl }} style={{ width: 200 * u, height: 200 * u, borderRadius: 4 * u }} contentFit="cover" />
+              </View>
+            </HardShadow>
           ) : null}
-          {born ? <Text style={[styles.big, { fontSize: 40 * u, flex: 1, color: Palette.muted }]}>{born}</Text> : null}
+          {born ? <Text style={[styles.medium, { fontSize: 40 * u, lineHeight: 48 * u, flex: 1, color: Palette.muted }]}>{born}</Text> : null}
         </View>
-        <View style={{ flexDirection: 'row', gap: 20 * u, marginTop: 16 * u, alignItems: 'flex-start' }}>
-          <Pressable accessibilityRole="button" onPress={onReplay} style={[styles.admin, { paddingHorizontal: 36 * u, paddingVertical: 18 * u }]}>
-            <Text style={[styles.adminText, { fontSize: 30 * u }]}>Replay final</Text>
-          </Pressable>
+        <View style={{ flexDirection: 'row', gap: 24 * u, marginTop: 24 * u, alignItems: 'center' }}>
+          <HardShadow offset={8 * u} radius={24 * u}>
+            <Pressable accessibilityRole="button" onPress={onReplay} style={[styles.replay, { borderWidth: 4 * u, borderRadius: 24 * u, paddingHorizontal: 40 * u, paddingVertical: 20 * u }]}>
+              <Text style={[styles.extrabold, { fontSize: 34 * u }]}>Replay final</Text>
+            </Pressable>
+          </HardShadow>
           {adminKey ? <AdminStart adminKey={adminKey} includeTest={includeTest} u={u} /> : null}
         </View>
       </View>
       {champ ? (
-        <View style={{ width: 760 * u, height: 860 * u, borderRadius: 40 * u, overflow: 'hidden' }}>
+        <View style={{ width: 760 * u, height: 860 * u, borderRadius: 48 * u, borderWidth: 4 * u, borderColor: Palette.ink, overflow: 'hidden', backgroundColor: Palette.stage }}>
           <MonsterView genome={champ.genome as Record<string, unknown>} dom={{ scrollEnabled: false, style: { flex: 1 } }} />
         </View>
       ) : null}
@@ -189,17 +246,20 @@ function Champion({ summary, adminKey, includeTest, onReplay }: { summary: Summa
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Palette.bg },
+  root: { flex: 1, backgroundColor: Palette.ground },
   center: { alignItems: 'center', justifyContent: 'center' },
-  title: { fontFamily: Fonts.black, color: Palette.ink, letterSpacing: 1 },
-  kicker: { fontFamily: Fonts.bold, letterSpacing: 3, color: Palette.muted },
-  countdown: { fontFamily: Fonts.black, color: Palette.accent, fontVariant: ['tabular-nums'] },
-  big: { fontFamily: Fonts.bold, color: Palette.ink },
-  grid: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'flex-start', overflow: 'hidden' },
-  tile: { backgroundColor: Palette.card },
-  placeholder: { width: '100%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center' },
-  tileName: { fontFamily: Fonts.bold, color: Palette.ink },
-  tileOwner: { fontFamily: Fonts.regular, color: Palette.muted },
+  black: { fontFamily: Fonts.black, color: Palette.ink },
+  extrabold: { fontFamily: Fonts.extrabold, color: Palette.ink },
+  semibold: { fontFamily: Fonts.semibold, color: Palette.ink },
+  medium: { fontFamily: Fonts.medium, color: Palette.ink },
+  caps: { fontFamily: Fonts.semibold, color: Palette.ink, textTransform: 'uppercase' },
+  tnum: { fontVariant: ['tabular-nums'] },
+  countdownBlock: { backgroundColor: Palette.primary, borderColor: Palette.ink },
+  qr: { backgroundColor: Palette.ground, borderColor: Palette.ink },
+  arena: { flex: 1, borderColor: Palette.ink, overflow: 'hidden', backgroundColor: Palette.stage },
+  more: { backgroundColor: Palette.ink, alignItems: 'center', justifyContent: 'center' },
+  ringCaption: { position: 'absolute', textAlign: 'center' },
+  replay: { backgroundColor: Palette.primary, borderColor: Palette.ink },
   admin: { backgroundColor: Palette.ink, borderRadius: 999 },
-  adminText: { color: '#fff', fontFamily: Fonts.bold },
+  adminText: { color: Palette.ground, fontFamily: Fonts.bold },
 });

@@ -1,31 +1,25 @@
 import { useQuery } from 'convex/react';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import MonsterSnapshots from '@/components/MonsterSnapshots';
-import { Appear, HardShadow, StageBlock } from '@/components/ui';
+import Egg from '@/components/Egg';
+import { Appear, HardShadow, InkSticker, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
+import { clock, royaleTimeToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
+import { useSnapshots } from '@/lib/snapshots';
 import { elementColor, Fonts, Palette, Radii, Type } from '@/lib/theme';
-
-const snapshots = new Map<string, string>();
 
 export default function CollectionScreen() {
   const deviceId = useDeviceId();
   const monsters = useQuery(api.monsters.listMine, { deviceId });
-  const [, setVersion] = useState(0);
-  const pending = useMemo(
-    () => (monsters ?? []).filter((m) => !snapshots.has(m._id)).map((m) => ({ id: m._id, genome: m.genome })),
-    [monsters],
-  );
-  const onSnapshot = async (id: string, uri: string) => {
-    snapshots.set(id, uri);
-    setVersion((v) => v + 1);
-  };
+  const hatched = monsters?.filter((m) => m.status === 'hatched').length ?? 0;
+  const eggs = monsters?.filter((m) => m.status === 'egg').length ?? 0;
+  const { pending, onSnapshot, snapshot } = useSnapshots(monsters?.flatMap((m) => (m.status === 'hatched' ? [m] : [])));
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -43,11 +37,11 @@ export default function CollectionScreen() {
               <Text style={Type.display}>Collection</Text>
               {monsters?.length ? (
                 <Text style={[Type.label, styles.count]}>
-                  {monsters.length} {monsters.length === 1 ? 'monster' : 'monsters'}
+                  {hatched} {hatched === 1 ? 'monster' : 'monsters'} · {eggs} {eggs === 1 ? 'egg' : 'eggs'}
                 </Text>
               ) : null}
             </View>
-            {monsters?.length === 0 ? <Text style={Type.muted}>Nothing here yet. Your first snap hatches in 5 seconds.</Text> : null}
+            {monsters?.length === 0 ? <Text style={Type.muted}>Nothing here yet. Your first snap lays an egg that hatches at 5 PM.</Text> : null}
           </View>
         }
         ListEmptyComponent={<ActivityIndicator color={Palette.ink} style={styles.loading} />}
@@ -65,7 +59,7 @@ export default function CollectionScreen() {
                 <Text style={styles.newText}>Snap something new</Text>
               </Pressable>
             </Appear>
-          ) : (
+          ) : item.status === 'hatched' ? (
             <Appear delay={Math.min(index, 8) * 50} style={styles.cell}>
               <Pressable
                 accessibilityRole="button"
@@ -73,13 +67,13 @@ export default function CollectionScreen() {
                 onPress={() => router.push({ pathname: '/monster/[id]', params: { id: item._id } })}
                 style={({ pressed }) => [styles.tile, pressed && styles.tilePressed]}>
                 <StageBlock radius={Radii.tile} style={styles.thumb}>
-                  {snapshots.has(item._id) ? (
-                    <Image source={{ uri: snapshots.get(item._id) }} style={styles.render} contentFit="cover" transition={200} />
+                  {snapshot(item._id) ? (
+                    <Image source={{ uri: snapshot(item._id) }} style={styles.render} contentFit="cover" transition={200} />
                   ) : null}
-                  {index === 0 ? (
+                  {item.golden ? (
                     <HardShadow offset={2} radius={Radii.chip} rotate={-6} style={styles.newTag}>
                       <View style={styles.newTagBody}>
-                        <Text style={Type.caps}>New</Text>
+                        <Text style={Type.caps}>Golden</Text>
                       </View>
                     </HardShadow>
                   ) : null}
@@ -92,11 +86,52 @@ export default function CollectionScreen() {
                 </View>
               </Pressable>
             </Appear>
+          ) : (
+            <Appear delay={Math.min(index, 8) * 50} style={styles.cell}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={item.status === 'rejected' ? "Egg that can't hatch" : 'Your egg'}
+                onPress={() => router.push({ pathname: '/egg/[id]', params: { id: item._id } })}
+                style={({ pressed }) => [styles.tile, pressed && styles.tilePressed]}>
+                <StageBlock radius={Radii.tile} style={styles.thumb}>
+                  <View style={item.status === 'rejected' && styles.rejected}>
+                    <Egg seed={item._id} width={72} golden={item.golden} rotate={-4} />
+                  </View>
+                  {item.photoUrl ? (
+                    <View style={styles.eggPhoto}>
+                      <HardShadow offset={2} radius={6} rotate={8}>
+                        <View style={styles.polaroid}>
+                          <Image source={{ uri: item.photoUrl }} style={styles.photo} contentFit="cover" />
+                        </View>
+                      </HardShadow>
+                    </View>
+                  ) : null}
+                  <InkSticker
+                    label={item.status === 'rejected' ? "Can't hatch" : 'Hatches 5 PM'}
+                    light={item.status === 'rejected'}
+                    fontSize={12}
+                    rotate={-5}
+                    style={styles.eggTag}
+                  />
+                </StageBlock>
+                <View style={styles.eggMeta}>
+                  <Text style={[styles.name, item.status === 'rejected' && styles.mutedName]} numberOfLines={1}>
+                    {item.status === 'rejected' ? 'No egg' : 'Mystery egg'}
+                  </Text>
+                  {item.status === 'egg' ? <EggClock /> : null}
+                </View>
+              </Pressable>
+            </Appear>
           )
         }
       />
     </SafeAreaView>
   );
+}
+
+function EggClock() {
+  const left = royaleTimeToday() - useNow();
+  return <Text style={styles.eggClock}>{left > 0 ? clock(left) : 'hatching now'}</Text>;
 }
 
 const styles = StyleSheet.create({
@@ -105,15 +140,23 @@ const styles = StyleSheet.create({
   grid: { paddingHorizontal: 20, paddingBottom: 24, rowGap: 18, width: '100%', maxWidth: 560, alignSelf: 'center', flexGrow: 1 },
   column: { gap: 14 },
   headerWrap: { gap: 8, paddingTop: 14, paddingHorizontal: 4, paddingBottom: 2 },
-  header: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 },
-  count: { paddingBottom: 7 },
+  header: { gap: 2 },
+  count: { color: Palette.muted },
   loading: { marginTop: 60 },
   cell: { flex: 1, maxWidth: '50%' },
   tile: { gap: 8 },
   tilePressed: { transform: [{ scale: 0.97 }] },
-  thumb: { aspectRatio: 168 / 156, alignItems: 'center', justifyContent: 'center' },
+  thumb: { aspectRatio: 168 / 156, alignItems: 'center', justifyContent: 'center', paddingTop: 14 },
   render: { width: '98%', aspectRatio: 1 },
   newTag: { position: 'absolute', top: 10, left: 10 },
+  eggTag: { position: 'absolute', top: 10, left: 10 },
+  eggPhoto: { position: 'absolute', right: 22, bottom: 16 },
+  polaroid: { backgroundColor: Palette.ground, borderWidth: 2, borderColor: Palette.ink, borderRadius: 6, padding: 3, paddingBottom: 6 },
+  photo: { width: 30, height: 30, borderRadius: 2 },
+  eggMeta: { gap: 1, paddingHorizontal: 4 },
+  eggClock: { fontFamily: Fonts.semibold, fontSize: 13, lineHeight: 16, color: Palette.muted, fontVariant: ['tabular-nums'] },
+  rejected: { opacity: 0.35 },
+  mutedName: { color: Palette.muted },
   newTagBody: {
     backgroundColor: Palette.primary,
     borderWidth: 2,

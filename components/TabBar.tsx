@@ -28,6 +28,7 @@ function TabIcon({ name, color }: { name: string; color: string }) {
 }
 
 export default function TabBar({ state, descriptors, emitter, navigateToTab, insets }: BottomTabBarProps) {
+  if (StyleSheet.flatten(descriptors[state.routes[state.index].key].options.tabBarStyle)?.display === 'none') return null;
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       {state.routes.map((route, index) => {

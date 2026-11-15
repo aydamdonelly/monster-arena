@@ -9,7 +9,7 @@ import { ElementTag } from '@/components/StatBar';
 import { api } from '@/convex/_generated/api';
 import { bornFrom, formatCountdown, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
-import { Palette } from '@/lib/theme';
+import { Fonts, Palette } from '@/lib/theme';
 
 export default function ArenaScreen() {
   const deviceId = useDeviceId();
@@ -34,7 +34,7 @@ export default function ArenaScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.next}>
         <Text style={styles.kicker}>NEXT ROYALE · 4:00 PM</Text>
-        <Text style={styles.countdown}>{formatCountdown(startsAt - now)}</Text>
+        <Text style={[styles.countdown, startsAt <= now && { fontSize: 30 }]}>{formatCountdown(startsAt - now)}</Text>
         <Text style={styles.entered}>{monsters ? `${monsters.length} ${monsters.length === 1 ? 'monster' : 'monsters'} entered` : '…'}</Text>
       </View>
 
@@ -96,23 +96,23 @@ export default function ArenaScreen() {
 const styles = StyleSheet.create({
   container: { padding: 20, gap: 16 },
   next: { gap: 4 },
-  kicker: { fontSize: 12, fontWeight: '800', letterSpacing: 1.2, color: Palette.muted },
-  countdown: { fontSize: 44, fontWeight: '800', color: Palette.ink, fontVariant: ['tabular-nums'] },
-  entered: { fontSize: 15, fontWeight: '700', color: Palette.muted },
+  kicker: { fontSize: 12, fontFamily: Fonts.bold, letterSpacing: 1.2, color: Palette.muted },
+  countdown: { fontSize: 44, fontFamily: Fonts.bold, color: Palette.ink, fontVariant: ['tabular-nums'] },
+  entered: { fontSize: 15, fontFamily: Fonts.bold, color: Palette.muted },
   practice: { backgroundColor: Palette.ink, borderRadius: 24, paddingVertical: 22, paddingHorizontal: 20, gap: 4 },
-  practiceTitle: { color: '#fff', fontSize: 24, fontWeight: '800' },
-  practiceSub: { color: 'rgba(255,255,255,0.75)', fontSize: 14, fontWeight: '600' },
+  practiceTitle: { color: '#fff', fontSize: 24, fontFamily: Fonts.bold },
+  practiceSub: { color: 'rgba(255,255,255,0.75)', fontSize: 14, fontFamily: Fonts.regular },
   card: { backgroundColor: Palette.card, borderRadius: 24, padding: 16, gap: 12 },
   stage: { height: 220, borderRadius: 18, overflow: 'hidden', backgroundColor: Palette.bg },
   champRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   champInfo: { flex: 1, gap: 4 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  champName: { fontSize: 24, fontWeight: '800', color: Palette.ink },
-  meta: { fontSize: 14, fontWeight: '600', color: Palette.muted },
+  champName: { fontSize: 24, fontFamily: Fonts.bold, color: Palette.ink },
+  meta: { fontSize: 14, fontFamily: Fonts.regular, color: Palette.muted },
   photo: { width: 72, height: 72, borderRadius: 14, transform: [{ rotate: '-4deg' }], backgroundColor: Palette.bg },
-  mine: { fontSize: 16, fontWeight: '800', color: Palette.ink },
+  mine: { fontSize: 16, fontFamily: Fonts.bold, color: Palette.ink },
   actions: { flexDirection: 'row', gap: 10 },
   action: { flex: 1, borderRadius: 999, paddingVertical: 14, alignItems: 'center', backgroundColor: Palette.bg },
   primary: { backgroundColor: Palette.ink },
-  actionText: { fontSize: 15, fontWeight: '800', color: Palette.ink },
+  actionText: { fontSize: 15, fontFamily: Fonts.bold, color: Palette.ink },
 });

@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ArenaView from '@/components/ArenaView';
 import type { ArenaResult, Entrant } from '@/lib/arena';
-import { Palette } from '@/lib/theme';
+import { Fonts, Palette } from '@/lib/theme';
 
 type Props = {
   entrants: Entrant[];
@@ -79,14 +79,14 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#cfeaf0' },
   stage: { flex: 1, overflow: 'hidden' },
   top: { paddingHorizontal: 12, paddingBottom: 4, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  label: { backgroundColor: 'rgba(43,37,35,0.78)', color: '#fff', fontWeight: '800', fontSize: 13, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, overflow: 'hidden' },
+  label: { backgroundColor: 'rgba(43,37,35,0.78)', color: '#fff', fontFamily: Fonts.bold, fontSize: 13, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, overflow: 'hidden' },
   close: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.92)', alignItems: 'center', justifyContent: 'center' },
   bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16 },
   panel: { backgroundColor: Palette.card, borderRadius: 24, padding: 18, gap: 8 },
-  headline: { fontSize: 22, fontWeight: '800', color: Palette.ink },
-  detail: { fontSize: 15, fontWeight: '600', color: Palette.muted },
+  headline: { fontSize: 22, fontFamily: Fonts.bold, color: Palette.ink },
+  detail: { fontSize: 15, fontFamily: Fonts.regular, color: Palette.muted },
   actions: { flexDirection: 'row', gap: 10, marginTop: 6 },
   action: { flex: 1, borderRadius: 999, paddingVertical: 14, alignItems: 'center', backgroundColor: Palette.bg },
   primary: { backgroundColor: Palette.ink },
-  actionText: { fontSize: 16, fontWeight: '800', color: Palette.ink },
+  actionText: { fontSize: 16, fontFamily: Fonts.bold, color: Palette.ink },
 });

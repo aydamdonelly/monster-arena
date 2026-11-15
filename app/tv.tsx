@@ -11,9 +11,9 @@ import MonsterView from '@/components/MonsterView';
 import QrCode from '@/components/QrCode';
 import { api } from '@/convex/_generated/api';
 import { bornFrom, formatCountdown, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
-import { ElementColors, Palette } from '@/lib/theme';
+import { ElementColors, Fonts, Palette, webUrl } from '@/lib/theme';
 
-const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL ?? 'https://snappymon.com';
+
 const HOLD_AFTER_ROUND_MS = 6000;
 
 function useUnit() {
@@ -60,9 +60,9 @@ function Lobby({ since, includeTest, adminKey }: { since: number; includeTest: b
         <View style={{ gap: 24 * u }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 28 * u }}>
             <View style={{ borderRadius: 20 * u, overflow: 'hidden' }}>
-              <QrCode value={WEB_URL} size={200 * u} />
+              <QrCode value={webUrl} size={200 * u} />
             </View>
-            <Text style={[styles.big, { fontSize: 36 * u, flex: 1 }]}>snap an object at {WEB_URL.replace(/^https?:\/\//, '')} to enter</Text>
+            <Text style={[styles.big, { fontSize: 36 * u, flex: 1 }]}>snap an object at {webUrl.replace(/^https?:\/\//, '')} to enter</Text>
           </View>
           {adminKey ? <AdminStart adminKey={adminKey} includeTest={includeTest} u={u} /> : null}
         </View>
@@ -106,7 +106,7 @@ function AdminStart({ adminKey, includeTest, u }: { adminKey: string; includeTes
       <Pressable accessibilityRole="button" onPress={onPress} disabled={busy} style={[styles.admin, { paddingHorizontal: 32 * u, paddingVertical: 16 * u }]}>
         {busy ? <ActivityIndicator color="#fff" /> : <Text style={[styles.adminText, { fontSize: 28 * u }]}>Start royale</Text>}
       </Pressable>
-      {error ? <Text style={{ color: Palette.accent, fontSize: 20 * u, fontWeight: '700' }}>{error}</Text> : null}
+      {error ? <Text style={{ color: Palette.accent, fontSize: 20 * u, fontFamily: Fonts.bold }}>{error}</Text> : null}
     </View>
   );
 }
@@ -191,15 +191,15 @@ function Champion({ summary, adminKey, includeTest, onReplay }: { summary: Summa
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Palette.bg },
   center: { alignItems: 'center', justifyContent: 'center' },
-  title: { fontWeight: '900', color: Palette.ink, letterSpacing: 1 },
-  kicker: { fontWeight: '800', letterSpacing: 3, color: Palette.muted },
-  countdown: { fontWeight: '900', color: Palette.accent, fontVariant: ['tabular-nums'] },
-  big: { fontWeight: '800', color: Palette.ink },
+  title: { fontFamily: Fonts.black, color: Palette.ink, letterSpacing: 1 },
+  kicker: { fontFamily: Fonts.bold, letterSpacing: 3, color: Palette.muted },
+  countdown: { fontFamily: Fonts.black, color: Palette.accent, fontVariant: ['tabular-nums'] },
+  big: { fontFamily: Fonts.bold, color: Palette.ink },
   grid: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'flex-start', overflow: 'hidden' },
   tile: { backgroundColor: Palette.card },
   placeholder: { width: '100%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center' },
-  tileName: { fontWeight: '800', color: Palette.ink },
-  tileOwner: { fontWeight: '600', color: Palette.muted },
+  tileName: { fontFamily: Fonts.bold, color: Palette.ink },
+  tileOwner: { fontFamily: Fonts.regular, color: Palette.muted },
   admin: { backgroundColor: Palette.ink, borderRadius: 999 },
-  adminText: { color: '#fff', fontWeight: '800' },
+  adminText: { color: '#fff', fontFamily: Fonts.bold },
 });

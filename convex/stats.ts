@@ -82,7 +82,9 @@ export const overview = query({
       .withIndex("by_status_and_ready", (q) => q.eq("status", "egg").eq("ready", false))
       .take(500);
     const purchases = await ctx.db.query("purchases").order("desc").take(500);
-    const paid = purchases.filter((x) => x._creationTime >= since);
+    // Verkauft zählt nur echtes Geld. Käufe aus der Whop-Sandbox (Testkarte) werden getrennt ausgewiesen.
+    const recent = purchases.filter((x) => x._creationTime >= since);
+    const paid = recent.filter((x) => x.environment === "production");
 
     return {
       since,
@@ -98,6 +100,7 @@ export const overview = query({
       returning,
       building: building.length,
       purchases: paid.length,
+      sandboxPurchases: recent.length - paid.length,
       revenueUsd: paid.reduce((sum, x) => sum + x.amountUsd, 0),
       goldenCredits,
       sources: sorted(sourcesAll).map((s) => ({ ...s, snappers: sourcesSnap[s.label] ?? 0 })),

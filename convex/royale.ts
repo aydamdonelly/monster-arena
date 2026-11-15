@@ -1,6 +1,6 @@
 // Royale: Alle fertigen Eier schlüpfen und kämpfen alle-gegen-alle (monster-kit/royale-sim.js).
 // Der Server rechnet nur das Ergebnis aus. Clients spielen jede Runde aus seed + entrants bitgleich nach (monster-kit/arena.js).
-// Bei mehr als 32 Monstern gibt es Vorrunden (Heats) und ein Finale.
+// Bei mehr als 24 Monstern gibt es Vorrunden (Heats) und ein Finale.
 //
 // Zwei Arten:
 // - "live": die echte Royale (Cron um 17:00 Uhr Pacific). Nur Eier echter Spieler. Sind es weniger als minEntrants,
@@ -17,7 +17,7 @@ import { hashString } from "../monster-kit/battle.js";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const EGG_WINDOW_MS = 3 * DAY_MS; // ein Ei, das um 17 Uhr noch nicht fertig war, schlüpft in der nächsten Royale
 const LIVE_GAP_MS = 20 * 60 * 60 * 1000;
-const SINGLE_MAX = 32; // bis hierhin eine einzige Arena (mit 24 und 32 im Hochformat geprüft: lesbar, rund eine Minute Kampf)
+const SINGLE_MAX = 24; // bis hierhin eine einzige Arena (mit 24 im Hochformat geprüft: lesbar, knapp eine Minute Kampf)
 const HEAT_SIZE = 16;
 const MIN_ENTRANTS = 8;
 const LATE_WINDOW_MS = 3 * 60 * 1000; // auf Eier warten, die in den letzten 3 Minuten gelegt wurden

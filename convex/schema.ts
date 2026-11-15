@@ -35,6 +35,12 @@ export default defineSchema({
     stats,
     stage: v.number(),
     photoId: v.optional(v.id("_storage")),
+    // Ei-Ablauf: Nach dem Foto ist der Eintrag ein Ei. Das Monster entsteht verdeckt (ready) und schlüpft erst in der Royale.
+    status: v.optional(v.string()), // "egg" | "hatched" | "rejected"; fehlt bei alten Einträgen = geschlüpft
+    ready: v.optional(v.boolean()),
+    golden: v.optional(v.boolean()),
+    hatchedAt: v.optional(v.number()),
+    attempts: v.optional(v.number()),
   }).index("by_playerId", ["playerId"]),
 
   drops: defineTable({

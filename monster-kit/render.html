@@ -14,7 +14,8 @@
   scene.add(new THREE.HemisphereLight('#ffffff', '#cfdcd4', 1.5));
   const sun = new THREE.DirectionalLight('#ffffff', 2.0); sun.position.set(-3, 5, 4); scene.add(sun);
   const fill = new THREE.DirectionalLight('#fff4ec', 0.9); fill.position.set(1.5, 1.5, 6); scene.add(fill);
-  const rows = await (await fetch('./test-genomes.json')).json(); const done = [];
+  const Q = new URLSearchParams(location.search);
+  const rows = await (await fetch('./' + (Q.get('file') || 'test-genomes.json'))).json(); const done = [];
   for (let i = 0; i < rows.length; i++) {
     const golden = new URLSearchParams(location.search).get('golden') === '1';
     const g = { ...genomeFromAI(rows[i].genome, 3000 + i), ...(golden ? { golden: true } : {}) }; const m = buildMonster(g, { outline: 0.045 }); m.rotation.y = -0.3; scene.add(m); updateMonster(m, 0.4);
@@ -22,7 +23,7 @@
     camera.position.set(0, h * 0.62, d); camera.lookAt(0, h * 0.47, 0); camera.updateProjectionMatrix();
     renderer.render(scene, camera);
     const blob = await new Promise((r) => renderer.domElement.toBlob(r, 'image/png'));
-    const name = (golden ? 'golden-' : '') + g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const name = (Q.get('prefix') || '') + (golden ? 'golden-' : '') + g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const res = await fetch(`http://127.0.0.1:5174/save?name=${name}`, { method: 'POST', body: blob });
     done.push(`${name}:${res.status}`); log.textContent = done.join(' '); scene.remove(m);
   }

@@ -8,8 +8,10 @@
  * @module
  */
 
+import type * as crons from "../crons.js";
 import type * as dev from "../dev.js";
 import type * as drops from "../drops.js";
+import type * as eggs from "../eggs.js";
 import type * as events from "../events.js";
 import type * as golden from "../golden.js";
 import type * as hatch from "../hatch.js";
@@ -24,8 +26,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  crons: typeof crons;
   dev: typeof dev;
   drops: typeof drops;
+  eggs: typeof eggs;
   events: typeof events;
   golden: typeof golden;
   hatch: typeof hatch;

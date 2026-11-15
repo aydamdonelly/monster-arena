@@ -2,65 +2,350 @@
   {
     "title": "Chair",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c6/Set_of_fourteen_side_chairs_MET_DP110780.jpg/330px-Set_of_fourteen_side_chairs_MET_DP110780.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 6838,
+    "ms": 26955,
     "genome": {
-      "object": "Ornate wooden chair with a bright red upholstered seat",
+      "object": "an antique dark wooden chair with a red upholstered seat",
       "safe": true,
-      "matchesPrompt": 0.94,
-      "name": "Chairzilla",
-      "lore": "Born when a royal chair swallowed a rogue red cushion and declared itself king of the room.",
-      "element": "fluff",
+      "matchesPrompt": 0.95,
+      "name": "Chairgeist",
+      "lore": "An antique chair woke up after someone finally complimented its upholstery.",
+      "element": "spirit",
       "shape": "box",
       "proportions": "normal",
       "colors": {
-        "body": "#c91f37",
-        "accent": "#54291f"
+        "body": "#CC2438",
+        "accent": "#57392D"
       },
       "eyes": "happy",
       "mouth": "smile",
-      "limbStyle": "stick",
+      "limbStyle": "stub",
       "pose": "rest",
       "parts": [
         {
           "type": "backrest",
-          "color": "#54291f"
+          "color": "#57392D"
         }
       ],
       "move1": {
-        "name": "Seat Slam",
-        "kind": "melee",
-        "element": "fluff"
+        "name": "Seat Slide",
+        "kind": "dash",
+        "element": "spirit"
       },
       "move2": {
-        "name": "Leg Sweep",
-        "kind": "dash",
-        "element": "metal"
+        "name": "Haunted Hotseat",
+        "kind": "burst",
+        "element": "fire"
+      },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "capsule",
+            "x": -0.7,
+            "y": 0.53,
+            "z": 0.51,
+            "w": 0.17,
+            "h": 1.08,
+            "d": 0.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": -4,
+            "color": "#57392D"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.7,
+            "y": 0.53,
+            "z": 0.51,
+            "w": 0.17,
+            "h": 1.08,
+            "d": 0.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": 4,
+            "color": "#57392D"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.69,
+            "y": 0.55,
+            "z": -0.52,
+            "w": 0.16,
+            "h": 1.11,
+            "d": 0.18,
+            "rx": -9,
+            "ry": 0,
+            "rz": -5,
+            "color": "#493024"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.69,
+            "y": 0.55,
+            "z": -0.52,
+            "w": 0.16,
+            "h": 1.11,
+            "d": 0.18,
+            "rx": -9,
+            "ry": 0,
+            "rz": 5,
+            "color": "#493024"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.01,
+            "z": 0,
+            "w": 1.65,
+            "h": 0.22,
+            "d": 1.4,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#57392D"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.37,
+            "z": 0.02,
+            "w": 1.76,
+            "h": 0.56,
+            "d": 1.48,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#CC2438"
+          },
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 1.61,
+            "z": 0.02,
+            "w": 1.72,
+            "h": 0.22,
+            "d": 1.43,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#DB3044"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.1,
+            "z": 0.773,
+            "w": 1.69,
+            "h": 0.045,
+            "d": 0.035,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#A9784B"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.72,
+            "y": 2.09,
+            "z": -0.59,
+            "w": 0.14,
+            "h": 1.63,
+            "d": 0.15,
+            "rx": 0,
+            "ry": 0,
+            "rz": 2,
+            "color": "#57392D"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.72,
+            "y": 2.09,
+            "z": -0.59,
+            "w": 0.14,
+            "h": 1.63,
+            "d": 0.15,
+            "rx": 0,
+            "ry": 0,
+            "rz": -2,
+            "color": "#57392D"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 2.82,
+            "z": -0.59,
+            "w": 1.54,
+            "h": 0.15,
+            "d": 0.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#57392D"
+          },
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 2.86,
+            "z": -0.58,
+            "w": 0.67,
+            "h": 0.35,
+            "d": 0.22,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#654333"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 2.79,
+            "z": -0.42,
+            "w": 0.31,
+            "h": 0.12,
+            "d": 0.38,
+            "rx": 90,
+            "ry": 0,
+            "rz": 0,
+            "color": "#39291F"
+          },
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 2.79,
+            "z": -0.343,
+            "w": 0.17,
+            "h": 0.23,
+            "d": 0.065,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#815B40"
+          },
+          {
+            "shape": "capsule",
+            "x": 0,
+            "y": 2.15,
+            "z": -0.58,
+            "w": 0.105,
+            "h": 1.11,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#57392D"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.19,
+            "y": 2.15,
+            "z": -0.58,
+            "w": 0.085,
+            "h": 1.13,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 12,
+            "color": "#654333"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.19,
+            "y": 2.15,
+            "z": -0.58,
+            "w": 0.085,
+            "h": 1.13,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": -12,
+            "color": "#654333"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.76,
+            "z": -0.57,
+            "w": 0.45,
+            "h": 0.2,
+            "d": 0.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#57392D"
+          },
+          {
+            "shape": "dome",
+            "x": 0,
+            "y": 1.85,
+            "z": -0.57,
+            "w": 0.48,
+            "h": 0.16,
+            "d": 0.22,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#654333"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.74,
+            "y": 2.85,
+            "z": -0.59,
+            "w": 0.2,
+            "h": 0.2,
+            "d": 0.22,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#654333"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.74,
+            "y": 2.85,
+            "z": -0.59,
+            "w": 0.2,
+            "h": 0.2,
+            "d": 0.22,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#654333"
+          }
+        ],
+        "face": {
+          "x": 0,
+          "y": 1.48,
+          "size": 0.68,
+          "mouthY": 1.23
+        },
+        "arms": false,
+        "feet": false
       },
       "traits": {
         "hard": 0.78,
-        "sharp": 0.18,
-        "fast": 0.22,
+        "sharp": 0.12,
+        "fast": 0.05,
         "big": 0.58,
-        "soft": 0.48
+        "soft": 0.38
       }
     }
   },
   {
     "title": "Backpack",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/Rucksack1.jpg/330px-Rucksack1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 6916,
+    "ms": 25866,
     "genome": {
-      "object": "A dark purple and gray hiking backpack with front pockets and shoulder straps",
+      "object": "a purple and gray hiking backpack with black straps",
       "safe": true,
-      "matchesPrompt": 0.16,
-      "name": "Packphantom",
-      "lore": "It was born when a forgotten trail map started whispering directions from the deepest pocket.",
+      "matchesPrompt": 0.03,
+      "name": "Packgremlin",
+      "lore": "It hatched from a forgotten trail snack and now insists on carrying everyone else's problems.",
       "element": "fluff",
       "shape": "box",
-      "proportions": "normal",
+      "proportions": "tall",
       "colors": {
-        "body": "#30233f",
-        "accent": "#a49b98"
+        "body": "#392B52",
+        "accent": "#B1A58D"
       },
       "eyes": "happy",
       "mouth": "smile",
@@ -69,90 +354,577 @@
       "parts": [
         {
           "type": "pocket",
-          "color": "#3b2c53"
+          "color": "#392B52"
+        },
+        {
+          "type": "handle",
+          "color": "#242023"
         }
       ],
       "move1": {
-        "name": "Pocket Pop",
-        "kind": "burst",
-        "element": "fluff"
-      },
-      "move2": {
-        "name": "Strap Snare",
+        "name": "Strap Slap",
         "kind": "melee",
         "element": "fluff"
       },
+      "move2": {
+        "name": "Overpack Rush",
+        "kind": "dash",
+        "element": "fluff"
+      },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.08,
+            "z": 0,
+            "w": 1.64,
+            "h": 2.04,
+            "d": 0.86,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B1A58D"
+          },
+          {
+            "shape": "dome",
+            "x": 0,
+            "y": 2.08,
+            "z": 0,
+            "w": 1.64,
+            "h": 0.62,
+            "d": 0.86,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B1A58D"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.08,
+            "z": 0.06,
+            "w": 1.69,
+            "h": 0.16,
+            "d": 1.01,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#242023"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.81,
+            "z": 0.46,
+            "w": 1.22,
+            "h": 0.94,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#392B52"
+          },
+          {
+            "shape": "dome",
+            "x": 0,
+            "y": 2.25,
+            "z": 0.38,
+            "w": 1.22,
+            "h": 0.26,
+            "d": 0.28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#392B52"
+          },
+          {
+            "shape": "box",
+            "x": -0.65,
+            "y": 1.84,
+            "z": 0.48,
+            "w": 0.055,
+            "h": 0.86,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": -7,
+            "color": "#242023"
+          },
+          {
+            "shape": "box",
+            "x": 0.65,
+            "y": 1.84,
+            "z": 0.48,
+            "w": 0.055,
+            "h": 0.86,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 7,
+            "color": "#242023"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.61,
+            "z": 0.49,
+            "w": 1.62,
+            "h": 0.94,
+            "d": 0.42,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B1A58D"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.57,
+            "z": 0.72,
+            "w": 1.3,
+            "h": 0.68,
+            "d": 0.08,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#392B52"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.04,
+            "z": 0.73,
+            "w": 1.39,
+            "h": 0.055,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#242023"
+          },
+          {
+            "shape": "box",
+            "x": 0.56,
+            "y": 0.95,
+            "z": 0.77,
+            "w": 0.07,
+            "h": 0.19,
+            "d": 0.05,
+            "rx": 0,
+            "ry": 0,
+            "rz": -12,
+            "color": "#C6BFAE"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.25,
+            "z": 0.48,
+            "w": 1.68,
+            "h": 0.16,
+            "d": 0.14,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#242023"
+          },
+          {
+            "shape": "box",
+            "x": 0.18,
+            "y": 1.25,
+            "z": 0.57,
+            "w": 0.31,
+            "h": 0.23,
+            "d": 0.09,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#151418"
+          },
+          {
+            "shape": "box",
+            "x": -0.85,
+            "y": 0.68,
+            "z": -0.01,
+            "w": 0.25,
+            "h": 0.76,
+            "d": 0.68,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#242023"
+          },
+          {
+            "shape": "box",
+            "x": 0.85,
+            "y": 0.68,
+            "z": -0.01,
+            "w": 0.25,
+            "h": 0.76,
+            "d": 0.68,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#242023"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.56,
+            "y": 1.28,
+            "z": -0.49,
+            "w": 0.24,
+            "h": 1.93,
+            "d": 0.23,
+            "rx": -9,
+            "ry": 0,
+            "rz": -5,
+            "color": "#242023"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.56,
+            "y": 1.28,
+            "z": -0.49,
+            "w": 0.24,
+            "h": 1.93,
+            "d": 0.23,
+            "rx": -9,
+            "ry": 0,
+            "rz": 5,
+            "color": "#242023"
+          },
+          {
+            "shape": "ring",
+            "x": 0,
+            "y": 2.58,
+            "z": -0.08,
+            "w": 0.49,
+            "h": 0.49,
+            "d": 0.14,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#242023"
+          },
+          {
+            "shape": "box",
+            "x": -0.1,
+            "y": 0.62,
+            "z": 0.78,
+            "w": 0.33,
+            "h": 0.14,
+            "d": 0.04,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D9D0B7"
+          }
+        ],
+        "face": {
+          "x": 0,
+          "y": 1.96,
+          "size": 0.83,
+          "mouthY": 1.65
+        },
+        "arms": true,
+        "feet": false
+      },
       "traits": {
-        "hard": 0.25,
-        "sharp": 0.1,
-        "fast": 0.35,
-        "big": 0.7,
-        "soft": 0.75
+        "hard": 0.15,
+        "sharp": 0.05,
+        "fast": 0.25,
+        "big": 0.65,
+        "soft": 0.78
       }
     }
   },
   {
     "title": "Computer_keyboard",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Typing_example.ogv/330px--Typing_example.ogv.jpg",
-    "ms": 6158,
+    "ms": 21486,
     "genome": {
-      "object": "Black-and-white computer keyboard",
+      "object": "a silver laptop with a black keyboard",
       "safe": true,
-      "matchesPrompt": 0.04,
-      "name": "Keybrawl",
-      "lore": "Born when a midnight typist mashed every key at once, this little bruiser now fights in perfect QWERTY.",
+      "matchesPrompt": 0.01,
+      "name": "Lapto gremlin",
+      "lore": "It hatched when someone pressed one too many keys at once.",
       "element": "metal",
       "shape": "box",
       "proportions": "wide",
       "colors": {
-        "body": "#25272a",
-        "accent": "#d5d4ce"
+        "body": "#BEC1BC",
+        "accent": "#252724"
       },
-      "eyes": "dot",
+      "eyes": "happy",
       "mouth": "smile",
       "limbStyle": "stick",
-      "pose": "cheer",
+      "pose": "wave",
       "parts": [
         {
+          "type": "screen",
+          "color": "#454A46"
+        },
+        {
           "type": "buttons",
-          "color": "#d5d4ce"
+          "color": "#252724"
         }
       ],
       "move1": {
-        "name": "Spacebar Slam",
-        "kind": "melee",
-        "element": "metal"
-      },
-      "move2": {
-        "name": "Keycap Volley",
+        "name": "Keycap Toss",
         "kind": "shot",
         "element": "metal"
       },
+      "move2": {
+        "name": "Reboot Rush",
+        "kind": "dash",
+        "element": "metal"
+      },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.14,
+            "z": 0.12,
+            "w": 2.4,
+            "h": 0.28,
+            "d": 1.65,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#BEC1BC"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 0.3,
+            "z": -0.59,
+            "w": 0.22,
+            "h": 2.12,
+            "d": 0.22,
+            "rx": 0,
+            "ry": 0,
+            "rz": 90,
+            "color": "#777C77"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.19,
+            "z": -0.7,
+            "w": 2.36,
+            "h": 1.8,
+            "d": 0.16,
+            "rx": -8,
+            "ry": 0,
+            "rz": 0,
+            "color": "#BEC1BC"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.21,
+            "z": -0.602,
+            "w": 2.16,
+            "h": 1.55,
+            "d": 0.045,
+            "rx": -8,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252724"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.23,
+            "z": -0.573,
+            "w": 1.96,
+            "h": 1.33,
+            "d": 0.035,
+            "rx": -8,
+            "ry": 0,
+            "rz": 0,
+            "color": "#737E76"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.29,
+            "z": -0.1,
+            "w": 2.08,
+            "h": 0.055,
+            "d": 0.85,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#454A46"
+          },
+          {
+            "shape": "box",
+            "x": -0.7,
+            "y": 0.345,
+            "z": -0.36,
+            "w": 0.59,
+            "h": 0.09,
+            "d": 0.19,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252724"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.345,
+            "z": -0.36,
+            "w": 0.59,
+            "h": 0.09,
+            "d": 0.19,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252724"
+          },
+          {
+            "shape": "box",
+            "x": 0.7,
+            "y": 0.345,
+            "z": -0.36,
+            "w": 0.59,
+            "h": 0.09,
+            "d": 0.19,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252724"
+          },
+          {
+            "shape": "box",
+            "x": -0.7,
+            "y": 0.345,
+            "z": -0.09,
+            "w": 0.59,
+            "h": 0.09,
+            "d": 0.19,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252724"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.345,
+            "z": -0.09,
+            "w": 0.59,
+            "h": 0.09,
+            "d": 0.19,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252724"
+          },
+          {
+            "shape": "box",
+            "x": 0.7,
+            "y": 0.345,
+            "z": -0.09,
+            "w": 0.59,
+            "h": 0.09,
+            "d": 0.19,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252724"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.345,
+            "z": 0.18,
+            "w": 1.17,
+            "h": 0.09,
+            "d": 0.17,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252724"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.292,
+            "z": 0.59,
+            "w": 0.75,
+            "h": 0.035,
+            "d": 0.39,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#999F99"
+          },
+          {
+            "shape": "box",
+            "x": -0.2,
+            "y": 0.315,
+            "z": 0.77,
+            "w": 0.33,
+            "h": 0.025,
+            "d": 0.07,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D8DAD3"
+          },
+          {
+            "shape": "box",
+            "x": 0.2,
+            "y": 0.315,
+            "z": 0.77,
+            "w": 0.33,
+            "h": 0.025,
+            "d": 0.07,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D8DAD3"
+          }
+        ],
+        "face": {
+          "x": 0,
+          "y": 1.39,
+          "size": 0.95,
+          "mouthY": 1.05
+        },
+        "arms": true,
+        "feet": false
+      },
       "traits": {
-        "hard": 0.8,
-        "sharp": 0.1,
-        "fast": 0.5,
-        "big": 0.6,
-        "soft": 0.1
+        "hard": 0.85,
+        "sharp": 0.13,
+        "fast": 0.35,
+        "big": 0.48,
+        "soft": 0.04
       }
     }
   },
   {
     "title": "Glasses",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/2023_Okulary_korekcyjne.jpg/330px-2023_Okulary_korekcyjne.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 6234,
+    "ms": 22534,
     "genome": {
-      "object": "Two pairs of rectangular eyeglasses",
+      "object": "dark teal rectangular eyeglasses",
       "safe": true,
-      "matchesPrompt": 0.12,
-      "name": "Spectacool",
-      "lore": "Born in a tiny optician’s shop, Spectacool can spot a bad pun from across the room.",
+      "matchesPrompt": 0.02,
+      "name": "Specsquatch",
+      "lore": "It grew a personality after witnessing one too many blurry mornings.",
       "element": "metal",
       "shape": "box",
       "proportions": "wide",
       "colors": {
-        "body": "#26383b",
-        "accent": "#38251c"
+        "body": "#28505A",
+        "accent": "#C5D4D6"
       },
       "eyes": "happy",
       "mouth": "smile",
@@ -161,7 +933,7 @@
       "parts": [
         {
           "type": "glasses",
-          "color": "#26383b"
+          "color": "#28505A"
         }
       ],
       "move1": {
@@ -170,61 +942,475 @@
         "element": "metal"
       },
       "move2": {
-        "name": "Focus Beam",
+        "name": "Prescription Ray",
         "kind": "beam",
         "element": "spirit"
       },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "box",
+            "x": -0.67,
+            "y": 1.16,
+            "z": 0.35,
+            "w": 1.2,
+            "h": 0.18,
+            "d": 0.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#28505A"
+          },
+          {
+            "shape": "box",
+            "x": 0.67,
+            "y": 1.16,
+            "z": 0.35,
+            "w": 1.2,
+            "h": 0.18,
+            "d": 0.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#28505A"
+          },
+          {
+            "shape": "box",
+            "x": -0.67,
+            "y": 0.08,
+            "z": 0.35,
+            "w": 1.08,
+            "h": 0.16,
+            "d": 0.16,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#28505A"
+          },
+          {
+            "shape": "box",
+            "x": 0.67,
+            "y": 0.08,
+            "z": 0.35,
+            "w": 1.08,
+            "h": 0.16,
+            "d": 0.16,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#28505A"
+          },
+          {
+            "shape": "box",
+            "x": -1.19,
+            "y": 0.62,
+            "z": 0.35,
+            "w": 0.16,
+            "h": 1.12,
+            "d": 0.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": 5,
+            "color": "#28505A"
+          },
+          {
+            "shape": "box",
+            "x": -0.15,
+            "y": 0.62,
+            "z": 0.35,
+            "w": 0.15,
+            "h": 1.12,
+            "d": 0.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": -5,
+            "color": "#28505A"
+          },
+          {
+            "shape": "box",
+            "x": 0.15,
+            "y": 0.62,
+            "z": 0.35,
+            "w": 0.15,
+            "h": 1.12,
+            "d": 0.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": 5,
+            "color": "#28505A"
+          },
+          {
+            "shape": "box",
+            "x": 1.19,
+            "y": 0.62,
+            "z": 0.35,
+            "w": 0.16,
+            "h": 1.12,
+            "d": 0.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": -5,
+            "color": "#28505A"
+          },
+          {
+            "shape": "capsule",
+            "x": 0,
+            "y": 1.02,
+            "z": 0.35,
+            "w": 0.15,
+            "h": 0.42,
+            "d": 0.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": 90,
+            "color": "#28505A"
+          },
+          {
+            "shape": "box",
+            "x": -0.67,
+            "y": 0.62,
+            "z": 0.32,
+            "w": 0.96,
+            "h": 0.98,
+            "d": 0.07,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#DCE8E8"
+          },
+          {
+            "shape": "box",
+            "x": 0.67,
+            "y": 0.62,
+            "z": 0.32,
+            "w": 0.96,
+            "h": 0.98,
+            "d": 0.07,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#DCE8E8"
+          },
+          {
+            "shape": "box",
+            "x": -1.16,
+            "y": 1.08,
+            "z": -0.36,
+            "w": 0.15,
+            "h": 0.17,
+            "d": 1.48,
+            "rx": 0,
+            "ry": -8,
+            "rz": 0,
+            "color": "#28505A"
+          },
+          {
+            "shape": "box",
+            "x": 1.16,
+            "y": 1.08,
+            "z": -0.36,
+            "w": 0.15,
+            "h": 0.17,
+            "d": 1.48,
+            "rx": 0,
+            "ry": 8,
+            "rz": 0,
+            "color": "#28505A"
+          },
+          {
+            "shape": "capsule",
+            "x": -1.06,
+            "y": 0.85,
+            "z": -1.03,
+            "w": 0.2,
+            "h": 0.57,
+            "d": 0.2,
+            "rx": -20,
+            "ry": 0,
+            "rz": 0,
+            "color": "#243D46"
+          },
+          {
+            "shape": "capsule",
+            "x": 1.06,
+            "y": 0.85,
+            "z": -1.03,
+            "w": 0.2,
+            "h": 0.57,
+            "d": 0.2,
+            "rx": -20,
+            "ry": 0,
+            "rz": 0,
+            "color": "#243D46"
+          },
+          {
+            "shape": "box",
+            "x": -1.15,
+            "y": 1.16,
+            "z": 0.46,
+            "w": 0.14,
+            "h": 0.05,
+            "d": 0.05,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#A6B7BA"
+          },
+          {
+            "shape": "box",
+            "x": 1.15,
+            "y": 1.16,
+            "z": 0.46,
+            "w": 0.14,
+            "h": 0.05,
+            "d": 0.05,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#A6B7BA"
+          }
+        ],
+        "face": {
+          "x": -0.67,
+          "y": 0.79,
+          "size": 0.7,
+          "mouthY": 0.46
+        },
+        "arms": true,
+        "feet": false
+      },
       "traits": {
-        "hard": 0.65,
-        "sharp": 0.2,
-        "fast": 0.55,
-        "big": 0.3,
-        "soft": 0.1
+        "hard": 0.75,
+        "sharp": 0.08,
+        "fast": 0.12,
+        "big": 0.12,
+        "soft": 0.05
       }
     }
   },
   {
     "title": "Book",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg/330px-Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 5495,
+    "ms": 25033,
     "genome": {
-      "object": "An old book opened to printed pages",
+      "object": "a large antique book opened to cream-colored printed pages",
       "safe": true,
       "matchesPrompt": 0.08,
       "name": "Bookgeist",
-      "lore": "This dusty page-wanderer escaped from a library and still insists on keeping its place.",
+      "lore": "It woke up after someone finally read the footnotes aloud.",
       "element": "spirit",
       "shape": "box",
       "proportions": "wide",
       "colors": {
-        "body": "#795c38",
-        "accent": "#f0e5c9"
+        "body": "#E9DFBA",
+        "accent": "#69512D"
       },
       "eyes": "happy",
       "mouth": "smile",
       "limbStyle": "stub",
-      "pose": "wave",
+      "pose": "rest",
       "parts": [
         {
           "type": "pages",
-          "color": "#f0e5c9"
+          "color": "#E9DFBA"
         }
       ],
       "move1": {
-        "name": "Page Flip",
-        "kind": "melee",
+        "name": "Folio Flick",
+        "kind": "shot",
         "element": "spirit"
       },
       "move2": {
-        "name": "Bookmark Blast",
-        "kind": "burst",
+        "name": "Spine Chiller",
+        "kind": "beam",
         "element": "spirit"
       },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "box",
+            "x": -0.65,
+            "y": 1,
+            "z": -0.08,
+            "w": 1.32,
+            "h": 2,
+            "d": 0.14,
+            "rx": 0,
+            "ry": 18,
+            "rz": 0,
+            "color": "#69512D"
+          },
+          {
+            "shape": "box",
+            "x": 0.65,
+            "y": 1,
+            "z": -0.08,
+            "w": 1.32,
+            "h": 2,
+            "d": 0.14,
+            "rx": 0,
+            "ry": -18,
+            "rz": 0,
+            "color": "#69512D"
+          },
+          {
+            "shape": "box",
+            "x": -0.64,
+            "y": 1.03,
+            "z": 0.035,
+            "w": 1.22,
+            "h": 1.85,
+            "d": 0.18,
+            "rx": 0,
+            "ry": 18,
+            "rz": 0,
+            "color": "#D3C598"
+          },
+          {
+            "shape": "box",
+            "x": 0.64,
+            "y": 1.03,
+            "z": 0.035,
+            "w": 1.22,
+            "h": 1.85,
+            "d": 0.18,
+            "rx": 0,
+            "ry": -18,
+            "rz": 0,
+            "color": "#D3C598"
+          },
+          {
+            "shape": "box",
+            "x": -0.63,
+            "y": 1.05,
+            "z": 0.145,
+            "w": 1.2,
+            "h": 1.8,
+            "d": 0.05,
+            "rx": 0,
+            "ry": 18,
+            "rz": 0,
+            "color": "#E9DFBA"
+          },
+          {
+            "shape": "box",
+            "x": 0.63,
+            "y": 1.05,
+            "z": 0.145,
+            "w": 1.2,
+            "h": 1.8,
+            "d": 0.05,
+            "rx": 0,
+            "ry": -18,
+            "rz": 0,
+            "color": "#F0E6C7"
+          },
+          {
+            "shape": "capsule",
+            "x": 0,
+            "y": 1,
+            "z": -0.035,
+            "w": 0.16,
+            "h": 1.98,
+            "d": 0.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#A58B55"
+          },
+          {
+            "shape": "box",
+            "x": -0.9,
+            "y": 1.49,
+            "z": 0.257,
+            "w": 0.28,
+            "h": 0.58,
+            "d": 0.025,
+            "rx": 0,
+            "ry": 18,
+            "rz": 0,
+            "color": "#8B846A"
+          },
+          {
+            "shape": "box",
+            "x": -0.47,
+            "y": 1.49,
+            "z": 0.117,
+            "w": 0.28,
+            "h": 0.58,
+            "d": 0.025,
+            "rx": 0,
+            "ry": 18,
+            "rz": 0,
+            "color": "#8B846A"
+          },
+          {
+            "shape": "box",
+            "x": 0.43,
+            "y": 1.65,
+            "z": 0.104,
+            "w": 0.27,
+            "h": 0.28,
+            "d": 0.025,
+            "rx": 0,
+            "ry": -18,
+            "rz": 0,
+            "color": "#8B846A"
+          },
+          {
+            "shape": "box",
+            "x": 0.88,
+            "y": 1.65,
+            "z": 0.25,
+            "w": 0.27,
+            "h": 0.28,
+            "d": 0.025,
+            "rx": 0,
+            "ry": -18,
+            "rz": 0,
+            "color": "#8B846A"
+          },
+          {
+            "shape": "box",
+            "x": -0.66,
+            "y": 0.51,
+            "z": 0.179,
+            "w": 0.78,
+            "h": 0.035,
+            "d": 0.025,
+            "rx": 0,
+            "ry": 18,
+            "rz": 0,
+            "color": "#A69B78"
+          },
+          {
+            "shape": "box",
+            "x": 0.075,
+            "y": 0.65,
+            "z": 0.005,
+            "w": 0.055,
+            "h": 1.08,
+            "d": 0.035,
+            "rx": 0,
+            "ry": 0,
+            "rz": 5,
+            "color": "#A66A42"
+          }
+        ],
+        "face": {
+          "x": 0.64,
+          "y": 1.13,
+          "size": 0.72,
+          "mouthY": 0.83
+        },
+        "arms": true,
+        "feet": false
+      },
       "traits": {
-        "hard": 0.35,
-        "sharp": 0.05,
-        "fast": 0.15,
-        "big": 0.55,
+        "hard": 0.5,
+        "sharp": 0.12,
+        "fast": 0.03,
+        "big": 0.65,
         "soft": 0.25
       }
     }
@@ -232,249 +1418,1584 @@
   {
     "title": "Watch",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Rolex_Oyster_Perpetual_with_a_%22Jubliee%22_dial.jpg/330px-Rolex_Oyster_Perpetual_with_a_%22Jubliee%22_dial.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 5190,
+    "ms": 25268,
     "genome": {
-      "object": "Stainless-steel wristwatch with a colorful patterned dial",
+      "object": "a silver wristwatch with a colorful patterned dial",
       "safe": true,
-      "matchesPrompt": 0.3,
-      "name": "Ticktock Golem",
-      "lore": "It woke up after counting every second in a box of confetti.",
+      "matchesPrompt": 0.18,
+      "name": "Ticktroll",
+      "lore": "It swallowed a confetti cannon and has been running party time ever since.",
       "element": "metal",
-      "shape": "blob",
+      "shape": "cylinder",
       "proportions": "normal",
       "colors": {
-        "body": "#b9b9b5",
-        "accent": "#e65b3e"
+        "body": "#BFC0B7",
+        "accent": "#E8BE39"
       },
-      "eyes": "big",
-      "mouth": "o",
+      "eyes": "happy",
+      "mouth": "smile",
       "limbStyle": "stick",
       "pose": "wave",
       "parts": [
         {
           "type": "dial",
-          "color": "#e65b3e"
+          "color": "#D8BB59"
         },
         {
           "type": "band",
-          "color": "#a7aaa8"
+          "color": "#BFC0B7"
         }
       ],
       "move1": {
-        "name": "Second-Hand Swipe",
+        "name": "Secondhand Slap",
         "kind": "melee",
         "element": "metal"
       },
       "move2": {
-        "name": "Confetti Timebeam",
+        "name": "Overtime Ray",
         "kind": "beam",
         "element": "spirit"
       },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.12,
+            "z": 0,
+            "w": 0.88,
+            "h": 0.24,
+            "d": 0.34,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#BFC0B7"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.35,
+            "z": 0,
+            "w": 0.93,
+            "h": 0.22,
+            "d": 0.34,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#A3A59E"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.56,
+            "z": 0,
+            "w": 1,
+            "h": 0.22,
+            "d": 0.35,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D2D1C7"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 2.04,
+            "z": 0,
+            "w": 1,
+            "h": 0.22,
+            "d": 0.35,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D2D1C7"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 2.25,
+            "z": 0,
+            "w": 0.93,
+            "h": 0.22,
+            "d": 0.34,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#A3A59E"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 2.46,
+            "z": 0,
+            "w": 0.88,
+            "h": 0.22,
+            "d": 0.34,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#BFC0B7"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 1.3,
+            "z": 0,
+            "w": 1.72,
+            "h": 0.4,
+            "d": 1.72,
+            "rx": 90,
+            "ry": 0,
+            "rz": 0,
+            "color": "#BFC0B7"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 1.3,
+            "z": 0.22,
+            "w": 1.48,
+            "h": 0.07,
+            "d": 1.48,
+            "rx": 90,
+            "ry": 0,
+            "rz": 0,
+            "color": "#55594E"
+          },
+          {
+            "shape": "ring",
+            "x": 0,
+            "y": 1.3,
+            "z": 0.25,
+            "w": 1.66,
+            "h": 1.66,
+            "d": 0.09,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#DDDDD2"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0.9,
+            "y": 1.4,
+            "z": 0,
+            "w": 0.22,
+            "h": 0.2,
+            "d": 0.22,
+            "rx": 0,
+            "ry": 0,
+            "rz": 90,
+            "color": "#AAA99E"
+          },
+          {
+            "shape": "box",
+            "x": -0.39,
+            "y": 1.78,
+            "z": 0.28,
+            "w": 0.28,
+            "h": 0.12,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": -28,
+            "color": "#E44A37"
+          },
+          {
+            "shape": "box",
+            "x": 0.36,
+            "y": 1.8,
+            "z": 0.28,
+            "w": 0.3,
+            "h": 0.12,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 25,
+            "color": "#E8BE39"
+          },
+          {
+            "shape": "box",
+            "x": -0.6,
+            "y": 1.36,
+            "z": 0.28,
+            "w": 0.13,
+            "h": 0.29,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 12,
+            "color": "#54A7AF"
+          },
+          {
+            "shape": "box",
+            "x": 0.6,
+            "y": 1.35,
+            "z": 0.28,
+            "w": 0.12,
+            "h": 0.28,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": -15,
+            "color": "#A8BB46"
+          },
+          {
+            "shape": "box",
+            "x": -0.37,
+            "y": 0.82,
+            "z": 0.28,
+            "w": 0.28,
+            "h": 0.13,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 26,
+            "color": "#E8BE39"
+          },
+          {
+            "shape": "box",
+            "x": 0.35,
+            "y": 0.81,
+            "z": 0.28,
+            "w": 0.29,
+            "h": 0.12,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": -24,
+            "color": "#E44A37"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.83,
+            "z": 0.3,
+            "w": 0.06,
+            "h": 0.28,
+            "d": 0.05,
+            "rx": 0,
+            "ry": 0,
+            "rz": -15,
+            "color": "#E9E4CF"
+          },
+          {
+            "shape": "box",
+            "x": 0.09,
+            "y": 1.73,
+            "z": 0.31,
+            "w": 0.25,
+            "h": 0.06,
+            "d": 0.05,
+            "rx": 0,
+            "ry": 0,
+            "rz": 25,
+            "color": "#E9E4CF"
+          }
+        ],
+        "face": {
+          "x": 0,
+          "y": 1.4,
+          "size": 0.78,
+          "mouthY": 1.08
+        },
+        "arms": true,
+        "feet": false
+      },
       "traits": {
-        "hard": 0.9,
-        "sharp": 0.1,
-        "fast": 0.7,
-        "big": 0.2,
-        "soft": 0.1
+        "hard": 0.92,
+        "sharp": 0.12,
+        "fast": 0.16,
+        "big": 0.12,
+        "soft": 0.03
       }
     }
   },
   {
     "title": "Guitar",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/GuitareClassique5.png/330px-GuitareClassique5.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 7779,
+    "ms": 35715,
     "genome": {
-      "object": "A full-size acoustic guitar with a warm orange-brown wooden body and long dark neck",
+      "object": "an amber wooden classical guitar",
       "safe": true,
-      "matchesPrompt": 0.18,
-      "name": "Guitarror",
-      "lore": "It learned to haunt campfires after being strummed one too many times.",
+      "matchesPrompt": 0.12,
+      "name": "Strumlin",
+      "lore": "It hatched from a forgotten guitar case and has demanded an encore ever since.",
       "element": "spirit",
-      "shape": "egg",
+      "shape": "blob",
       "proportions": "tall",
       "colors": {
-        "body": "#d98718",
-        "accent": "#43251c"
+        "body": "#F5A522",
+        "accent": "#65301C"
       },
       "eyes": "happy",
-      "mouth": "smile",
+      "mouth": "open",
       "limbStyle": "stick",
       "pose": "cheer",
       "parts": [
         {
           "type": "neck",
-          "color": "#493b3b"
-        },
-        {
-          "type": "stripes",
-          "color": "#c5b9a5"
+          "color": "#49382F"
         }
       ],
       "move1": {
-        "name": "Chord Charge",
-        "kind": "dash",
+        "name": "Pluck Shot",
+        "kind": "shot",
         "element": "spirit"
       },
       "move2": {
-        "name": "Strumwave",
+        "name": "Encore Chord",
         "kind": "burst",
         "element": "spirit"
       },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 0.66,
+            "z": 0,
+            "w": 1.7,
+            "h": 1.32,
+            "d": 0.58,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#F5A522"
+          },
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 1.31,
+            "z": 0,
+            "w": 1.32,
+            "h": 1.06,
+            "d": 0.55,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#F5A522"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 1.31,
+            "z": 0.27,
+            "w": 0.78,
+            "h": 0.045,
+            "d": 0.78,
+            "rx": 90,
+            "ry": 0,
+            "rz": 0,
+            "color": "#8F471D"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 1.31,
+            "z": 0.3,
+            "w": 0.67,
+            "h": 0.035,
+            "d": 0.67,
+            "rx": 90,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D59640"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 1.31,
+            "z": 0.325,
+            "w": 0.57,
+            "h": 0.025,
+            "d": 0.57,
+            "rx": 90,
+            "ry": 0,
+            "rz": 0,
+            "color": "#514337"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.53,
+            "z": 0.29,
+            "w": 0.84,
+            "h": 0.16,
+            "d": 0.09,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#78341C"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.57,
+            "z": 0.35,
+            "w": 0.48,
+            "h": 0.045,
+            "d": 0.035,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#F2E5C9"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 2.11,
+            "z": 0.025,
+            "w": 0.34,
+            "h": 1.48,
+            "d": 0.22,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#713C25"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 2.1,
+            "z": 0.16,
+            "w": 0.36,
+            "h": 1.48,
+            "d": 0.065,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#423B38"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 3.03,
+            "z": 0.025,
+            "w": 0.48,
+            "h": 0.56,
+            "d": 0.2,
+            "rx": -8,
+            "ry": 0,
+            "rz": 0,
+            "color": "#65301C"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.12,
+            "y": 3.04,
+            "z": 0.135,
+            "w": 0.085,
+            "h": 0.34,
+            "d": 0.025,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#EBDDC7"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.12,
+            "y": 3.04,
+            "z": 0.135,
+            "w": 0.085,
+            "h": 0.34,
+            "d": 0.025,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#EBDDC7"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.27,
+            "y": 2.92,
+            "z": 0.02,
+            "w": 0.15,
+            "h": 0.1,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D9AD53"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.27,
+            "y": 2.92,
+            "z": 0.02,
+            "w": 0.15,
+            "h": 0.1,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D9AD53"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.27,
+            "y": 3.12,
+            "z": 0.02,
+            "w": 0.15,
+            "h": 0.1,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D9AD53"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.27,
+            "y": 3.12,
+            "z": 0.02,
+            "w": 0.15,
+            "h": 0.1,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D9AD53"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.72,
+            "z": 0.207,
+            "w": 0.37,
+            "h": 0.018,
+            "d": 0.025,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#C9B9A5"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.99,
+            "z": 0.207,
+            "w": 0.37,
+            "h": 0.018,
+            "d": 0.025,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#C9B9A5"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 2.25,
+            "z": 0.207,
+            "w": 0.37,
+            "h": 0.018,
+            "d": 0.025,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#C9B9A5"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 2.5,
+            "z": 0.207,
+            "w": 0.37,
+            "h": 0.018,
+            "d": 0.025,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#C9B9A5"
+          },
+          {
+            "shape": "box",
+            "x": -0.11,
+            "y": 2.15,
+            "z": 0.229,
+            "w": 0.012,
+            "h": 1.4,
+            "d": 0.012,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#E1D4BF"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 2.15,
+            "z": 0.229,
+            "w": 0.012,
+            "h": 1.4,
+            "d": 0.012,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#E1D4BF"
+          },
+          {
+            "shape": "box",
+            "x": 0.11,
+            "y": 2.15,
+            "z": 0.229,
+            "w": 0.012,
+            "h": 1.4,
+            "d": 0.012,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#E1D4BF"
+          }
+        ],
+        "face": {
+          "x": 0,
+          "y": 0.91,
+          "size": 0.76,
+          "mouthY": 0.68
+        },
+        "arms": true,
+        "feet": false
+      },
       "traits": {
-        "hard": 0.65,
-        "sharp": 0.12,
-        "fast": 0.48,
-        "big": 0.72,
-        "soft": 0.18
+        "hard": 0.78,
+        "sharp": 0.08,
+        "fast": 0.12,
+        "big": 0.58,
+        "soft": 0.06
       }
     }
   },
   {
     "title": "Bicycle",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Left_side_of_Flying_Pigeon.jpg/330px-Left_side_of_Flying_Pigeon.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 7365,
+    "ms": 48120,
     "genome": {
-      "object": "Black city bicycle with a front basket",
+      "object": "a black city bicycle with a front wire basket and rear rack",
       "safe": true,
-      "matchesPrompt": 0.08,
+      "matchesPrompt": 0.03,
       "name": "Cycleclops",
-      "lore": "It rolled out of a moonlit bike shed and has been pedaling in circles ever since.",
+      "lore": "It came alive after someone finally remembered where they parked it.",
       "element": "metal",
       "shape": "blob",
       "proportions": "wide",
       "colors": {
-        "body": "#242525",
-        "accent": "#b8b8b0"
+        "body": "#252927",
+        "accent": "#B8BDB8"
       },
-      "eyes": "dot",
+      "eyes": "happy",
       "mouth": "smile",
       "limbStyle": "stick",
       "pose": "rest",
       "parts": [
         {
           "type": "wheels",
-          "color": "#242525"
-        },
-        {
-          "type": "handle",
-          "color": "#b8b8b0"
+          "color": "#252927"
         }
       ],
       "move1": {
-        "name": "Pedal Pummel",
-        "kind": "melee",
-        "element": "metal"
-      },
-      "move2": {
-        "name": "Spoke Sprint",
+        "name": "Pedal Pounce",
         "kind": "dash",
         "element": "metal"
       },
+      "move2": {
+        "name": "Spoke Cyclone",
+        "kind": "burst",
+        "element": "metal"
+      },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "ring",
+            "x": -0.99,
+            "y": 0.68,
+            "z": 0,
+            "w": 1.36,
+            "h": 1.36,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252927"
+          },
+          {
+            "shape": "ring",
+            "x": 0.99,
+            "y": 0.68,
+            "z": 0,
+            "w": 1.36,
+            "h": 1.36,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252927"
+          },
+          {
+            "shape": "ring",
+            "x": -0.99,
+            "y": 0.68,
+            "z": 0.025,
+            "w": 1.22,
+            "h": 1.22,
+            "d": 0.055,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B8BDB8"
+          },
+          {
+            "shape": "ring",
+            "x": 0.99,
+            "y": 0.68,
+            "z": 0.025,
+            "w": 1.22,
+            "h": 1.22,
+            "d": 0.055,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B8BDB8"
+          },
+          {
+            "shape": "cylinder",
+            "x": -0.99,
+            "y": 0.68,
+            "z": 0.03,
+            "w": 0.16,
+            "h": 0.19,
+            "d": 0.16,
+            "rx": 90,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B8BDB8"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0.99,
+            "y": 0.68,
+            "z": 0.03,
+            "w": 0.18,
+            "h": 0.19,
+            "d": 0.18,
+            "rx": 90,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B8BDB8"
+          },
+          {
+            "shape": "box",
+            "x": -0.99,
+            "y": 0.68,
+            "z": 0,
+            "w": 1.2,
+            "h": 0.035,
+            "d": 0.035,
+            "rx": 0,
+            "ry": 0,
+            "rz": 45,
+            "color": "#A6AEA8"
+          },
+          {
+            "shape": "box",
+            "x": -0.99,
+            "y": 0.68,
+            "z": 0,
+            "w": 1.2,
+            "h": 0.035,
+            "d": 0.035,
+            "rx": 0,
+            "ry": 0,
+            "rz": -45,
+            "color": "#A6AEA8"
+          },
+          {
+            "shape": "box",
+            "x": 0.99,
+            "y": 0.68,
+            "z": 0,
+            "w": 1.2,
+            "h": 0.035,
+            "d": 0.035,
+            "rx": 0,
+            "ry": 0,
+            "rz": 45,
+            "color": "#A6AEA8"
+          },
+          {
+            "shape": "box",
+            "x": 0.99,
+            "y": 0.68,
+            "z": 0,
+            "w": 1.2,
+            "h": 0.035,
+            "d": 0.035,
+            "rx": 0,
+            "ry": 0,
+            "rz": -45,
+            "color": "#A6AEA8"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.855,
+            "y": 1.165,
+            "z": 0.08,
+            "w": 0.095,
+            "h": 1.1,
+            "d": 0.095,
+            "rx": 0,
+            "ry": 0,
+            "rz": -16,
+            "color": "#252927"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.415,
+            "y": 1.155,
+            "z": 0.02,
+            "w": 0.12,
+            "h": 1.15,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 33,
+            "color": "#252927"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.145,
+            "y": 1.275,
+            "z": 0.02,
+            "w": 0.115,
+            "h": 1.25,
+            "d": 0.115,
+            "rx": 0,
+            "ry": 0,
+            "rz": -19,
+            "color": "#252927"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.665,
+            "y": 1.2,
+            "z": -0.02,
+            "w": 0.075,
+            "h": 1.27,
+            "d": 0.075,
+            "rx": 0,
+            "ry": 0,
+            "rz": 32,
+            "color": "#252927"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.47,
+            "y": 0.7,
+            "z": 0,
+            "w": 0.085,
+            "h": 1.08,
+            "d": 0.085,
+            "rx": 0,
+            "ry": 0,
+            "rz": 90,
+            "color": "#252927"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.785,
+            "y": 1.935,
+            "z": 0,
+            "w": 0.09,
+            "h": 0.65,
+            "d": 0.09,
+            "rx": 0,
+            "ry": 0,
+            "rz": 14,
+            "color": "#B8BDB8"
+          },
+          {
+            "shape": "cylinder",
+            "x": -0.86,
+            "y": 2.22,
+            "z": 0,
+            "w": 0.095,
+            "h": 0.85,
+            "d": 0.095,
+            "rx": 90,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B8BDB8"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.33,
+            "y": 1.92,
+            "z": 0,
+            "w": 0.16,
+            "h": 0.62,
+            "d": 0.35,
+            "rx": 0,
+            "ry": 0,
+            "rz": 90,
+            "color": "#252927"
+          },
+          {
+            "shape": "box",
+            "x": -1.08,
+            "y": 1.97,
+            "z": 0.04,
+            "w": 0.8,
+            "h": 0.6,
+            "d": 0.64,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#454D49"
+          },
+          {
+            "shape": "box",
+            "x": -1.08,
+            "y": 2.27,
+            "z": 0.04,
+            "w": 0.88,
+            "h": 0.065,
+            "d": 0.71,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252927"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.4,
+            "y": 0.73,
+            "z": 0.14,
+            "w": 0.27,
+            "h": 1.3,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": 90,
+            "color": "#252927"
+          },
+          {
+            "shape": "box",
+            "x": 0.7,
+            "y": 1.49,
+            "z": 0,
+            "w": 1.14,
+            "h": 0.075,
+            "d": 0.38,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B8BDB8"
+          },
+          {
+            "shape": "box",
+            "x": -0.08,
+            "y": 0.6,
+            "z": 0.25,
+            "w": 0.055,
+            "h": 0.37,
+            "d": 0.065,
+            "rx": 0,
+            "ry": 0,
+            "rz": -35,
+            "color": "#B8BDB8"
+          },
+          {
+            "shape": "box",
+            "x": -0.19,
+            "y": 0.44,
+            "z": 0.26,
+            "w": 0.24,
+            "h": 0.07,
+            "d": 0.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#A6AEA8"
+          }
+        ],
+        "face": {
+          "x": -1.08,
+          "y": 2.06,
+          "size": 0.6,
+          "mouthY": 1.8
+        },
+        "arms": false,
+        "feet": false
+      },
       "traits": {
-        "hard": 0.82,
-        "sharp": 0.18,
-        "fast": 0.72,
-        "big": 0.68,
-        "soft": 0.04
+        "hard": 0.9,
+        "sharp": 0.12,
+        "fast": 0.7,
+        "big": 0.62,
+        "soft": 0.08
       }
     }
   },
   {
     "title": "Car",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/White_Toyota_Corolla_sedan_in_San_Jose_California_dllu.jpg/330px-White_Toyota_Corolla_sedan_in_San_Jose_California_dllu.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 6803,
+    "ms": 21686,
     "genome": {
-      "object": "White four-door sedan",
+      "object": "a white four-door sedan",
       "safe": true,
-      "matchesPrompt": 0.05,
-      "name": "Carzilla",
-      "lore": "Born from a sleepy suburban driveway, Carzilla dreams of becoming a race-car legend.",
+      "matchesPrompt": 0.02,
+      "name": "Sedantasm",
+      "lore": "A family sedan became haunted after its thousandth argument with a parking meter.",
       "element": "metal",
       "shape": "box",
       "proportions": "wide",
       "colors": {
-        "body": "#f2f2ee",
-        "accent": "#34383a"
+        "body": "#F3F4EF",
+        "accent": "#252A2C"
       },
       "eyes": "happy",
       "mouth": "smile",
       "limbStyle": "stub",
-      "pose": "cheer",
+      "pose": "rest",
       "parts": [
         {
           "type": "wheels",
-          "color": "#34383a"
-        },
-        {
-          "type": "stripes",
-          "color": "#c8c9c5"
+          "color": "#252A2C"
         }
       ],
       "move1": {
-        "name": "Grille Grumble",
-        "kind": "melee",
-        "element": "metal"
-      },
-      "move2": {
-        "name": "Sedan Sprint",
+        "name": "Sedan Rush",
         "kind": "dash",
         "element": "metal"
       },
+      "move2": {
+        "name": "Hubcap Frisbee",
+        "kind": "shot",
+        "element": "metal"
+      },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.65,
+            "z": 0,
+            "w": 1.92,
+            "h": 0.66,
+            "d": 2.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#F3F4EF"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.98,
+            "z": 0.88,
+            "w": 1.82,
+            "h": 0.23,
+            "d": 0.94,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#F3F4EF"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.98,
+            "z": -1.02,
+            "w": 1.8,
+            "h": 0.22,
+            "d": 0.64,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#F3F4EF"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.32,
+            "z": -0.16,
+            "w": 1.58,
+            "h": 0.78,
+            "d": 1.49,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#F3F4EF"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.36,
+            "z": 0.6,
+            "w": 1.4,
+            "h": 0.62,
+            "d": 0.06,
+            "rx": -15,
+            "ry": 0,
+            "rz": 0,
+            "color": "#A5B8BD"
+          },
+          {
+            "shape": "box",
+            "x": -0.801,
+            "y": 1.37,
+            "z": -0.14,
+            "w": 0.05,
+            "h": 0.48,
+            "d": 1.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#9DADB2"
+          },
+          {
+            "shape": "box",
+            "x": 0.801,
+            "y": 1.37,
+            "z": -0.14,
+            "w": 0.05,
+            "h": 0.48,
+            "d": 1.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#9DADB2"
+          },
+          {
+            "shape": "box",
+            "x": -0.835,
+            "y": 1.37,
+            "z": -0.2,
+            "w": 0.045,
+            "h": 0.51,
+            "d": 0.085,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#333A3C"
+          },
+          {
+            "shape": "box",
+            "x": 0.835,
+            "y": 1.37,
+            "z": -0.2,
+            "w": 0.045,
+            "h": 0.51,
+            "d": 0.085,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#333A3C"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.73,
+            "z": -0.18,
+            "w": 1.61,
+            "h": 0.12,
+            "d": 1.38,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#F3F4EF"
+          },
+          {
+            "shape": "wheel",
+            "x": -0.94,
+            "y": 0.35,
+            "z": 0.83,
+            "w": 0.3,
+            "h": 0.7,
+            "d": 0.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252A2C"
+          },
+          {
+            "shape": "wheel",
+            "x": 0.94,
+            "y": 0.35,
+            "z": 0.83,
+            "w": 0.3,
+            "h": 0.7,
+            "d": 0.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252A2C"
+          },
+          {
+            "shape": "wheel",
+            "x": -0.94,
+            "y": 0.35,
+            "z": -0.85,
+            "w": 0.3,
+            "h": 0.7,
+            "d": 0.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252A2C"
+          },
+          {
+            "shape": "wheel",
+            "x": 0.94,
+            "y": 0.35,
+            "z": -0.85,
+            "w": 0.3,
+            "h": 0.7,
+            "d": 0.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#252A2C"
+          },
+          {
+            "shape": "wheel",
+            "x": -1.1,
+            "y": 0.35,
+            "z": 0.83,
+            "w": 0.04,
+            "h": 0.44,
+            "d": 0.44,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D4D8D8"
+          },
+          {
+            "shape": "wheel",
+            "x": 1.1,
+            "y": 0.35,
+            "z": 0.83,
+            "w": 0.04,
+            "h": 0.44,
+            "d": 0.44,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D4D8D8"
+          },
+          {
+            "shape": "box",
+            "x": -0.64,
+            "y": 0.88,
+            "z": 1.37,
+            "w": 0.46,
+            "h": 0.2,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#EEE7CE"
+          },
+          {
+            "shape": "box",
+            "x": 0.64,
+            "y": 0.88,
+            "z": 1.37,
+            "w": 0.46,
+            "h": 0.2,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#EEE7CE"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.85,
+            "z": 1.37,
+            "w": 0.67,
+            "h": 0.16,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#333A3C"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 0.49,
+            "z": 1.37,
+            "w": 1.27,
+            "h": 0.12,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#333A3C"
+          }
+        ],
+        "face": {
+          "x": 0,
+          "y": 1.46,
+          "size": 0.85,
+          "mouthY": 1.18
+        },
+        "arms": false,
+        "feet": false
+      },
       "traits": {
-        "hard": 0.8,
-        "sharp": 0.2,
-        "fast": 0.6,
-        "big": 0.8,
-        "soft": 0.1
+        "hard": 0.92,
+        "sharp": 0.12,
+        "fast": 0.82,
+        "big": 0.87,
+        "soft": 0.08
       }
     }
   },
   {
     "title": "Candle",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/aa/LA2_Skultuna_kontorsljusstake.jpg/330px-LA2_Skultuna_kontorsljusstake.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 6317,
+    "ms": 21719,
     "genome": {
-      "object": "A lit white candle in a silver candlestick",
+      "object": "a lit white taper candle in a brass chamberstick holder",
       "safe": true,
-      "matchesPrompt": 0.12,
-      "name": "Wickwraith",
-      "lore": "Born when a tiny fire spirit mistook a candlestick for a cozy tower.",
+      "matchesPrompt": 0.03,
+      "name": "Wickling",
+      "lore": "A birthday wish missed its cake and possessed the candlestick instead.",
       "element": "fire",
       "shape": "cylinder",
       "proportions": "tall",
       "colors": {
-        "body": "#fff9f3",
-        "accent": "#b9b9b3"
+        "body": "#FFFDF1",
+        "accent": "#BA9452"
       },
       "eyes": "happy",
       "mouth": "smile",
-      "limbStyle": "stick",
-      "pose": "cheer",
+      "limbStyle": "stub",
+      "pose": "rest",
       "parts": [
         {
           "type": "flame",
-          "color": "#ff9b18"
+          "color": "#FFBF39"
         },
         {
           "type": "handle",
-          "color": "#b9b9b3"
+          "color": "#BA9452"
         }
       ],
       "move1": {
-        "name": "Wick Flick",
+        "name": "Wax Whack",
         "kind": "shot",
         "element": "fire"
       },
       "move2": {
-        "name": "Candlelight Burst",
-        "kind": "burst",
+        "name": "Wick Inferno",
+        "kind": "beam",
         "element": "fire"
+      },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 0.08,
+            "z": 0,
+            "w": 1.75,
+            "h": 0.16,
+            "d": 1.45,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#BA9452"
+          },
+          {
+            "shape": "ring",
+            "x": 0,
+            "y": 0.16,
+            "z": 0,
+            "w": 1.73,
+            "h": 1.43,
+            "d": 0.09,
+            "rx": 90,
+            "ry": 0,
+            "rz": 0,
+            "color": "#E0C58B"
+          },
+          {
+            "shape": "cone",
+            "x": 0,
+            "y": 0.25,
+            "z": 0,
+            "w": 0.64,
+            "h": 0.27,
+            "d": 0.64,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#AA8245"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 0.48,
+            "z": 0,
+            "w": 0.22,
+            "h": 0.4,
+            "d": 0.22,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D3B474"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 1,
+            "z": 0,
+            "w": 0.43,
+            "h": 0.78,
+            "d": 0.43,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#BA9452"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 0.69,
+            "z": 0,
+            "w": 0.49,
+            "h": 0.07,
+            "d": 0.49,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#E0C58B"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 1.36,
+            "z": 0,
+            "w": 0.52,
+            "h": 0.09,
+            "d": 0.52,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#E0C58B"
+          },
+          {
+            "shape": "ring",
+            "x": 0.43,
+            "y": 1.1,
+            "z": 0,
+            "w": 0.55,
+            "h": 0.55,
+            "d": 0.1,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#BA9452"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 1.91,
+            "z": 0,
+            "w": 0.48,
+            "h": 1.08,
+            "d": 0.48,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#FFFDF1"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.18,
+            "y": 2.34,
+            "z": 0.1,
+            "w": 0.11,
+            "h": 0.23,
+            "d": 0.11,
+            "rx": 0,
+            "ry": 0,
+            "rz": 8,
+            "color": "#F2EAD9"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 2.48,
+            "z": 0,
+            "w": 0.035,
+            "h": 0.09,
+            "d": 0.035,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#45382B"
+          },
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 2.61,
+            "z": 0,
+            "w": 0.18,
+            "h": 0.28,
+            "d": 0.16,
+            "rx": 0,
+            "ry": 0,
+            "rz": -5,
+            "color": "#FFBF39"
+          },
+          {
+            "shape": "cone",
+            "x": 0.015,
+            "y": 2.78,
+            "z": 0,
+            "w": 0.15,
+            "h": 0.25,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": -7,
+            "color": "#FFD967"
+          },
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 2.59,
+            "z": 0.065,
+            "w": 0.08,
+            "h": 0.16,
+            "d": 0.045,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#FFF7CA"
+          }
+        ],
+        "face": {
+          "x": 0,
+          "y": 2.04,
+          "size": 0.6,
+          "mouthY": 1.77
+        },
+        "arms": true,
+        "feet": false
       },
       "traits": {
         "hard": 0.45,
         "sharp": 0.05,
-        "fast": 0.25,
-        "big": 0.35,
+        "fast": 0.02,
+        "big": 0.22,
         "soft": 0.3
       }
     }
@@ -482,78 +3003,224 @@
   {
     "title": "Umbrella",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/87/M0354_000727-005_1.jpg/330px-M0354_000727-005_1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 5904,
+    "ms": 26049,
     "genome": {
-      "object": "Open black umbrella",
+      "object": "a black umbrella with a curved handle",
       "safe": true,
-      "matchesPrompt": 0.02,
-      "name": "Umbrellahaunt",
-      "lore": "Born from a rainy-day cloud, it insists every puddle is its personal dance floor.",
+      "matchesPrompt": 0,
+      "name": "Umbrell Imp",
+      "lore": "It opened indoors once and has been collecting bad luck ever since.",
       "element": "water",
       "shape": "blob",
-      "proportions": "wide",
+      "proportions": "normal",
       "colors": {
-        "body": "#252525",
-        "accent": "#454545"
+        "body": "#202123",
+        "accent": "#383A3C"
       },
-      "eyes": "dot",
+      "eyes": "happy",
       "mouth": "smile",
       "limbStyle": "stick",
       "pose": "wave",
       "parts": [
         {
           "type": "canopy",
-          "color": "#252525"
+          "color": "#202123"
         },
         {
           "type": "handle",
-          "color": "#353535"
+          "color": "#242321"
         }
       ],
       "move1": {
-        "name": "Canopy Clip",
+        "name": "Hook Forecast",
         "kind": "melee",
-        "element": "water"
+        "element": "metal"
       },
       "move2": {
-        "name": "Raincheck Rush",
-        "kind": "dash",
+        "name": "Rain Check",
+        "kind": "burst",
         "element": "water"
       },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "dome",
+            "x": 0,
+            "y": 1.78,
+            "z": 0,
+            "w": 2.6,
+            "h": 0.66,
+            "d": 2.05,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#202123"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 1.12,
+            "z": 0,
+            "w": 0.075,
+            "h": 1.82,
+            "d": 0.075,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#555452"
+          },
+          {
+            "shape": "cone",
+            "x": 0,
+            "y": 2.48,
+            "z": 0,
+            "w": 0.1,
+            "h": 0.25,
+            "d": 0.1,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#242321"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 1.79,
+            "z": 0,
+            "w": 0.17,
+            "h": 0.16,
+            "d": 0.17,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#383A3C"
+          },
+          {
+            "shape": "capsule",
+            "x": 0,
+            "y": 0.3,
+            "z": 0,
+            "w": 0.14,
+            "h": 0.43,
+            "d": 0.14,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#242321"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.1,
+            "y": 0.11,
+            "z": 0,
+            "w": 0.14,
+            "h": 0.29,
+            "d": 0.14,
+            "rx": 0,
+            "ry": 0,
+            "rz": -65,
+            "color": "#242321"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.28,
+            "y": 0.11,
+            "z": 0,
+            "w": 0.14,
+            "h": 0.27,
+            "d": 0.14,
+            "rx": 0,
+            "ry": 0,
+            "rz": 60,
+            "color": "#242321"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.37,
+            "y": 0.25,
+            "z": 0,
+            "w": 0.14,
+            "h": 0.28,
+            "d": 0.14,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#242321"
+          },
+          {
+            "shape": "sphere",
+            "x": -1.22,
+            "y": 1.79,
+            "z": 0,
+            "w": 0.13,
+            "h": 0.09,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#383A3C"
+          },
+          {
+            "shape": "sphere",
+            "x": 1.22,
+            "y": 1.79,
+            "z": 0,
+            "w": 0.13,
+            "h": 0.09,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#383A3C"
+          }
+        ],
+        "face": {
+          "x": 0,
+          "y": 2.12,
+          "size": 0.78,
+          "mouthY": 1.89
+        },
+        "arms": true,
+        "feet": false
+      },
       "traits": {
-        "hard": 0.55,
-        "sharp": 0.2,
-        "fast": 0.45,
+        "hard": 0.35,
+        "sharp": 0.3,
+        "fast": 0.25,
         "big": 0.65,
-        "soft": 0.15
+        "soft": 0.45
       }
     }
   },
   {
     "title": "Pen",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Carandache_Ecridor.jpg/330px-Carandache_Ecridor.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 7046,
+    "ms": 29873,
     "genome": {
-      "object": "A silver metal ballpoint pen with its cap removed",
+      "object": "a silver metal pen with a measurement scale and removable cap",
       "safe": true,
-      "matchesPrompt": 0.03,
-      "name": "Pen-demon",
-      "lore": "Born when a doodle escaped the notebook, it now signs autographs with its nib.",
+      "matchesPrompt": 0.01,
+      "name": "Penzilla",
+      "lore": "It came alive after someone used it to draw outside the margins.",
       "element": "metal",
       "shape": "cylinder",
       "proportions": "tall",
       "colors": {
-        "body": "#c4c7c9",
-        "accent": "#34383b"
+        "body": "#C8CBCD",
+        "accent": "#333638"
       },
-      "eyes": "dot",
+      "eyes": "wink",
       "mouth": "smile",
       "limbStyle": "stick",
       "pose": "wave",
       "parts": [
         {
           "type": "cap",
-          "color": "#c4c7c9"
+          "color": "#D4D6D7"
+        },
+        {
+          "type": "stripes",
+          "color": "#333638"
         }
       ],
       "move1": {
@@ -562,35 +3229,242 @@
         "element": "metal"
       },
       "move2": {
-        "name": "Inkshot",
-        "kind": "shot",
-        "element": "metal"
+        "name": "Ink Ray",
+        "kind": "beam",
+        "element": "water"
+      },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 1.3,
+            "z": 0,
+            "w": 0.72,
+            "h": 1.48,
+            "d": 0.72,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#C8CBCD"
+          },
+          {
+            "shape": "cone",
+            "x": 0,
+            "y": 0.33,
+            "z": 0,
+            "w": 0.61,
+            "h": 0.62,
+            "d": 0.61,
+            "rx": 180,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B1B6BA"
+          },
+          {
+            "shape": "cone",
+            "x": 0,
+            "y": 0.065,
+            "z": 0,
+            "w": 0.13,
+            "h": 0.13,
+            "d": 0.13,
+            "rx": 180,
+            "ry": 0,
+            "rz": 0,
+            "color": "#333638"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 0.62,
+            "z": 0,
+            "w": 0.75,
+            "h": 0.12,
+            "d": 0.75,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#E0E2E3"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 2.26,
+            "z": 0,
+            "w": 0.79,
+            "h": 0.59,
+            "d": 0.79,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D4D6D7"
+          },
+          {
+            "shape": "dome",
+            "x": 0,
+            "y": 2.55,
+            "z": 0,
+            "w": 0.78,
+            "h": 0.16,
+            "d": 0.78,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#E0E2E3"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 2.005,
+            "z": 0,
+            "w": 0.81,
+            "h": 0.08,
+            "d": 0.81,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#777E83"
+          },
+          {
+            "shape": "box",
+            "x": 0.36,
+            "y": 2.34,
+            "z": 0.07,
+            "w": 0.17,
+            "h": 0.15,
+            "d": 0.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#ADB3B7"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.43,
+            "y": 2.08,
+            "z": 0.1,
+            "w": 0.11,
+            "h": 0.63,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#ECEDED"
+          },
+          {
+            "shape": "box",
+            "x": -0.265,
+            "y": 1.32,
+            "z": 0.245,
+            "w": 0.035,
+            "h": 1.15,
+            "d": 0.055,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#333638"
+          },
+          {
+            "shape": "box",
+            "x": -0.215,
+            "y": 0.82,
+            "z": 0.29,
+            "w": 0.14,
+            "h": 0.035,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#333638"
+          },
+          {
+            "shape": "box",
+            "x": -0.235,
+            "y": 1.03,
+            "z": 0.275,
+            "w": 0.1,
+            "h": 0.035,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#333638"
+          },
+          {
+            "shape": "box",
+            "x": -0.215,
+            "y": 1.24,
+            "z": 0.29,
+            "w": 0.14,
+            "h": 0.035,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#333638"
+          },
+          {
+            "shape": "box",
+            "x": -0.235,
+            "y": 1.66,
+            "z": 0.275,
+            "w": 0.1,
+            "h": 0.035,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#333638"
+          },
+          {
+            "shape": "box",
+            "x": -0.215,
+            "y": 1.87,
+            "z": 0.29,
+            "w": 0.14,
+            "h": 0.035,
+            "d": 0.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#333638"
+          }
+        ],
+        "face": {
+          "x": 0.035,
+          "y": 1.54,
+          "size": 0.6,
+          "mouthY": 1.25
+        },
+        "arms": true,
+        "feet": true
       },
       "traits": {
-        "hard": 0.8,
-        "sharp": 0.7,
-        "fast": 0.5,
-        "big": 0.2,
-        "soft": 0.1
+        "hard": 0.88,
+        "sharp": 0.62,
+        "fast": 0.25,
+        "big": 0.08,
+        "soft": 0.02
       }
     }
   },
   {
-    "title": "Key_(lock)",
-    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Solex_99_30_padlock_with_keys_%28DSCF2659%29.jpg/330px-Solex_99_30_padlock_with_keys_%28DSCF2659%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 5765,
+    "title": "Capybara",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/71/Capybaracropped.jpg/330px-Capybaracropped.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 20794,
     "genome": {
-      "object": "Brass padlock with two silver keys",
+      "object": "a brown capybara",
       "safe": true,
-      "matchesPrompt": 0.05,
-      "name": "Lockness Monster",
-      "lore": "Born in a key-cutting shop, it guards the snack drawer and only opens for compliments.",
-      "element": "metal",
-      "shape": "box",
+      "matchesPrompt": 0.03,
+      "name": "Capyogre",
+      "lore": "A riverside mud pie came alive and immediately demanded a nap.",
+      "element": "fluff",
+      "shape": "egg",
       "proportions": "normal",
       "colors": {
-        "body": "#a68a4d",
-        "accent": "#a6a9aa"
+        "body": "#946341",
+        "accent": "#B18661"
       },
       "eyes": "dot",
       "mouth": "smile",
@@ -598,138 +3472,794 @@
       "pose": "rest",
       "parts": [
         {
-          "type": "handle",
-          "color": "#a6a9aa"
-        },
-        {
-          "type": "buttons",
-          "color": "#b6b8b8"
+          "type": "ears",
+          "color": "#795039"
         }
       ],
       "move1": {
-        "name": "Key Jingle Jab",
+        "name": "Marsh Molar",
         "kind": "melee",
-        "element": "metal"
+        "element": "fluff"
       },
       "move2": {
-        "name": "Shackle Snap",
+        "name": "Capy Cannonball",
         "kind": "burst",
-        "element": "metal"
+        "element": "water"
+      },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 0.94,
+            "z": -0.35,
+            "w": 1.8,
+            "h": 1.55,
+            "d": 2.05,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#946341"
+          },
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 1.57,
+            "z": 0.51,
+            "w": 1.38,
+            "h": 1.15,
+            "d": 1.35,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#946341"
+          },
+          {
+            "shape": "box",
+            "x": 0,
+            "y": 1.4,
+            "z": 1.02,
+            "w": 1.12,
+            "h": 0.73,
+            "d": 0.73,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B18661"
+          },
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 1.62,
+            "z": 1.38,
+            "w": 0.39,
+            "h": 0.19,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#4C3528"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.47,
+            "y": 2.08,
+            "z": 0.39,
+            "w": 0.3,
+            "h": 0.34,
+            "d": 0.22,
+            "rx": 0,
+            "ry": 0,
+            "rz": -12,
+            "color": "#795039"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.47,
+            "y": 2.08,
+            "z": 0.39,
+            "w": 0.3,
+            "h": 0.34,
+            "d": 0.22,
+            "rx": 0,
+            "ry": 0,
+            "rz": 12,
+            "color": "#795039"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.47,
+            "y": 2.09,
+            "z": 0.495,
+            "w": 0.15,
+            "h": 0.19,
+            "d": 0.045,
+            "rx": 0,
+            "ry": 0,
+            "rz": -12,
+            "color": "#B18661"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.47,
+            "y": 2.09,
+            "z": 0.495,
+            "w": 0.15,
+            "h": 0.19,
+            "d": 0.045,
+            "rx": 0,
+            "ry": 0,
+            "rz": 12,
+            "color": "#B18661"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.57,
+            "y": 0.3,
+            "z": 0.47,
+            "w": 0.43,
+            "h": 0.6,
+            "d": 0.55,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#795039"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.57,
+            "y": 0.3,
+            "z": 0.47,
+            "w": 0.43,
+            "h": 0.6,
+            "d": 0.55,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#795039"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.64,
+            "y": 0.25,
+            "z": -0.95,
+            "w": 0.5,
+            "h": 0.5,
+            "d": 0.65,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#795039"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.64,
+            "y": 0.25,
+            "z": -0.95,
+            "w": 0.5,
+            "h": 0.5,
+            "d": 0.65,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#795039"
+          }
+        ],
+        "face": {
+          "x": 0,
+          "y": 1.47,
+          "size": 0.78,
+          "mouthY": 1.18
+        },
+        "arms": false,
+        "feet": false
       },
       "traits": {
-        "hard": 0.95,
-        "sharp": 0.35,
-        "fast": 0.2,
-        "big": 0.3,
-        "soft": 0.05
+        "hard": 0.12,
+        "sharp": 0.16,
+        "fast": 0.38,
+        "big": 0.65,
+        "soft": 0.76
       }
     }
   },
   {
     "title": "Amanita_muscaria",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/71/Amanita_muscaria_Aberystwyth_2023.jpg/330px-Amanita_muscaria_Aberystwyth_2023.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 5212,
+    "ms": 22379,
     "genome": {
-      "object": "Large red mushroom with white spots",
+      "object": "a red mushroom with pale spots and a thick cream stem",
       "safe": true,
-      "matchesPrompt": 0.98,
-      "name": "Shroompuff",
-      "lore": "It sprouted after a tiny forest dragon sneezed glittering spores across the moss.",
+      "matchesPrompt": 0.99,
+      "name": "Shroomlin",
+      "lore": "It grew an enormous red hat so the forest would stop overlooking it.",
       "element": "plant",
       "shape": "blob",
       "proportions": "wide",
       "colors": {
-        "body": "#f34235",
-        "accent": "#f3e8d4"
+        "body": "#ED382C",
+        "accent": "#E9DFC1"
       },
       "eyes": "happy",
-      "mouth": "o",
+      "mouth": "smile",
       "limbStyle": "stub",
-      "pose": "cheer",
+      "pose": "wave",
       "parts": [
         {
           "type": "canopy",
-          "color": "#ed4937"
-        },
-        {
-          "type": "spots",
-          "color": "#f5ead9"
+          "color": "#ED382C"
         },
         {
           "type": "stem",
-          "color": "#d8c9ad"
+          "color": "#E9DFC1"
+        },
+        {
+          "type": "spots",
+          "color": "#EEDCB2"
         }
       ],
       "move1": {
-        "name": "Spore Pop",
-        "kind": "burst",
-        "element": "plant"
-      },
-      "move2": {
-        "name": "Cap Toss",
+        "name": "Spore Spit",
         "kind": "shot",
         "element": "plant"
       },
+      "move2": {
+        "name": "Cap Quake",
+        "kind": "burst",
+        "element": "plant"
+      },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 0.22,
+            "z": 0,
+            "w": 0.9,
+            "h": 0.44,
+            "d": 0.78,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#D9CFB2"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 0.91,
+            "z": 0,
+            "w": 0.78,
+            "h": 1.48,
+            "d": 0.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#E9DFC1"
+          },
+          {
+            "shape": "cone",
+            "x": 0,
+            "y": 1.37,
+            "z": 0,
+            "w": 1.02,
+            "h": 0.35,
+            "d": 0.89,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#F1E7CC"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 1.65,
+            "z": 0,
+            "w": 2.12,
+            "h": 0.13,
+            "d": 1.84,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#E8C98B"
+          },
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 1.85,
+            "z": 0,
+            "w": 2.4,
+            "h": 0.58,
+            "d": 2.06,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#F46A2F"
+          },
+          {
+            "shape": "sphere",
+            "x": 0,
+            "y": 1.92,
+            "z": -0.01,
+            "w": 2.22,
+            "h": 0.48,
+            "d": 1.9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#ED382C"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.53,
+            "y": 2.105,
+            "z": 0.13,
+            "w": 0.19,
+            "h": 0.065,
+            "d": 0.15,
+            "rx": 0,
+            "ry": 15,
+            "rz": 0,
+            "color": "#EEDCB2"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.31,
+            "y": 2.13,
+            "z": 0.13,
+            "w": 0.15,
+            "h": 0.06,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#EEDCB2"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.64,
+            "y": 2.06,
+            "z": 0.32,
+            "w": 0.18,
+            "h": 0.065,
+            "d": 0.13,
+            "rx": 0,
+            "ry": -20,
+            "rz": 0,
+            "color": "#EEDCB2"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.19,
+            "y": 2.08,
+            "z": 0.61,
+            "w": 0.2,
+            "h": 0.07,
+            "d": 0.14,
+            "rx": 0,
+            "ry": 10,
+            "rz": 0,
+            "color": "#EEDCB2"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.71,
+            "y": 2.01,
+            "z": 0.42,
+            "w": 0.13,
+            "h": 0.06,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#EEDCB2"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.05,
+            "y": 2.12,
+            "z": -0.45,
+            "w": 0.17,
+            "h": 0.06,
+            "d": 0.14,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#EEDCB2"
+          }
+        ],
+        "face": {
+          "x": 0,
+          "y": 1.02,
+          "size": 0.65,
+          "mouthY": 0.73
+        },
+        "arms": true,
+        "feet": false
+      },
       "traits": {
-        "hard": 0.18,
-        "sharp": 0.08,
-        "fast": 0.25,
-        "big": 0.72,
-        "soft": 0.68
+        "hard": 0.12,
+        "sharp": 0.02,
+        "fast": 0.03,
+        "big": 0.32,
+        "soft": 0.8
       }
     }
   },
   {
     "title": "Houseplant",
     "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Orkide_i_finstua_mot_vest.jpg/330px-Orkide_i_finstua_mot_vest.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
-    "ms": 6104,
+    "ms": 34687,
     "genome": {
-      "object": "Potted orchid with pale pink blossoms and green leaves",
+      "object": "a white and pink orchid in a pale gray flowerpot",
       "safe": true,
-      "matchesPrompt": 0.28,
-      "name": "Orchidzilla",
-      "lore": "It learned to bloom dramatically after being applauded by the morning sun.",
+      "matchesPrompt": 0.04,
+      "name": "Orchid imp",
+      "lore": "It grew tiny feet after overhearing that orchids need a little movement of air.",
       "element": "plant",
-      "shape": "cactus",
+      "shape": "cylinder",
       "proportions": "tall",
       "colors": {
-        "body": "#39713f",
-        "accent": "#f2c9dc"
+        "body": "#DDDCD6",
+        "accent": "#52852A"
       },
       "eyes": "happy",
       "mouth": "smile",
       "limbStyle": "stub",
-      "pose": "cheer",
+      "pose": "wave",
       "parts": [
         {
           "type": "flower",
-          "color": "#edb9d2"
+          "color": "#FAF1F4"
         },
         {
           "type": "leafCrown",
-          "color": "#39713f"
+          "color": "#52852A"
         },
         {
           "type": "stem",
-          "color": "#315a36"
+          "color": "#497232"
         }
       ],
       "move1": {
-        "name": "Petal Flick",
+        "name": "Petal Pelt",
         "kind": "shot",
         "element": "plant"
       },
       "move2": {
-        "name": "Bloom Boom",
+        "name": "Orchidstra Bloom",
         "kind": "burst",
         "element": "plant"
       },
+      "blueprint": {
+        "parts": [
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 0.425,
+            "z": 0,
+            "w": 0.98,
+            "h": 0.85,
+            "d": 0.98,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#DDDCD6"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 0.82,
+            "z": 0,
+            "w": 1.04,
+            "h": 0.12,
+            "d": 1.04,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#EAE8E2"
+          },
+          {
+            "shape": "cylinder",
+            "x": 0,
+            "y": 0.875,
+            "z": 0,
+            "w": 0.86,
+            "h": 0.035,
+            "d": 0.86,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#524434"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.38,
+            "y": 1.03,
+            "z": 0.12,
+            "w": 0.95,
+            "h": 0.19,
+            "d": 0.37,
+            "rx": 0,
+            "ry": -15,
+            "rz": 16,
+            "color": "#52852A"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.38,
+            "y": 1.08,
+            "z": 0.09,
+            "w": 0.98,
+            "h": 0.19,
+            "d": 0.35,
+            "rx": 0,
+            "ry": 18,
+            "rz": 24,
+            "color": "#659334"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.21,
+            "y": 1.18,
+            "z": -0.09,
+            "w": 0.65,
+            "h": 0.17,
+            "d": 0.31,
+            "rx": 0,
+            "ry": -20,
+            "rz": -55,
+            "color": "#47782A"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.25,
+            "y": 1.22,
+            "z": -0.12,
+            "w": 0.77,
+            "h": 0.17,
+            "d": 0.3,
+            "rx": 0,
+            "ry": 15,
+            "rz": 48,
+            "color": "#52852A"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.3,
+            "y": 1.52,
+            "z": -0.04,
+            "w": 0.065,
+            "h": 1.55,
+            "d": 0.065,
+            "rx": 0,
+            "ry": 0,
+            "rz": 25,
+            "color": "#497232"
+          },
+          {
+            "shape": "capsule",
+            "x": -0.08,
+            "y": 1.65,
+            "z": -0.1,
+            "w": 0.065,
+            "h": 1.72,
+            "d": 0.065,
+            "rx": 0,
+            "ry": 0,
+            "rz": 6,
+            "color": "#497232"
+          },
+          {
+            "shape": "capsule",
+            "x": 0.31,
+            "y": 1.48,
+            "z": -0.03,
+            "w": 0.065,
+            "h": 1.4,
+            "d": 0.065,
+            "rx": 0,
+            "ry": 0,
+            "rz": -28,
+            "color": "#497232"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.83,
+            "y": 2.21,
+            "z": 0.03,
+            "w": 0.36,
+            "h": 0.29,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": -25,
+            "color": "#FAF1F4"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.46,
+            "y": 2.22,
+            "z": 0.03,
+            "w": 0.36,
+            "h": 0.29,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": 25,
+            "color": "#FFF8F7"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.64,
+            "y": 2.37,
+            "z": 0.015,
+            "w": 0.23,
+            "h": 0.34,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#FFF8F7"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.64,
+            "y": 2.08,
+            "z": 0.07,
+            "w": 0.29,
+            "h": 0.26,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#EFDFEB"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.64,
+            "y": 2.18,
+            "z": 0.15,
+            "w": 0.12,
+            "h": 0.17,
+            "d": 0.09,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B34E91"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.34,
+            "y": 2.51,
+            "z": -0.02,
+            "w": 0.31,
+            "h": 0.26,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": -25,
+            "color": "#FAF1F4"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.01,
+            "y": 2.51,
+            "z": -0.02,
+            "w": 0.31,
+            "h": 0.26,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": 25,
+            "color": "#FFF8F7"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.17,
+            "y": 2.64,
+            "z": -0.035,
+            "w": 0.22,
+            "h": 0.28,
+            "d": 0.12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#FFF8F7"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.17,
+            "y": 2.38,
+            "z": 0.02,
+            "w": 0.25,
+            "h": 0.24,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#EFDFEB"
+          },
+          {
+            "shape": "sphere",
+            "x": -0.17,
+            "y": 2.48,
+            "z": 0.1,
+            "w": 0.1,
+            "h": 0.14,
+            "d": 0.09,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#B34E91"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.49,
+            "y": 2.16,
+            "z": 0.04,
+            "w": 0.34,
+            "h": 0.3,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": -30,
+            "color": "#FAF1F4"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.82,
+            "y": 2.16,
+            "z": 0.04,
+            "w": 0.34,
+            "h": 0.3,
+            "d": 0.13,
+            "rx": 0,
+            "ry": 0,
+            "rz": 30,
+            "color": "#FFF8F7"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.65,
+            "y": 1.99,
+            "z": 0.07,
+            "w": 0.3,
+            "h": 0.3,
+            "d": 0.14,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#F5E7F0"
+          },
+          {
+            "shape": "sphere",
+            "x": 0.65,
+            "y": 2.1,
+            "z": 0.15,
+            "w": 0.12,
+            "h": 0.18,
+            "d": 0.09,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "color": "#C05A9B"
+          }
+        ],
+        "face": {
+          "x": 0,
+          "y": 0.56,
+          "size": 0.66,
+          "mouthY": 0.3
+        },
+        "arms": true,
+        "feet": false
+      },
       "traits": {
-        "hard": 0.25,
-        "sharp": 0.08,
-        "fast": 0.3,
-        "big": 0.55,
-        "soft": 0.65
+        "hard": 0.3,
+        "sharp": 0.02,
+        "fast": 0.02,
+        "big": 0.3,
+        "soft": 0.58
       }
     }
   }

@@ -1,8 +1,8 @@
 import { useQuery } from 'convex/react';
 import type { FunctionReturnType } from 'convex/server';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -36,10 +36,12 @@ export default function ArenaScreen() {
   const watchedKey = today ? `snappymon.watched.${today._id}` : null;
   const [watched, setWatched] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!watchedKey) return;
-    getItem(watchedKey).then((v) => v === '1' && setWatched(watchedKey));
-  }, [watchedKey]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!watchedKey) return;
+      getItem(watchedKey).then((v) => v === '1' && setWatched(watchedKey));
+    }, [watchedKey]),
+  );
 
   const markWatched = () => {
     if (!watchedKey) return;

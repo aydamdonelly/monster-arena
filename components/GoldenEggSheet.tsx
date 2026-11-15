@@ -57,53 +57,52 @@ export default function GoldenEggSheet({ visible, from, onClose: close }: { visi
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
       <Pressable accessibilityLabel="Close" style={styles.dim} onPress={onClose} />
-      <Animated.View
-        style={[
-          styles.sheet,
-          { paddingBottom: insets.bottom + 14, transform: [{ translateY: rise.interpolate({ inputRange: [0, 1], outputRange: [520, 0] }) }] },
-        ]}>
-        <View style={styles.grabber} />
-        <View style={styles.stageLane}>
-          <View style={styles.stage}>
-            <Image source={require('@/assets/images/renders/bp-golden-capyboogey.png')} style={styles.render} contentFit="contain" />
-            <InkSticker label="+1 egg" rotate={-5} style={styles.plus} />
-            <InkSticker label="Crown included" light rotate={4} style={styles.crown} />
-          </View>
-        </View>
-        <View style={styles.title}>
-          <Text style={styles.titleText}>Golden Egg</Text>
-          <Text style={styles.titleText}>$1</Text>
-        </View>
-        <View style={styles.perks}>
-          {PERKS.map((p) => (
-            <View key={p} style={styles.perk}>
-              <View style={styles.bullet} />
-              <Text style={styles.perkText}>{p}</Text>
+      <View pointerEvents="box-none" style={styles.sheetLane}>
+        <Animated.View
+          style={[
+            styles.sheet,
+            { paddingBottom: insets.bottom + 14, transform: [{ translateY: rise.interpolate({ inputRange: [0, 1], outputRange: [520, 0] }) }] },
+          ]}>
+          <View style={styles.grabber} />
+          <View style={styles.stageLane}>
+            <View style={styles.stage}>
+              <Image source={require('@/assets/images/renders/bp-golden-capyboogey.png')} style={styles.render} contentFit="contain" />
+              <InkSticker label="+1 egg" rotate={-5} style={styles.plus} />
+              <InkSticker label="Crown included" light rotate={4} style={styles.crown} />
             </View>
-          ))}
-        </View>
-        <View style={styles.actions}>
-          <PrimaryButton label="Crack one open · $1" onPress={buy} busy={busy} style={styles.buy} buttonStyle={styles.buyButton} />
-          {busy ? <Text style={styles.note}>Opening secure checkout…</Text> : null}
-          {error ? <Text style={styles.failed}>{error}</Text> : null}
-          {busy ? null : (
-            <Pressable accessibilityRole="button" onPress={onClose} hitSlop={12}>
-              <Text style={styles.later}>Maybe tomorrow</Text>
-            </Pressable>
-          )}
-        </View>
-      </Animated.View>
+          </View>
+          <View style={styles.title}>
+            <Text style={styles.titleText}>Golden Egg</Text>
+            <Text style={styles.titleText}>$1</Text>
+          </View>
+          <View style={styles.perks}>
+            {PERKS.map((p) => (
+              <View key={p} style={styles.perk}>
+                <View style={styles.bullet} />
+                <Text style={styles.perkText}>{p}</Text>
+              </View>
+            ))}
+          </View>
+          <View style={styles.actions}>
+            <PrimaryButton label="Crack one open · $1" onPress={buy} busy={busy} style={styles.buy} buttonStyle={styles.buyButton} />
+            {busy ? <Text style={styles.note}>Opening secure checkout…</Text> : null}
+            {error ? <Text style={styles.failed}>{error}</Text> : null}
+            {busy ? null : (
+              <Pressable accessibilityRole="button" onPress={onClose} hitSlop={12}>
+                <Text style={styles.later}>Maybe tomorrow</Text>
+              </Pressable>
+            )}
+          </View>
+        </Animated.View>
+      </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   dim: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(17,17,17,0.55)' },
+  sheetLane: { position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center' },
   sheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
     backgroundColor: Palette.ground,
     borderTopWidth: 2,
     borderColor: Palette.ink,
@@ -111,7 +110,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
     width: '100%',
     maxWidth: 560,
-    alignSelf: 'center',
   },
   grabber: { alignSelf: 'center', width: 44, height: 5, borderRadius: 3, backgroundColor: '#CCCCCC', marginTop: 10 },
   stageLane: { paddingHorizontal: 20, paddingTop: 72 },

@@ -9,6 +9,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import Egg from '@/components/Egg';
 import GoldenEggSheet from '@/components/GoldenEggSheet';
+import { useLiveRoyale } from '@/components/RoyaleTakeover';
 import SourceChips, { useSource } from '@/components/SourceChips';
 import ShareButton from '@/components/ShareButton';
 import TrainerRow from '@/components/TrainerRow';
@@ -206,10 +207,17 @@ function Shell({ sticker, onClose, children }: { sticker: string; onClose?: () =
 function Countdown() {
   const now = useNow();
   const left = royaleTimeToday() - now;
+  const { live, watch } = useLiveRoyale();
   return (
     <View style={styles.countdown}>
-      <Text style={styles.clock} numberOfLines={1} adjustsFontSizeToFit>{left > 0 ? clock(left) : 'HATCHING…'}</Text>
-      <Text style={[Type.label, styles.muted, styles.toGo]}>{left > 0 ? 'to go' : 'in the arena'}</Text>
+      <Text style={styles.clock} numberOfLines={1} adjustsFontSizeToFit>
+        {left > 0 ? clock(left) : live ? 'LIVE NOW' : 'HATCHING…'}
+      </Text>
+      {left <= 0 && live ? (
+        <OutlineButton small label="Watch live" onPress={watch} />
+      ) : (
+        <Text style={[Type.label, styles.muted, styles.toGo]}>{left > 0 ? 'to go' : 'in the arena'}</Text>
+      )}
     </View>
   );
 }

@@ -15,6 +15,7 @@ export const ELEMENT_COLORS = { fire: '#ff6b4a', water: '#3d9df3', plant: '#4cb8
 const colorOf = (el) => ELEMENT_COLORS[el] || '#b0b6b3';
 const S = 0.6; // Monster-Maßstab in der Arena
 const INK = '#2b2523';
+const MINI_OUTLINE = new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide });
 
 const CSS = `
 .sa-ui { position: absolute; inset: 0; pointer-events: none; font-family: 'Fredoka', -apple-system, system-ui, sans-serif; font-size: 10px; color: ${INK}; overflow: hidden; user-select: none; -webkit-user-select: none; }
@@ -137,13 +138,16 @@ export function createArena(container, opts = {}) {
       root.scale.setScalar(S);
       const holder = new THREE.Group(); holder.add(root); scene.add(holder);
       const height = (root.userData.monster?.height ?? 2.2) * S;
+      // Mini-Kopie des Körpers für Geschosse und Eruptionen (gleiche Geometrie und Farbe, eigene Kontur)
+      let bodyMesh = null; root.traverse((n) => { if (n.isMesh && n.userData.isBody) bodyMesh = n; });
+      const mini = bodyMesh ? () => { const g = new THREE.Group(); g.add(new THREE.Mesh(bodyMesh.geometry, bodyMesh.material)); const ol = new THREE.Mesh(bodyMesh.geometry, MINI_OUTLINE); ol.scale.setScalar(1.14); g.add(ol); return g; } : null;
       const cell = el('div', 'sa-cell' + (e.id === followId ? ' me' : ''), rosterEl);
       const thumb = el('div', 'sa-thumb', cell); if (e.photoUrl) thumb.style.backgroundImage = `url("${e.photoUrl}")`; else thumb.style.background = colorOf(e.element);
       const body = el('div', 'sa-cellbody', cell); el('div', 'sa-cellname', body, e.name);
       const fillEl = el('div', 'sa-fill', el('div', 'sa-track', body));
       const hp = el('div', 'sa-hp', floatEl); const hpFill = el('i', null, hp);
       const tag = el('div', 'sa-tag' + (e.id === followId ? ' me' : ''), floatEl, e.id === followId ? `YOU · ${e.name}` : e.name);
-      actors.set(e.id, { e, root, holder, height, cell, fillEl, hp, hpFill, tag, yaw: 0, lunge: 0, hurt: 0, dead: 0, shownHp: -1 });
+      actors.set(e.id, { e, root, holder, height, mini, cell, fillEl, hp, hpFill, tag, yaw: 0, lunge: 0, hurt: 0, dead: 0, shownHp: -1 });
     }
   }
 
@@ -190,7 +194,7 @@ export function createArena(container, opts = {}) {
       const a = actors.get(e.id); const big = e.move === 1; const [dx, dz] = dirTo(e.x, e.y, e.tx ?? e.x, e.ty ?? e.y + 1);
       if (e.kind === 'melee') { if (a) a.lunge = 1; FX.slash(e.x, e.y, dx, dz, e.element, big); }
       else if (e.kind === 'beam') { FX.beam(e.x, e.y, e.tx, e.ty, e.element, big); rig.kick = Math.max(rig.kick, big ? 0.9 : 0.5); }
-      else if (e.kind === 'burst') { FX.eruption(e.x, e.y, MOVE_SPECS.burst.range, e.element, big); rig.kick = Math.max(rig.kick, big ? 0.9 : 0.5); }
+      else if (e.kind === 'burst') { FX.eruption(e.x, e.y, MOVE_SPECS.burst.range, e.element, big, a?.mini); rig.kick = Math.max(rig.kick, big ? 0.9 : 0.5); }
       else if (e.kind === 'dash') { FX.landing(e.tx, e.ty, e.element, big); rig.kick = Math.max(rig.kick, 0.6); }
       // Zeitlupe für große Momente: Spezialangriffe im Endkampf oder vom eigenen Monster, höchstens alle 3 s
       if (big && e.kind !== 'shot' && slowCool <= 0 && (aliveN <= 4 || e.id === followId)) { slowLeft = 0.22; slowCool = 3; }
@@ -357,7 +361,7 @@ export function createArena(container, opts = {}) {
     const seen = new Set();
     for (const p of sim.state.projectiles) {
       seen.add(p.id); let shot = shots.get(p.id);
-      if (!shot) { shot = FX.shot(p.element, p.move === 1); shots.set(p.id, shot); }
+      if (!shot) { shot = FX.shot(p.element, p.move === 1, actors.get(p.by)?.mini); shots.set(p.id, shot); }
       shot.group.position.set(lerp(p.px ?? p.x, p.x, alpha), 0.62, lerp(p.py ?? p.y, p.y, alpha)); shot.update(sdt);
     }
     for (const [id, shot] of shots) if (!seen.has(id)) { shot.dispose(); shots.delete(id); }

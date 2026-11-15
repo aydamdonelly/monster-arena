@@ -422,6 +422,7 @@ export function buildMonster(genome, opts = {}) {
   const rig = new THREE.Group(); root.add(rig);
   const body = new THREE.Mesh(bodyGeometry(shape, seed, proportions), mat(bodyColor, golden ? { roughness: 0.34, emissive: '#5a3c00', emissiveIntensity: 0.32 } : {}));
   body.userData.topX = (TOP_X[shape] || 0) * (PROPORTIONS[proportions] || PROPORTIONS.normal)[0];
+  body.userData.isBody = true; // die Arena baut daraus Mini-Kopien für Geschosse
   body.updateMatrixWorld(true);
   const bb = body.geometry.boundingBox.clone(); const center = bb.getCenter(new THREE.Vector3());
   const parts = genome.parts || [];

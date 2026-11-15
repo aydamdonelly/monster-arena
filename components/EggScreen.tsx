@@ -2,9 +2,9 @@ import { useMutation, useQuery } from 'convex/react';
 import type { FunctionReturnType } from 'convex/server';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ComponentRef, type ReactNode, type Ref, useEffect, useRef, useState } from 'react';
 import { Image } from 'expo-image';
-import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { HatchNowButton } from '@/components/DemoMode';
@@ -51,6 +51,15 @@ export default function EggScreen({
   const [sheet, setSheet] = useState(false);
   const demoKey = useDemoKey();
   const offer = !demoKey && !!me && me.hatchesLeft === 0 && me.canGolden && me.goldenEggs === 0;
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
+  const nameFocused = useRef(false);
+
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidShow', () => {
+      if (nameFocused.current) setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 100);
+    });
+    return () => sub.remove();
+  }, []);
 
   if (entry?.status === 'rejected') {
     return (
@@ -109,7 +118,7 @@ export default function EggScreen({
   }
 
   return (
-    <Shell onClose={onClose} sticker={golden ? 'Your golden egg is in' : 'Your egg is in'}>
+    <Shell scrollRef={scroll} onClose={onClose} sticker={golden ? 'Your golden egg is in' : 'Your egg is in'}>
       <EggStage seed={eggId || 'new'} photo={photo} golden={golden} layIn={layIn && !answered} />
       <Appear delay={layIn ? 900 : 0} style={styles.copy}>
         {demoKey ? (
@@ -133,7 +142,14 @@ export default function EggScreen({
         </Appear>
       ) : null}
       <Appear delay={layIn ? 1050 : 120} style={styles.trainer}>
-        <TrainerRow />
+        <TrainerRow
+          onFocus={() => {
+            nameFocused.current = true;
+          }}
+          onBlur={() => {
+            nameFocused.current = false;
+          }}
+        />
       </Appear>
       <Appear delay={layIn ? 1100 : 160} style={styles.actions}>
         {demoKey ? <HatchNowButton /> : SMS_NUMBER ? <TextMe deviceId={deviceId} quiet={offer} /> : null}
@@ -198,21 +214,29 @@ function TextMe({ deviceId, quiet }: { deviceId: string; quiet: boolean }) {
   );
 }
 
-function Shell({ sticker, onClose, children }: { sticker: string; onClose?: () => void; children: ReactNode }) {
+function Shell({ sticker, onClose, scrollRef, children }: { sticker: string; onClose?: () => void; scrollRef?: Ref<ComponentRef<typeof ScrollView>>; children: ReactNode }) {
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-      <View style={styles.top}>
-        <InkSticker label={sticker} fontSize={14} />
-        {onClose ? (
-          <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={onClose} hitSlop={12}>
-            <Svg width={28} height={28} viewBox="0 0 28 28">
-              <Path d="M7 7l14 14M21 7L7 21" fill="none" stroke={Palette.ink} strokeWidth={2.8} strokeLinecap="round" />
-            </Svg>
-          </Pressable>
-        ) : null}
-      </View>
-      {children}
-    </ScrollView>
+    <KeyboardAvoidingView style={styles.fill} behavior="padding" enabled={Platform.OS === 'android'}>
+      <ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+        automaticallyAdjustKeyboardInsets>
+        <View style={styles.top}>
+          <InkSticker label={sticker} fontSize={14} />
+          {onClose ? (
+            <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={onClose} hitSlop={12}>
+              <Svg width={28} height={28} viewBox="0 0 28 28">
+                <Path d="M7 7l14 14M21 7L7 21" fill="none" stroke={Palette.ink} strokeWidth={2.8} strokeLinecap="round" />
+              </Svg>
+            </Pressable>
+          ) : null}
+        </View>
+        {children}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -323,6 +347,7 @@ function EggStage({ seed, photo, golden, layIn }: { seed: string; photo: string 
 }
 
 const styles = StyleSheet.create({
+  fill: { flex: 1 },
   container: { paddingBottom: 28, width: '100%', maxWidth: 560, alignSelf: 'center' },
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 22, paddingRight: 20, paddingTop: 8 },
   stageLane: { paddingHorizontal: 20, paddingTop: 12 },

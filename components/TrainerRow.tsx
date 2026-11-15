@@ -1,12 +1,12 @@
 import { useMutation, useQuery } from 'convex/react';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { api } from '@/convex/_generated/api';
 import { useDeviceId } from '@/lib/device';
 import { Fonts, Palette, Type } from '@/lib/theme';
 
-export default function TrainerRow() {
+export default function TrainerRow({ onFocus, onBlur }: { onFocus?: () => void; onBlur?: () => void }) {
   const deviceId = useDeviceId();
   const [now] = useState(() => Date.now());
   const me = useQuery(api.players.me, { deviceId, now });
@@ -16,7 +16,8 @@ export default function TrainerRow() {
   const [entered, setEntered] = useState(false);
 
   const enter = async () => {
-    if (!name.trim()) return;
+    Keyboard.dismiss();
+    if (busy || !name.trim()) return;
     setBusy(true);
     try {
       await setProfile({ deviceId, name: name.trim() });
@@ -46,6 +47,8 @@ export default function TrainerRow() {
           autoCorrect={false}
           returnKeyType="done"
           onSubmitEditing={enter}
+          onFocus={onFocus}
+          onBlur={onBlur}
           style={styles.input}
         />
         <Pressable

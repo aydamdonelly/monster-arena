@@ -5,11 +5,12 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "monsterarena",
+    "scheme": "snappymon",
     "userInterfaceStyle": "light",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.monsterarena.app"
+      "bundleIdentifier": "com.snappymon.app",
+      "appleTeamId": "88J7VD74DB"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,14 +20,14 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.monsterarena.app"
+      "package": "com.snappymon.app"
     },
     "web": {
       "output": "single",
       "favicon": "./assets/images/favicon.png",
       "name": "Snappymon",
       "shortName": "Snappymon",
-      "description": "Snap anything. Hatch a monster. Battle in the daily royale.",
+      "description": "Snap anything. Get an egg. It hatches at 5 PM and fights in the royale.",
       "themeColor": "#ffffff",
       "backgroundColor": "#ffffff"
     },
@@ -55,6 +56,6 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "description": "Snap anything. Hatch a monster. Battle in the daily royale."
+    "description": "Snap anything. Get an egg. It hatches at 5 PM and fights in the royale."
   }
 }

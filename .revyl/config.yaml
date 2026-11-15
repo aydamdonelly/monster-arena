@@ -11,7 +11,7 @@ build:
             ios:
                 app_id: 55307733-a41b-4d3e-bc5e-c131607a188f
                 setup_commands:
-                    - npm ci
+                    - npm ci --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000 --fetch-timeout=600000
                     - npx expo prebuild --platform ios --no-install
                 build_commands:
                     - cd ios && pod install && WS=$(ls -d *.xcworkspace | head -n 1) && xcodebuild -workspace "$WS" -scheme "${WS%.xcworkspace}" -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' ARCHS=arm64 -derivedDataPath build

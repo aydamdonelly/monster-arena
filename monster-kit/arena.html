@@ -23,7 +23,7 @@
   <div id="stage"><div id="hook" class="over"></div><div id="cta" class="over"></div></div>
   <div id="hint"></div>
   <script type="module">
-    // Für Videos: hook=Text beim Intro · cta=Text nach dem Sieg (z. B. snappymon.com) · owner=Trainername (nur dessen Monster, mit src=today&test=1)
+    // Für Videos: ui=1.4 (größere Schrift) · photos=0 (ohne Ursprungsfotos) · manual=1 (Bild für Bild, siehe prep/video/render.mjs) · hook=Text beim Intro · cta=Text nach dem Sieg (z. B. snappymon.com) · owner=Trainername (nur dessen Monster, mit src=today&test=1)
     // Parameter: ?src=test|today|royale (round=-1 Finale, 0.. Vorrunde)  n=16  seed=7  cam=auto|tilt|top|follow  follow=<id>  speed=1  intro=3  stage=9x16
     import { createArena } from './arena.js';
     import { genomeFromAI } from './genome-spec.js';
@@ -60,14 +60,16 @@
     }
 
     const entrants = await loadEntrants();
+    if (P.get('photos') === '0') for (const e of entrants) e.photoUrl = null; // z. B. für Testmonster mit fremden Fotos
     const arena = createArena(stage, {
       entrants, seed: SEED, dayElement: DAY, camera: P.get('cam') || 'auto', followId: P.get('follow') || null,
-      speed: Number(P.get('speed') || 1), intro: Number(P.get('intro') ?? 3), title: TITLE, controls: P.get('controls') !== '0',
-      onEnd: (r) => { console.log('[arena] end', JSON.stringify(r)); if (P.get('cta')) setTimeout(() => { const c = document.getElementById('cta'); c.innerHTML = `snap anything. hatch a monster.<br><b>${P.get('cta')}</b>`; c.classList.add('on'); }, 1800); },
+      speed: Number(P.get('speed') || 1), intro: Number(P.get('intro') ?? 3), title: TITLE, controls: P.get('controls') !== '0', manual: P.get('manual') === '1', uiScale: Number(P.get('ui') || 1),
+      onEnd: (r) => { console.log('[arena] end', JSON.stringify(r)); window.__arenaDone = true; if (P.get('cta')) arena.later(() => { const c = document.getElementById('cta'); c.innerHTML = `snap anything. hatch a monster.<br><b>${P.get('cta')}</b>`; c.classList.add('on'); }, 1800); },
       onEvent: (e) => { if (e.type === 'cast') document.getElementById('hook').classList.remove('on'); },
     });
     if (P.get('hook')) { const h = document.getElementById('hook'); h.textContent = P.get('hook'); h.classList.add('on'); }
-    window.arena = arena;
+    window.arena = arena; window.__arenaStep = (ms) => arena.step(ms);
+    (document.fonts?.ready || Promise.resolve()).then(() => { window.__arenaReady = true; });
     addEventListener('keydown', (e) => { if (e.code === 'Space') arena.restart(); if (e.key >= '1' && e.key <= '4') arena.setCamera(['auto', 'tilt', 'top', 'follow'][Number(e.key) - 1]); });
     addEventListener('error', (e) => console.log('[arena] error', e.message));
     console.log('[arena] ready', entrants.length);

@@ -8,6 +8,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
+import RoyaleTakeover from '@/components/RoyaleTakeover';
 import { convex } from '@/lib/convex';
 import { DeviceProvider } from '@/lib/device';
 import { Palette } from '@/lib/theme';
@@ -29,6 +30,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Palette.bg } }}>
           <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
         </Stack>
+        <RoyaleTakeover />
       </DeviceProvider>
     </ConvexProvider>
   );

@@ -47,6 +47,10 @@ export function royaleHour() {
   return local.getHours() === 17 && local.getMinutes() === 0 ? '5 PM' : '5 PM PT';
 }
 
+export function replayRound(mine: { entered: boolean; inFinal?: boolean; heatIndex?: number | null } | null | undefined) {
+  return mine?.entered && !mine.inFinal && mine.heatIndex != null ? String(mine.heatIndex) : '-1';
+}
+
 export function formatCountdown(ms: number) {
   if (ms <= 0) return 'any moment now';
   const s = Math.floor(ms / 1000);

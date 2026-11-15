@@ -6,7 +6,20 @@ const MAX_SIDE = 1024;
 
 export type Photo = { uri: string; width: number; height: number };
 
+let photoFlowUntil = 0;
+
+export function photoFlowActive() {
+  return Date.now() < photoFlowUntil;
+}
+
 export async function pickPhoto(source: 'camera' | 'library'): Promise<Photo | null> {
+  photoFlowUntil = Date.now() + 5 * 60 * 1000;
+  const photo = await launchPicker(source).catch(() => null);
+  photoFlowUntil = photo ? Date.now() + 20 * 1000 : 0;
+  return photo;
+}
+
+async function launchPicker(source: 'camera' | 'library'): Promise<Photo | null> {
   const options: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 1 };
   let result: ImagePicker.ImagePickerResult;
   if (source === 'camera' && Platform.OS !== 'web') {

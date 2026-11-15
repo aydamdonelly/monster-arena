@@ -249,7 +249,7 @@ function HatchClock() {
   const left = royaleTimeToday() - now;
   return (
     <View style={styles.hatchClock}>
-      <Text style={styles.hatchClockTime}>{left > 0 ? clock(left) : 'LIVE'}</Text>
+      <Text style={styles.hatchClockTime} numberOfLines={1} adjustsFontSizeToFit>{left > 0 ? clock(left) : 'HATCHING…'}</Text>
       <Text style={[Type.label, styles.mutedLabel]}>{left > 0 ? `until it hatches · ${royaleHour()}` : 'in the arena now'}</Text>
     </View>
   );

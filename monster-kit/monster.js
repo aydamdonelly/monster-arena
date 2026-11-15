@@ -21,7 +21,34 @@ export function hashString(s) {
 }
 
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-const mat = (color, opts = {}) => new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.9, metalness: 0, ...opts });
+// Stil: schwarze Comic-Kontur wie im Sticker-Design (outline = Dicke in Einheiten, 0 = aus). toon = Stufen-Schattierung (Versuch).
+let STYLE = { outline: 0.04, toon: false };
+export function setMonsterStyle(style) { STYLE = { ...STYLE, ...style }; }
+let ramp = null;
+function toonRamp() {
+  if (!ramp) { ramp = new THREE.DataTexture(new Uint8Array([165, 165, 165, 255, 225, 225, 225, 255, 255, 255, 255, 255]), 3, 1, THREE.RGBAFormat); ramp.minFilter = ramp.magFilter = THREE.NearestFilter; ramp.needsUpdate = true; }
+  return ramp;
+}
+// opts.outline: false = dieses Teil bekommt keine Kontur (Augen, Kleinteile)
+const mat = (color, opts = {}) => {
+  const { outline, ...rest } = opts; let m;
+  if (STYLE.toon) { const { roughness, metalness, flatShading, ...toon } = rest; m = new THREE.MeshToonMaterial({ color, gradientMap: toonRamp(), ...toon }); m.flatShading = flatShading !== false; }
+  else m = new THREE.MeshStandardMaterial({ color, flatShading: true, roughness: 0.9, metalness: 0, emissive: color, emissiveIntensity: 0.16, ...rest });
+  m.userData.lit = outline !== false;
+  return m;
+};
+const OUTLINE = new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 2 }); // leicht nach hinten, damit an Nähten nichts durchblitzt
+// Kontur als umgestülpte, leicht vergrößerte Kopie jedes beleuchteten Teils (gleiche Geometrie, kein Mehraufwand im Speicher)
+function addOutlines(rig, thickness) {
+  const targets = [];
+  rig.traverse((o) => { if (o.isMesh && o.material.userData.lit && !o.material.transparent && o.material.side !== THREE.DoubleSide) targets.push(o); });
+  for (const m of targets) {
+    const g = m.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
+    const r = g.boundingSphere.radius; if (r < 0.085) continue;
+    const k = 1 + thickness / r; const c = g.boundingSphere.center;
+    const o = new THREE.Mesh(g, OUTLINE); o.scale.setScalar(k); o.position.set(c.x * (1 - k), c.y * (1 - k), c.z * (1 - k)); m.add(o);
+  }
+}
 const basic = (color, opts = {}) => new THREE.MeshBasicMaterial({ color, ...opts });
 
 // Verschiebt Ecken leicht, gleiche Position -> gleiche Verschiebung (Facetten bleiben geschlossen)
@@ -136,7 +163,7 @@ function addFace(rig, body, bb, center, face) {
   const dx = w * (face.eyeSpread ?? 0.17);
   if (face.screen) addScreen(rig, body, bb, center, eyeY, face.screen);
   const lift = face.screen ? 0.024 : 0; // Gesicht liegt dann auf dem Bildschirm
-  const ink = face.screen ? basic('#9ff3ff') : mat(INK, { roughness: 0.35, flatShading: false });
+  const ink = face.screen ? basic('#9ff3ff') : mat(INK, { roughness: 0.35, flatShading: false, outline: false });
   const mouthDark = face.screen ? '#9ff3ff' : '#5a2a2a';
   const white = basic('#ffffff');
   const kinds = face.eyes === 'wink' ? ['dot', 'happy'] : [face.eyes || 'dot', face.eyes || 'dot'];
@@ -145,9 +172,9 @@ function addFace(rig, body, bb, center, face) {
     const p = frontPoint(body, s * dx, eyeY); if (!p) return;
     let e;
     if (kinds[i] === 'happy') {
-      e = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.03, 6, 14, Math.PI), ink);
+      e = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.038, 6, 14, Math.PI), ink);
     } else {
-      const r = kinds[i] === 'big' ? 0.15 : 0.105;
+      const r = kinds[i] === 'big' ? 0.175 : 0.128;
       e = new THREE.Group();
       const ball = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), ink); ball.scale.z = 0.45; e.add(ball);
       const hl = new THREE.Mesh(new THREE.SphereGeometry(r * 0.32, 10, 8), white); hl.position.set(-r * 0.3, r * 0.38, r * 0.42); e.add(hl);
@@ -171,7 +198,7 @@ function addFace(rig, body, bb, center, face) {
     } else if (face.mouth === 'o') {
       m = stickTo(new THREE.Mesh(new THREE.CircleGeometry(0.06, 14), basic(mouthDark)), mp, softNormal(mp, center), 0.012 + lift);
     } else {
-      m = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.028, 6, 14, Math.PI), ink);
+      m = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.036, 6, 14, Math.PI), ink);
       stickTo(m, mp, softNormal(mp, center), 0.012 + lift); m.rotateZ(Math.PI); // ∪
     }
     rig.add(m);
@@ -180,7 +207,7 @@ function addFace(rig, body, bb, center, face) {
   if (face.blush !== false) {
     [-1, 1].forEach((s) => {
       const p = frontPoint(body, s * dx * 1.6, eyeY - h * 0.09); if (!p) return;
-      const b = new THREE.Mesh(new THREE.CircleGeometry(0.1, 16), basic('#ff7f95', { transparent: true, opacity: 0.55 }));
+      const b = new THREE.Mesh(new THREE.CircleGeometry(0.12, 16), basic('#ff7f95', { transparent: true, opacity: 0.6 }));
       b.scale.y = 0.7; rig.add(stickTo(b, p, softNormal(p, center), 0.01 + lift));
     });
   }
@@ -385,7 +412,7 @@ function makeShadow(width) {
 }
 
 // ---------- Öffentliche API ----------
-export function buildMonster(genome) {
+export function buildMonster(genome, opts = {}) {
   const seed = genome.seed ?? hashString(JSON.stringify(genome));
   const rand = rng(seed);
   const golden = !!genome.golden; // Goldenes Ei: goldener Körper, Krone, Funken (nur Optik, keine besseren Werte)
@@ -404,6 +431,7 @@ export function buildMonster(genome) {
   const anim = addParts(rig, body, bb, center, parts, bodyColor, rand, shape);
   if (golden) addGolden(rig, body, bb, anim);
   rig.add(body);
+  const outline = opts.outline ?? STYLE.outline; if (outline) addOutlines(rig, outline);
   const box = new THREE.Box3().setFromObject(rig);
   rig.position.y = -box.min.y;
   root.add(makeShadow(bb.max.x - bb.min.x));

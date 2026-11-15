@@ -1,46 +1,47 @@
-import type Ionicons from '@expo/vector-icons/Ionicons';
-import type { ComponentProps } from 'react';
+import { StyleSheet } from 'react-native';
 
 export const Palette = {
-  bg: '#e8f1ec',
-  card: '#ffffff',
-  ink: '#2b2523',
-  muted: '#6f6763',
-  faint: '#d5e3db',
-  accent: '#e5503f',
-  sun: '#ffd84d',
+  ground: '#FFFFFF',
+  ink: '#111111',
+  muted: '#6B6B6B',
+  hairline: '#E6E6E6',
+  primary: '#FFD60A',
+  stage: '#E8F1EC',
+  bg: '#FFFFFF',
+  card: '#FFFFFF',
 } as const;
 
 export const Fonts = {
-  regular: 'Nunito_600SemiBold',
-  bold: 'Nunito_800ExtraBold',
-  black: 'Nunito_900Black',
+  medium: 'Rubik_500Medium',
+  semibold: 'Rubik_600SemiBold',
+  bold: 'Rubik_700Bold',
+  extrabold: 'Rubik_800ExtraBold',
+  black: 'Rubik_900Black',
 } as const;
 
-export const ElementColors: Record<string, string> = {
-  fire: '#ff7a59',
-  water: '#4aa3df',
-  plant: '#5fae6e',
-  metal: '#8b98a5',
-  fluff: '#f08dbb',
-  spirit: '#9a7be2',
-  leaf: '#5fae6e',
-  spark: '#f2c53d',
-  rock: '#a08c7a',
-  normal: '#b9b2ad',
-};
+export const Radii = { chip: 8, sticker: 10, button: 16, tile: 20, card: 24, stage: 28, pill: 999 } as const;
 
-export const ElementIcons: Record<string, ComponentProps<typeof Ionicons>['name']> = {
-  fire: 'flame',
-  water: 'water',
-  plant: 'leaf',
-  leaf: 'leaf',
-  metal: 'cog',
-  fluff: 'cloud',
-  spirit: 'sparkles',
-  spark: 'flash',
-  rock: 'diamond',
-  normal: 'ellipse',
+export const Type = StyleSheet.create({
+  display: { fontFamily: Fonts.black, fontSize: 44, lineHeight: 44, letterSpacing: -1.5, color: Palette.ink },
+  headline: { fontFamily: Fonts.black, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: Palette.ink },
+  heading: { fontFamily: Fonts.extrabold, fontSize: 22, lineHeight: 26, letterSpacing: -0.4, color: Palette.ink },
+  body: { fontFamily: Fonts.medium, fontSize: 16, lineHeight: 22, color: Palette.ink },
+  muted: { fontFamily: Fonts.medium, fontSize: 16, lineHeight: 22, color: Palette.muted },
+  label: { fontFamily: Fonts.semibold, fontSize: 13, lineHeight: 16, letterSpacing: 1, textTransform: 'uppercase', color: Palette.ink },
+  caps: { fontFamily: Fonts.bold, fontSize: 12, lineHeight: 14, letterSpacing: 1, textTransform: 'uppercase', color: Palette.ink },
+});
+
+export const ElementColors: Record<string, string> = {
+  fire: '#FF6B4A',
+  water: '#3D9DF3',
+  plant: '#4CB867',
+  metal: '#8C97A6',
+  fluff: '#E98BC4',
+  spirit: '#9A7BF0',
+  leaf: '#4CB867',
+  spark: '#F5C542',
+  rock: '#A08A6A',
+  normal: '#B0B6B3',
 };
 
 export function elementColor(element: string) {

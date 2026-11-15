@@ -1,22 +1,26 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAction, useMutation, useQuery } from 'convex/react';
 import { ConvexError } from 'convex/values';
+import { Image } from 'expo-image';
 import { useCallback, useEffect, useState } from 'react';
-import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 import Confetti from '@/components/Confetti';
 import Hatching from '@/components/Hatching';
-import MonsterDetails from '@/components/MonsterDetails';
+import MonsterDetails, { MonsterTopBar } from '@/components/MonsterDetails';
 import ShareButton from '@/components/ShareButton';
-import { ElementTag } from '@/components/StatBar';
-import { Appear, Button, Card, SectionLabel } from '@/components/ui';
+import { Appear, ElementChip, HardShadow, OutlineButton, PrimaryButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 import { useDeviceId } from '@/lib/device';
 import { celebrate, tap } from '@/lib/haptics';
 import { pickPhoto, toUploadJpeg, uploadJpeg } from '@/lib/photo';
-import { Fonts, Palette } from '@/lib/theme';
+import { Fonts, Palette, Radii, Type } from '@/lib/theme';
+
+const DAILY_HATCHES = 3;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 type Phase =
   | { kind: 'idle' }
@@ -70,9 +74,11 @@ export default function CatchScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.wordmark}>Snappymon</Text>
-        </View>
+        {phase.kind === 'idle' || phase.kind === 'error' ? (
+          <View style={styles.header}>
+            <Text style={styles.wordmark}>snappymon</Text>
+          </View>
+        ) : null}
 
         {phase.kind === 'idle' ? <Idle onCatch={onCatch} /> : null}
 
@@ -81,33 +87,30 @@ export default function CatchScreen() {
         ) : null}
 
         {phase.kind === 'revealed' && monster ? (
-          <View style={styles.revealed}>
-            <Appear>
-              <Text style={styles.kicker}>It hatched!</Text>
-            </Appear>
-            <MonsterDetails monster={monster} photoUri={phase.photoUri} />
-            <Appear delay={460} style={styles.actions}>
-              <ShareButton id={monster._id} name={monster.name} style={styles.flex} />
-              <Button label="Catch another" icon="camera" variant="secondary" onPress={reset} style={styles.flex} />
-            </Appear>
+          <View>
+            <MonsterTopBar label="It hatched!" />
+            <View style={styles.revealed}>
+              <MonsterDetails monster={monster} photoUri={phase.photoUri} />
+              <Appear delay={460} style={styles.actions}>
+                <ShareButton id={monster._id} name={monster.name} style={styles.share} />
+                <OutlineButton label="Catch another" onPress={reset} style={styles.another} />
+              </Appear>
+            </View>
           </View>
         ) : null}
 
         {phase.kind === 'error' ? (
-          <Appear>
-            <Card style={styles.errorCard}>
-              <View style={styles.errorIcon}>
-                <Ionicons name={ERROR_COPY[phase.code]?.icon ?? 'sad-outline'} size={34} color={Palette.ink} />
+          <Appear style={styles.lane}>
+            <HardShadow offset={5} radius={Radii.card}>
+              <View style={styles.errorCard}>
+                <View style={styles.errorIcon}>
+                  <Ionicons name={ERROR_COPY[phase.code]?.icon ?? 'sad-outline'} size={30} color={Palette.ink} />
+                </View>
+                <Text style={[Type.heading, styles.centerText]}>{ERROR_COPY[phase.code]?.title ?? 'Oops, no monster this time'}</Text>
+                <Text style={[Type.muted, styles.centerText]}>{phase.message}</Text>
+                <PrimaryButton label={phase.code === 'limit' ? 'Got it' : 'Try another photo'} onPress={reset} style={styles.errorButton} />
               </View>
-              <Text style={styles.errorTitle}>{ERROR_COPY[phase.code]?.title ?? 'Oops, no monster this time'}</Text>
-              <Text style={styles.errorMessage}>{phase.message}</Text>
-              <Button
-                label={phase.code === 'limit' ? 'Got it' : 'Try another photo'}
-                icon={phase.code === 'limit' ? undefined : 'camera'}
-                onPress={reset}
-                style={styles.errorButton}
-              />
-            </Card>
+            </HardShadow>
           </Appear>
         ) : null}
       </ScrollView>
@@ -119,17 +122,39 @@ export default function CatchScreen() {
 function Idle({ onCatch }: { onCatch: (source: 'camera' | 'library') => void }) {
   return (
     <View style={styles.idle}>
-      <Appear>
+      <Appear style={styles.lane}>
         <DropCard />
       </Appear>
-      <Appear delay={120} style={styles.cameraWrap}>
+      <Appear delay={120} style={styles.cameraArea}>
+        <Image source={require('@/assets/images/duckula.png')} style={styles.mascot} contentFit="contain" />
         <CameraButton onPress={() => onCatch('camera')} />
-        <Text style={styles.cta}>Snap anything</Text>
-        <Text style={styles.hint}>A mug, your cat, a sandwich. Every photo hatches a one-of-a-kind monster.</Text>
+        <View style={styles.ctaText}>
+          <Text style={[Type.heading, styles.centerText]}>Snap any object.</Text>
+          <Text style={[Type.muted, styles.centerText]}>It hatches in 5 seconds.</Text>
+        </View>
+        <HatchesLeft />
         <Pressable accessibilityRole="button" onPress={() => onCatch('library')} hitSlop={12}>
-          <Text style={styles.link}>or choose from library</Text>
+          <Text style={styles.link}>or pick from your library</Text>
         </Pressable>
       </Appear>
+    </View>
+  );
+}
+
+function HatchesLeft() {
+  const deviceId = useDeviceId();
+  const mine = useQuery(api.monsters.listMine, { deviceId });
+  const [now] = useState(() => Date.now());
+  if (!mine) return <View style={styles.eggs} />;
+  const left = Math.max(0, DAILY_HATCHES - mine.filter((m) => m._creationTime > now - DAY_MS).length);
+  return (
+    <View style={styles.eggs}>
+      <View style={styles.eggRow}>
+        {Array.from({ length: DAILY_HATCHES }, (_, i) => (
+          <View key={i} style={[styles.egg, i < left && styles.eggFull]} />
+        ))}
+      </View>
+      <Text style={Type.label}>{left ? `${left} of ${DAILY_HATCHES} hatches left today` : 'No hatches left today'}</Text>
     </View>
   );
 }
@@ -152,19 +177,21 @@ function DropCard() {
   const remaining = drop ? drop.endsAt - now : null;
 
   return (
-    <Card style={styles.drop}>
-      <View style={styles.dropTop}>
-        <SectionLabel>{"Today's drop"}</SectionLabel>
-        {remaining !== null && remaining > 0 ? (
-          <View style={styles.timer}>
-            <Ionicons name="time-outline" size={13} color={Palette.ink} />
-            <Text style={styles.timerText}>{formatCountdown(remaining)}</Text>
+    <HardShadow offset={5} radius={Radii.card}>
+      <View style={styles.drop}>
+        <View style={styles.dropTop}>
+          <Text style={Type.label}>{"Today's drop"}</Text>
+          {remaining !== null && remaining > 0 ? <Text style={styles.timer}>ends in {formatCountdown(remaining)}</Text> : null}
+        </View>
+        <Text style={styles.dropTitle}>{drop === undefined ? ' ' : drop ? drop.title : 'Snap anything'}</Text>
+        {drop ? (
+          <View style={styles.dropBonus}>
+            <ElementChip element={drop.element} />
+            <Text style={styles.bonusText}>+10% in the arena</Text>
           </View>
         ) : null}
       </View>
-      <Text style={styles.dropTitle}>{drop === undefined ? ' ' : drop ? drop.title : 'Today: snap anything'}</Text>
-      {drop ? <ElementTag element={drop.element} /> : null}
-    </Card>
+    </HardShadow>
   );
 }
 
@@ -176,83 +203,131 @@ function formatCountdown(ms: number) {
 
 function CameraButton({ onPress }: { onPress: () => void }) {
   const { height } = useWindowDimensions();
-  const size = Math.min(184, Math.max(132, Math.round(height * 0.22)));
-  const pulse = useState(() => new Animated.Value(0))[0];
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.timing(pulse, { toValue: 1, duration: 1800, easing: Easing.out(Easing.quad), useNativeDriver: Platform.OS !== 'web' }),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [pulse]);
+  const size = Math.min(180, Math.max(136, Math.round(height * 0.213)));
+  const icon = Math.round(size * 0.42);
   return (
-    <View style={[styles.cameraOuter, { width: size + 16, height: size + 16 }]}>
-      <Animated.View
-        style={[
-          styles.ring,
-          { width: size + 16, height: size + 16 },
-          {
-            opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.5, 0] }),
-            transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.35] }) }],
-          },
-        ]}
-      />
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Take a photo"
-        onPress={onPress}
-        style={({ pressed }) => [styles.camera, { width: size, height: size }, pressed && { transform: [{ scale: 0.93 }] }]}>
-        <View style={styles.cameraInner}>
-          <Ionicons name="camera" size={Math.round(size * 0.35)} color="#fff" />
-        </View>
-      </Pressable>
-    </View>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Take a photo"
+      onPress={onPress}
+      style={{ width: size + 10, height: size + 10 }}>
+      {({ pressed }) => (
+        <>
+          <View style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }]} />
+          <View
+            style={[
+              styles.camera,
+              { width: size, height: size, borderRadius: size / 2 },
+              pressed && { transform: [{ translateX: 5 }, { translateY: 5 }] },
+            ]}>
+            <Svg width={icon} height={icon} viewBox="0 0 76 76">
+              <Path
+                d="M10 26a6 6 0 0 1 6-6h8l4-7h20l4 7h8a6 6 0 0 1 6 6v28a6 6 0 0 1-6 6H16a6 6 0 0 1-6-6z"
+                fill="none"
+                stroke={Palette.ground}
+                strokeWidth={5}
+                strokeLinejoin="round"
+              />
+              <Circle cx={38} cy={40} r={11} fill="none" stroke={Palette.ground} strokeWidth={5} />
+            </Svg>
+          </View>
+        </>
+      )}
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Palette.bg },
-  container: { padding: 20, paddingBottom: 40, gap: 18, flexGrow: 1, width: '100%', maxWidth: 560, alignSelf: 'center' },
-  header: { alignItems: 'center', paddingTop: 4 },
-  wordmark: { fontFamily: Fonts.black, fontSize: 26, color: Palette.ink, letterSpacing: -0.5 },
-  idle: { gap: 20, flexGrow: 1 },
-  drop: { gap: 10 },
-  dropTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  safe: { flex: 1, backgroundColor: Palette.ground },
+  container: { paddingBottom: 24, flexGrow: 1, width: '100%', maxWidth: 560, alignSelf: 'center' },
+  header: { paddingHorizontal: 24, paddingTop: 14 },
+  wordmark: { fontFamily: Fonts.black, fontSize: 28, lineHeight: 32, letterSpacing: -1.1, color: Palette.ink },
+  lane: { paddingHorizontal: 20, paddingTop: 22 },
+  centerText: { textAlign: 'center' },
+  idle: { flexGrow: 1 },
+  drop: {
+    backgroundColor: Palette.primary,
+    borderWidth: 2,
+    borderColor: Palette.ink,
+    borderRadius: Radii.card,
+    paddingTop: 18,
+    paddingBottom: 22,
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  dropTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   timer: {
-    flexDirection: 'row',
+    fontFamily: Fonts.semibold,
+    fontSize: 13,
+    lineHeight: 16,
+    letterSpacing: 0.5,
+    color: Palette.ink,
+    fontVariant: ['tabular-nums'],
+  },
+  dropTitle: { fontFamily: Fonts.black, fontSize: 46, lineHeight: 44, letterSpacing: -1.6, color: Palette.ink, paddingTop: 4 },
+  dropBonus: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingTop: 4 },
+  bonusText: { fontFamily: Fonts.medium, fontSize: 15, lineHeight: 20, color: Palette.ink, flexShrink: 1 },
+  cameraArea: {
+    flexGrow: 1,
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: Palette.sun,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    justifyContent: 'center',
+    gap: 20,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    overflow: 'hidden',
   },
-  timerText: { fontFamily: Fonts.black, fontSize: 13, color: Palette.ink, fontVariant: ['tabular-nums'] },
-  dropTitle: { fontFamily: Fonts.black, fontSize: 26, lineHeight: 31, color: Palette.ink },
-  cameraWrap: { alignItems: 'center', gap: 12, flexGrow: 1, justifyContent: 'center', paddingVertical: 12 },
-  cameraOuter: { alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  ring: { position: 'absolute', borderRadius: 999, backgroundColor: Palette.ink },
-  camera: {
-    borderRadius: 999,
-    backgroundColor: '#fff',
-    padding: 10,
-    shadowColor: Palette.ink,
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 6,
+  mascot: { position: 'absolute', width: 150, height: 150, right: -52, top: 72, transform: [{ rotate: '-2deg' }] },
+  ring: {
+    position: 'absolute',
+    left: 10,
+    top: 10,
+    backgroundColor: Palette.ground,
+    borderWidth: 2,
+    borderColor: Palette.ink,
   },
-  cameraInner: { flex: 1, borderRadius: 999, backgroundColor: Palette.ink, alignItems: 'center', justifyContent: 'center' },
-  cta: { fontFamily: Fonts.black, fontSize: 30, color: Palette.ink },
-  hint: { fontFamily: Fonts.regular, fontSize: 16, lineHeight: 22, color: Palette.muted, textAlign: 'center', maxWidth: 300 },
-  link: { fontFamily: Fonts.bold, fontSize: 15, color: Palette.ink, textDecorationLine: 'underline', paddingVertical: 6 },
-  revealed: { gap: 14 },
-  kicker: { fontFamily: Fonts.black, fontSize: 14, letterSpacing: 1.4, color: Palette.accent, textTransform: 'uppercase', textAlign: 'center' },
-  actions: { gap: 10, marginTop: 6 },
-  flex: { alignSelf: 'stretch' },
-  errorCard: { alignItems: 'center', gap: 12, paddingVertical: 28, marginTop: 24 },
-  errorIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: Palette.bg, alignItems: 'center', justifyContent: 'center' },
-  errorTitle: { fontFamily: Fonts.black, fontSize: 24, color: Palette.ink, textAlign: 'center' },
-  errorMessage: { fontFamily: Fonts.regular, fontSize: 16, lineHeight: 22, color: Palette.muted, textAlign: 'center' },
+  camera: { backgroundColor: Palette.ink, alignItems: 'center', justifyContent: 'center' },
+  ctaText: { gap: 4, alignItems: 'center' },
+  eggs: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 16 },
+  eggRow: { flexDirection: 'row', gap: 5 },
+  egg: {
+    width: 12,
+    height: 15,
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 6,
+    borderBottomLeftRadius: 7,
+    borderBottomRightRadius: 7,
+    borderWidth: 2,
+    borderColor: Palette.ink,
+  },
+  eggFull: { backgroundColor: Palette.ink },
+  link: {
+    fontFamily: Fonts.semibold,
+    fontSize: 15,
+    lineHeight: 20,
+    color: Palette.muted,
+    textDecorationLine: 'underline',
+  },
+  revealed: { paddingHorizontal: 20, gap: 16 },
+  actions: { flexDirection: 'row', gap: 12, marginTop: 8 },
+  share: { flex: 1 },
+  another: { flex: 1.3 },
+  errorCard: {
+    backgroundColor: Palette.ground,
+    borderWidth: 2,
+    borderColor: Palette.ink,
+    borderRadius: Radii.card,
+    padding: 22,
+    alignItems: 'center',
+    gap: 12,
+  },
+  errorIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: Palette.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   errorButton: { alignSelf: 'stretch', marginTop: 8 },
 });

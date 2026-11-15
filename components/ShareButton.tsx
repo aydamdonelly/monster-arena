@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 
-import { Button } from '@/components/ui';
+import { OutlineButton, PrimaryButton } from '@/components/ui';
 import { shareMonster } from '@/lib/share';
 
 export default function ShareButton({
@@ -12,7 +12,7 @@ export default function ShareButton({
 }: {
   id: string;
   name: string;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'outline';
   style?: StyleProp<ViewStyle>;
 }) {
   const [label, setLabel] = useState('Share');
@@ -22,5 +22,6 @@ export default function ShareButton({
     setLabel(outcome === 'copied' ? 'Link copied!' : 'Could not share');
     setTimeout(() => setLabel('Share'), 2000);
   };
-  return <Button label={label} icon="share-outline" variant={variant} onPress={onPress} style={style} />;
+  const Button = variant === 'primary' ? PrimaryButton : OutlineButton;
+  return <Button label={label} onPress={onPress} style={style} />;
 }

@@ -1,14 +1,15 @@
 import { useMutation } from 'convex/react';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Appear, Button, SectionLabel } from '@/components/ui';
+import { Appear, HardShadow, PrimaryButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import { useDeviceId, useOnboarding } from '@/lib/device';
 import { tap } from '@/lib/haptics';
-import { Fonts, Palette } from '@/lib/theme';
+import { Fonts, Palette, Radii, Type } from '@/lib/theme';
 
 const SOURCES = ['TikTok', 'Instagram', 'YouTube', 'Friend', 'Hackathon', 'Other'];
 
@@ -43,35 +44,33 @@ export default function OnboardingScreen() {
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          <View style={styles.top}>
-            <Text style={styles.wordmark}>Snappymon</Text>
-            <Pressable accessibilityRole="button" onPress={done} hitSlop={12}>
-              <Text style={styles.skip}>Skip</Text>
-            </Pressable>
+          <View style={styles.hero}>
+            <Image source={require('@/assets/images/bananaconda.png')} style={styles.mascot} contentFit="contain" />
+            <Appear style={styles.heroText}>
+              <Text style={styles.title}>Pick a trainer name</Text>
+              <Text style={styles.subtitle}>Your monsters need someone to blame.</Text>
+            </Appear>
           </View>
 
-          <Appear style={styles.hero}>
-            <Text style={styles.title}>Snap anything.{'\n'}Hatch a monster.</Text>
-            <Text style={styles.subtitle}>Battle in the daily royale.</Text>
-          </Appear>
-
-          <Appear delay={120} style={styles.block}>
-            <SectionLabel>Pick a trainer name</SectionLabel>
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="e.g. Captain Toast"
-              placeholderTextColor="#a59d99"
-              maxLength={20}
-              autoCapitalize="words"
-              autoCorrect={false}
-              returnKeyType="done"
-              style={styles.input}
-            />
+          <Appear delay={120} style={styles.field}>
+            <HardShadow offset={4} radius={Radii.button}>
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                placeholder="e.g. Captain Toast"
+                placeholderTextColor={Palette.muted}
+                accessibilityLabel="Trainer name"
+                maxLength={20}
+                autoCapitalize="words"
+                autoCorrect={false}
+                returnKeyType="done"
+                style={styles.input}
+              />
+            </HardShadow>
           </Appear>
 
           <Appear delay={220} style={styles.block}>
-            <SectionLabel>Where did you find us?</SectionLabel>
+            <Text style={Type.label}>Where did you find us?</Text>
             <View style={styles.chips}>
               {SOURCES.map((s) => {
                 const active = s === source;
@@ -93,7 +92,10 @@ export default function OnboardingScreen() {
           </Appear>
 
           <Appear delay={320} style={styles.footer}>
-            <Button label="Let's go" icon="arrow-forward" onPress={submit} busy={busy} disabled={!name.trim() && !source} />
+            <PrimaryButton label="Let's go" onPress={submit} busy={busy} disabled={!name.trim() && !source} style={styles.go} />
+            <Pressable accessibilityRole="button" onPress={done} hitSlop={12}>
+              <Text style={styles.skip}>skip</Text>
+            </Pressable>
           </Appear>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -102,31 +104,42 @@ export default function OnboardingScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Palette.bg },
+  safe: { flex: 1, backgroundColor: Palette.ground },
   flex: { flex: 1 },
-  container: { padding: 24, gap: 28, flexGrow: 1, width: '100%', maxWidth: 520, alignSelf: 'center' },
-  top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  wordmark: { fontFamily: Fonts.black, fontSize: 22, color: Palette.ink, letterSpacing: -0.5 },
-  skip: { fontFamily: Fonts.bold, fontSize: 16, color: Palette.muted, textDecorationLine: 'underline' },
-  hero: { gap: 8, marginTop: 12 },
-  title: { fontFamily: Fonts.black, fontSize: 40, lineHeight: 44, color: Palette.ink, letterSpacing: -0.8 },
-  subtitle: { fontFamily: Fonts.bold, fontSize: 19, color: Palette.muted },
-  block: { gap: 12 },
+  container: { paddingBottom: 16, flexGrow: 1, width: '100%', maxWidth: 520, alignSelf: 'center', overflow: 'hidden' },
+  hero: { paddingHorizontal: 24, paddingTop: 120 },
+  heroText: { gap: 10 },
+  mascot: { position: 'absolute', width: 176, height: 176, right: -30, top: 22, transform: [{ rotate: '12deg' }] },
+  title: { ...Type.headline, fontSize: 46, lineHeight: 44, letterSpacing: -1.6, width: 300 },
+  subtitle: { fontFamily: Fonts.medium, fontSize: 17, lineHeight: 24, color: Palette.muted },
+  field: { paddingHorizontal: 24, paddingTop: 22 },
   input: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
+    position: 'relative',
+    height: 60,
+    backgroundColor: Palette.ground,
+    borderRadius: Radii.button,
+    borderWidth: 2,
+    borderColor: Palette.ink,
     paddingHorizontal: 18,
-    paddingVertical: 16,
     fontSize: 20,
     fontFamily: Fonts.bold,
     color: Palette.ink,
-    borderWidth: 2,
-    borderColor: 'transparent',
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  chip: { borderRadius: 999, paddingHorizontal: 18, paddingVertical: 11, backgroundColor: '#fff', borderWidth: 2, borderColor: '#fff' },
-  chipActive: { backgroundColor: Palette.ink, borderColor: Palette.ink },
-  chipText: { fontFamily: Fonts.black, fontSize: 16, color: Palette.ink },
-  chipTextActive: { color: '#fff' },
-  footer: { marginTop: 'auto' },
+  block: { gap: 12, paddingHorizontal: 24, paddingTop: 30 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 8, rowGap: 10 },
+  chip: {
+    height: 42,
+    justifyContent: 'center',
+    borderRadius: Radii.pill,
+    paddingHorizontal: 16,
+    backgroundColor: Palette.ground,
+    borderWidth: 2,
+    borderColor: Palette.ink,
+  },
+  chipActive: { backgroundColor: Palette.ink },
+  chipText: { fontFamily: Fonts.semibold, fontSize: 16, lineHeight: 20, color: Palette.ink },
+  chipTextActive: { color: Palette.ground },
+  footer: { marginTop: 'auto', paddingTop: 32, paddingHorizontal: 20, gap: 16, alignItems: 'center' },
+  go: { alignSelf: 'stretch' },
+  skip: { fontFamily: Fonts.semibold, fontSize: 15, lineHeight: 20, color: Palette.muted, textDecorationLine: 'underline' },
 });

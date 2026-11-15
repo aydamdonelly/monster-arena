@@ -3,7 +3,7 @@ import { Animated, Easing, Platform, StyleSheet, useWindowDimensions, View } fro
 
 import { ElementColors, Palette } from '@/lib/theme';
 
-const COLORS = [ElementColors.fire, ElementColors.water, ElementColors.plant, ElementColors.fluff, ElementColors.spirit, Palette.sun];
+const COLORS = [ElementColors.fire, ElementColors.water, ElementColors.plant, ElementColors.fluff, ElementColors.spirit, Palette.primary];
 
 export default function Confetti({ count = 44 }: { count?: number }) {
   const { width, height } = useWindowDimensions();

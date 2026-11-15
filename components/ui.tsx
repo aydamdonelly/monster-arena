@@ -1,22 +1,58 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
+import { Image } from 'expo-image';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Animated, Platform, Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { Fonts, Palette } from '@/lib/theme';
+import { elementColor, Fonts, Palette, Radii, Type } from '@/lib/theme';
+
+export function HardShadow({
+  offset = 4,
+  radius = Radii.button,
+  rotate,
+  style,
+  children,
+}: {
+  offset?: number;
+  radius?: number;
+  rotate?: number;
+  style?: StyleProp<ViewStyle>;
+  children: ReactNode;
+}) {
+  return (
+    <View style={[{ paddingRight: offset, paddingBottom: offset }, rotate ? { transform: [{ rotate: `${rotate}deg` }] } : null, style]}>
+      <View style={[styles.shadow, { left: offset, top: offset, borderRadius: radius }]} />
+      {children}
+    </View>
+  );
+}
 
 type ButtonProps = {
   label: string;
   onPress: () => void;
-  icon?: ComponentProps<typeof Ionicons>['name'];
-  variant?: 'primary' | 'secondary';
   busy?: boolean;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-export function Button({ label, onPress, icon, variant = 'primary', busy, disabled, style }: ButtonProps) {
-  const primary = variant === 'primary';
-  const color = primary ? '#fff' : Palette.ink;
+export function PrimaryButton({ label, onPress, busy, disabled, style }: ButtonProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      disabled={disabled || busy}
+      style={[style, disabled && styles.disabled]}>
+      {({ pressed }) => (
+        <HardShadow offset={4} radius={Radii.button}>
+          <View style={[styles.button, styles.primary, pressed && styles.pressedPrimary]}>
+            {busy ? <ActivityIndicator color={Palette.ink} /> : <Text style={styles.primaryLabel}>{label}</Text>}
+          </View>
+        </HardShadow>
+      )}
+    </Pressable>
+  );
+}
+
+export function OutlineButton({ label, onPress, busy, disabled, small, style }: ButtonProps & { small?: boolean }) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -25,20 +61,71 @@ export function Button({ label, onPress, icon, variant = 'primary', busy, disabl
       disabled={disabled || busy}
       style={({ pressed }) => [
         styles.button,
-        primary ? styles.primary : styles.secondary,
-        (disabled || busy) && { opacity: 0.5 },
-        pressed && { transform: [{ scale: 0.96 }] },
+        styles.outline,
+        small && styles.small,
+        pressed && styles.pressedOutline,
+        disabled && styles.disabled,
         style,
       ]}>
       {busy ? (
-        <ActivityIndicator color={color} />
+        <ActivityIndicator color={Palette.ink} />
       ) : (
-        <>
-          {icon ? <Ionicons name={icon} size={20} color={color} /> : null}
-          <Text style={[styles.label, { color }]}>{label}</Text>
-        </>
+        <Text style={[styles.outlineLabel, small && styles.smallLabel]}>{label}</Text>
       )}
     </Pressable>
+  );
+}
+
+export function ElementChip({ element, rotate = -3, style }: { element: string; rotate?: number; style?: StyleProp<ViewStyle> }) {
+  return (
+    <HardShadow offset={2} radius={Radii.chip} rotate={rotate} style={[styles.selfStart, style]}>
+      <View style={[styles.chip, { backgroundColor: elementColor(element) }]}>
+        <Text style={styles.chipLabel}>{element}</Text>
+      </View>
+    </HardShadow>
+  );
+}
+
+export function StickerTag({ name, kind, element, special }: { name: string; kind?: string; element: string; special?: boolean }) {
+  return (
+    <HardShadow offset={3} radius={Radii.sticker} rotate={special ? 2 : -2} style={styles.sticker}>
+      <View style={[styles.stickerBody, { backgroundColor: special ? elementColor(element) : Palette.ground }]}>
+        <Text style={styles.stickerName} numberOfLines={2}>
+          {name}
+        </Text>
+        <Text style={[Type.caps, styles.stickerKind, !special && { color: Palette.muted }]}>
+          {special ? `Special${kind ? ` · ${kind}` : ''}` : (kind ?? 'Basic')}
+        </Text>
+      </View>
+    </HardShadow>
+  );
+}
+
+export function StageBlock({ radius = Radii.stage, style, children }: { radius?: number; style?: StyleProp<ViewStyle>; children?: ReactNode }) {
+  return <View style={[styles.stage, { borderRadius: radius }, style]}>{children}</View>;
+}
+
+export function Polaroid({
+  uri,
+  size = 44,
+  rotate = -5,
+  shadow = 3,
+  caption,
+}: {
+  uri: string;
+  size?: number;
+  rotate?: number;
+  shadow?: number;
+  caption?: string;
+}) {
+  const big = !!caption;
+  return (
+    <HardShadow offset={shadow} radius={big ? 8 : 6} rotate={rotate}>
+      <View style={[styles.polaroid, big && styles.polaroidBig]}>
+        <Image source={{ uri }} style={{ width: size, height: size, borderRadius: big ? 3 : 2 }} contentFit="cover" transition={150} />
+        {caption ? <Text style={[Type.caps, styles.polaroidCaption]}>{caption}</Text> : null}
+      </View>
+    </HardShadow>
   );
 }
 
@@ -67,43 +154,51 @@ export function Appear({ children, delay = 0, style }: { children: ReactNode; de
   );
 }
 
-export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  return <View style={[styles.card, style]}>{children}</View>;
-}
-
-export function SectionLabel({ children }: { children: ReactNode }) {
-  return <Text style={styles.section}>{children}</Text>;
-}
-
 const styles = StyleSheet.create({
+  shadow: { position: 'absolute', right: 0, bottom: 0, backgroundColor: Palette.ink },
+  selfStart: { alignSelf: 'flex-start' },
   button: {
-    flexDirection: 'row',
+    height: 56,
+    borderRadius: Radii.button,
+    borderWidth: 2,
+    borderColor: Palette.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    borderRadius: 999,
-    paddingVertical: 16,
-    paddingHorizontal: 22,
-    minHeight: 56,
+    paddingHorizontal: 18,
   },
-  primary: { backgroundColor: Palette.ink },
-  secondary: { backgroundColor: '#fff', borderWidth: 2, borderColor: Palette.ink },
-  label: { fontFamily: Fonts.black, fontSize: 17, letterSpacing: 0.2 },
-  card: {
-    backgroundColor: Palette.card,
-    borderRadius: 28,
-    padding: 18,
-    shadowColor: '#2b2523',
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 3,
+  primary: { backgroundColor: Palette.primary },
+  pressedPrimary: { transform: [{ translateX: 3 }, { translateY: 3 }] },
+  outline: { backgroundColor: Palette.ground },
+  pressedOutline: { backgroundColor: Palette.hairline },
+  small: { height: 42, borderRadius: 12, paddingHorizontal: 14 },
+  disabled: { opacity: 0.45 },
+  primaryLabel: { fontFamily: Fonts.extrabold, fontSize: 18, lineHeight: 22, color: Palette.ink },
+  outlineLabel: { fontFamily: Fonts.bold, fontSize: 18, lineHeight: 22, color: Palette.ink },
+  smallLabel: { fontSize: 15, lineHeight: 20 },
+  chip: { borderWidth: 2, borderColor: Palette.ink, borderRadius: Radii.chip, paddingHorizontal: 10, paddingVertical: 4 },
+  chipLabel: { fontFamily: Fonts.bold, fontSize: 13, lineHeight: 16, letterSpacing: 0.8, textTransform: 'uppercase', color: Palette.ink },
+  sticker: { flexShrink: 1 },
+  stickerBody: {
+    borderWidth: 2,
+    borderColor: Palette.ink,
+    borderRadius: Radii.sticker,
+    paddingHorizontal: 12,
+    paddingTop: 7,
+    paddingBottom: 8,
+    gap: 1,
   },
-  section: {
-    fontFamily: Fonts.black,
-    fontSize: 12,
-    letterSpacing: 1.4,
-    color: Palette.muted,
-    textTransform: 'uppercase',
+  stickerName: { fontFamily: Fonts.extrabold, fontSize: 16, lineHeight: 20, color: Palette.ink },
+  stickerKind: { fontFamily: Fonts.semibold },
+  stage: { backgroundColor: Palette.stage, overflow: 'hidden' },
+  polaroid: {
+    backgroundColor: Palette.ground,
+    borderWidth: 2,
+    borderColor: Palette.ink,
+    borderRadius: 6,
+    paddingTop: 4,
+    paddingHorizontal: 4,
+    paddingBottom: 10,
   },
+  polaroidBig: { borderRadius: 8, paddingTop: 6, paddingHorizontal: 6, paddingBottom: 8, gap: 5 },
+  polaroidCaption: { fontFamily: Fonts.semibold, textAlign: 'center' },
 });

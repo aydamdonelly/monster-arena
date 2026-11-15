@@ -1,101 +1,140 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQuery } from 'convex/react';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
-import { ElementTag } from '@/components/StatBar';
-import { Appear, Button } from '@/components/ui';
+import MonsterSnapshots from '@/components/MonsterSnapshots';
+import { Appear, HardShadow, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import { useDeviceId } from '@/lib/device';
-import { elementColor, ElementIcons, Fonts, Palette } from '@/lib/theme';
+import { elementColor, Fonts, Palette, Radii, Type } from '@/lib/theme';
+
+const snapshots = new Map<string, string>();
 
 export default function CollectionScreen() {
   const deviceId = useDeviceId();
   const monsters = useQuery(api.monsters.listMine, { deviceId });
+  const [, setVersion] = useState(0);
+  const pending = useMemo(
+    () => (monsters ?? []).filter((m) => !snapshots.has(m._id)).map((m) => ({ id: m._id, genome: m.genome })),
+    [monsters],
+  );
+  const onSnapshot = async (id: string, uri: string) => {
+    snapshots.set(id, uri);
+    setVersion((v) => v + 1);
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <MonsterSnapshots items={pending} onSnapshot={onSnapshot} dom={{ style: styles.snapshotter }} />
       <FlatList
-        data={monsters ?? []}
+        data={monsters ? [...monsters, null] : []}
         numColumns={2}
-        keyExtractor={(m) => m._id}
+        keyExtractor={(m) => m?._id ?? 'new'}
         contentContainerStyle={styles.grid}
         columnWrapperStyle={styles.column}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
-          <View style={styles.header}>
-            <Text style={styles.title}>Collection</Text>
-            {monsters?.length ? <Text style={styles.count}>{monsters.length} caught</Text> : null}
+          <View style={styles.headerWrap}>
+            <View style={styles.header}>
+              <Text style={Type.display}>Collection</Text>
+              {monsters?.length ? (
+                <Text style={[Type.label, styles.count]}>
+                  {monsters.length} {monsters.length === 1 ? 'monster' : 'monsters'}
+                </Text>
+              ) : null}
+            </View>
+            {monsters?.length === 0 ? <Text style={Type.muted}>Nothing here yet. Your first snap hatches in 5 seconds.</Text> : null}
           </View>
         }
-        ListEmptyComponent={
-          monsters ? (
-            <Appear style={styles.empty}>
-              <View style={styles.emptyIcon}>
-                <Ionicons name="egg-outline" size={40} color={Palette.ink} />
-              </View>
-              <Text style={styles.emptyTitle}>No monsters yet</Text>
-              <Text style={styles.emptyText}>Snap your first photo and watch it hatch.</Text>
-              <Button label="Catch one" icon="camera" onPress={() => router.navigate('/')} style={styles.emptyButton} />
+        ListEmptyComponent={<ActivityIndicator color={Palette.ink} style={styles.loading} />}
+        renderItem={({ item, index }) =>
+          item === null ? (
+            <Appear delay={Math.min(index, 8) * 50} style={styles.cell}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Snap something new"
+                onPress={() => router.navigate('/')}
+                style={({ pressed }) => [styles.newSlot, pressed && styles.newSlotPressed]}>
+                <Svg width={30} height={30} viewBox="0 0 30 30">
+                  <Path d="M15 4v22M4 15h22" stroke={Palette.ink} strokeWidth={3} strokeLinecap="round" />
+                </Svg>
+                <Text style={styles.newText}>Snap something new</Text>
+              </Pressable>
             </Appear>
           ) : (
-            <ActivityIndicator color={Palette.ink} style={{ marginTop: 60 }} />
+            <Appear delay={Math.min(index, 8) * 50} style={styles.cell}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={item.name}
+                onPress={() => router.push({ pathname: '/monster/[id]', params: { id: item._id } })}
+                style={({ pressed }) => [styles.tile, pressed && styles.tilePressed]}>
+                <StageBlock radius={Radii.tile} style={styles.thumb}>
+                  {snapshots.has(item._id) ? (
+                    <Image source={{ uri: snapshots.get(item._id) }} style={styles.render} contentFit="cover" transition={200} />
+                  ) : null}
+                  {index === 0 ? (
+                    <HardShadow offset={2} radius={Radii.chip} rotate={-6} style={styles.newTag}>
+                      <View style={styles.newTagBody}>
+                        <Text style={Type.caps}>New</Text>
+                      </View>
+                    </HardShadow>
+                  ) : null}
+                </StageBlock>
+                <View style={styles.meta}>
+                  <Text style={styles.name} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                  <View style={[styles.dot, { backgroundColor: elementColor(item.element) }]} />
+                </View>
+              </Pressable>
+            </Appear>
           )
         }
-        renderItem={({ item, index }) => (
-          <Appear delay={Math.min(index, 8) * 50} style={styles.cellWrap}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={item.name}
-              onPress={() => router.push({ pathname: '/monster/[id]', params: { id: item._id } })}
-              style={({ pressed }) => [styles.cell, pressed && { transform: [{ scale: 0.97 }] }]}>
-              <View style={[styles.photo, { backgroundColor: elementColor(item.element) }]}>
-                {item.photoUrl ? (
-                  <Image source={{ uri: item.photoUrl }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
-                ) : (
-                  <Ionicons name={ElementIcons[item.element] ?? 'egg'} size={44} color="rgba(255,255,255,0.9)" />
-                )}
-              </View>
-              <View style={styles.meta}>
-                <Text style={styles.name} numberOfLines={1}>
-                  {item.name}
-                </Text>
-                <ElementTag element={item.element} />
-              </View>
-            </Pressable>
-          </Appear>
-        )}
       />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Palette.bg },
-  grid: { padding: 16, paddingBottom: 32, gap: 12, width: '100%', maxWidth: 560, alignSelf: 'center', flexGrow: 1 },
-  column: { gap: 12 },
-  header: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', paddingHorizontal: 4, paddingBottom: 4 },
-  title: { fontFamily: Fonts.black, fontSize: 34, color: Palette.ink, letterSpacing: -0.5 },
-  count: { fontFamily: Fonts.bold, fontSize: 15, color: Palette.muted },
-  cellWrap: { flex: 1, maxWidth: '50%' },
-  cell: {
-    backgroundColor: Palette.card,
-    borderRadius: 24,
-    overflow: 'hidden',
-    shadowColor: Palette.ink,
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
+  safe: { flex: 1, backgroundColor: Palette.ground },
+  snapshotter: { position: 'absolute', width: 1, height: 1, opacity: 0 },
+  grid: { paddingHorizontal: 20, paddingBottom: 24, rowGap: 18, width: '100%', maxWidth: 560, alignSelf: 'center', flexGrow: 1 },
+  column: { gap: 14 },
+  headerWrap: { gap: 8, paddingTop: 14, paddingHorizontal: 4, paddingBottom: 2 },
+  header: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 },
+  count: { paddingBottom: 7 },
+  loading: { marginTop: 60 },
+  cell: { flex: 1, maxWidth: '50%' },
+  tile: { gap: 8 },
+  tilePressed: { transform: [{ scale: 0.97 }] },
+  thumb: { aspectRatio: 168 / 156, alignItems: 'center', justifyContent: 'center' },
+  render: { width: '98%', aspectRatio: 1 },
+  newTag: { position: 'absolute', top: 10, left: 10 },
+  newTagBody: {
+    backgroundColor: Palette.primary,
+    borderWidth: 2,
+    borderColor: Palette.ink,
+    borderRadius: Radii.chip,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
   },
-  photo: { aspectRatio: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  meta: { padding: 12, gap: 6 },
-  name: { fontSize: 17, fontFamily: Fonts.black, color: Palette.ink },
-  empty: { alignItems: 'center', gap: 10, marginTop: 60, paddingHorizontal: 20 },
-  emptyIcon: { width: 84, height: 84, borderRadius: 42, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
-  emptyTitle: { fontFamily: Fonts.black, fontSize: 24, color: Palette.ink },
-  emptyText: { fontFamily: Fonts.regular, fontSize: 16, color: Palette.muted, textAlign: 'center' },
-  emptyButton: { marginTop: 8, alignSelf: 'stretch' },
+  meta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingHorizontal: 4 },
+  name: { flexShrink: 1, fontFamily: Fonts.extrabold, fontSize: 17, lineHeight: 20, letterSpacing: -0.2, color: Palette.ink },
+  dot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: Palette.ink },
+  newSlot: {
+    aspectRatio: 168 / 156,
+    borderRadius: Radii.tile,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: Palette.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  newSlotPressed: { backgroundColor: Palette.hairline },
+  newText: { width: 130, fontFamily: Fonts.bold, fontSize: 15, lineHeight: 18, color: Palette.ink, textAlign: 'center' },
 });

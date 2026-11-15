@@ -217,7 +217,7 @@ function RoyaleResult({ summary, mine }: { summary: Summary; mine: Mine }) {
       )}
       <View style={styles.resultActions}>
         <PrimaryButton
-          label="Watch the replay"
+          label="Watch replay"
           onPress={() => router.push({ pathname: '/arena/replay', params: { round: replayRound(mine) } })}
           style={styles.replayButton}
         />

@@ -8,11 +8,11 @@
 - **Frontend:** Vercel
 - **Convex deployment:** https://superb-buzzard-616.convex.cloud
 - **Components:** none
-- **Convex features:** schema, indexes, queries, mutations, actions, internal functions, file storage, scheduled functions, crons, realtime queries (HTTP actions in open PRs #6 and Whop)
+- **Convex features:** schema, indexes, queries, mutations, actions, internal functions, file storage, scheduled functions, crons, HTTP actions, realtime queries
 - **Auth:** none (anonymous device id)
 - **AI models:** gpt-6.1-sol with gpt-6-luna as fallback (OpenAI Responses API, `convex/eggs.ts`)
 - **Started:** 2026-11-15T10:53:51-08:00
-- **Last updated:** 2026-11-15T14:03:00-08:00
+- **Last updated:** 2026-11-15T14:59:34-08:00
 
 All times are Pacific on 2026-11-15. Commit times are author times from
 `git log`; PR times are GitHub's opened and merged times. Hacking started at
@@ -77,7 +77,44 @@ better build.
 - **13:53** `b35ed03` Bundle id `com.snappymon.app` and signing team for a
   device build.
 - **13:58** PR #8 opened (Capy, MONS-5): Revyl proof of changes via
-  `.revyl/config.yaml`. Open.
-- **14:03** `af73c79` on branch `whop-golden-egg` (Capy, MONS-9): draft Whop
-  checkout action and `/whop` webhook for the $1 Golden Egg. No PR yet.
-- **In progress:** the Whop Golden Egg PR and a rehearsal-mode PR.
+  `.revyl/config.yaml`.
+- **14:03** `af73c79` on branch `whop-golden-egg`: Whop checkout action and
+  `/whop` webhook for the Golden Egg, priced at $1 because that is Whop's
+  minimum.
+
+## Last stretch: payments, takeover, demo mode
+
+- **14:12** `91eda3d` Whop backend merged into `main` so every deploy has it.
+- **14:14** PR #8 merged. Revyl now builds the iOS app for every PR and posts a
+  proof of changes. On #8 itself the verdict was Inconclusive (1/5): the app
+  launched, but a config change can't be seen in the app.
+- **14:16** PR #10 merged (Capy, MONS-7): rehearsal mode (`?test=1`),
+  next-royale countdown, lint clean, layout polish.
+- **14:20** `4a6d7a1` Wild fill-up monsters fight with 65 percent health and
+  attack, so a real egg usually wins.
+- **14:21** PR #9 merged (Capy, MONS-10): egg-first README and build log.
+- **14:25** PR #11 merged (Capy, MONS-7): the 5 PM takeover. If the app is
+  open, or opened within 15 minutes, it jumps into the live royale.
+- **14:25** The Capy thread for #12 (MONS-9) reports a full sandbox purchase
+  worked end to end: payment, webhook credit, golden egg.
+- **14:28** PR #12 merged (Capy, MONS-9): Golden Egg client with the Whop
+  checkout, running in Whop's sandbox.
+- **14:40** `5725203` Analytics count sales only with real money; sandbox
+  purchases are listed separately.
+- **14:43** `66be5a9` One shared arena up to 32 monsters; heats only above 32.
+- **14:47** `a5a5f5c` Demo royale backend (`royale.demoEnter`,
+  `royale.demo`): a test device's egg hatches on demand against wild monsters.
+- **14:49** PR #13 merged (Capy, MONS-7): after-the-royale fixes for home,
+  arena and `/tv`. Revyl proof: Partial coverage (2/5), no defects found in
+  what it could reach.
+- **14:54** `cef88c0` Monsters can only be created through `eggs.lay`, plus
+  a flood limit of 150 eggs in 10 minutes.
+- **14:58** PR #14 merged (Capy, MONS-7): demo mode with a Hatch now button for
+  live demos.
+- **14:59** PR #15 opened (Capy, MONS-5): Revyl proofs can lay an egg on the
+  cloud iPhone. Open.
+- **Still open:** PR #6, Keiki iMessage back channel.
+
+## Launch day
+
+**Numbers from launch day: to be filled in after the 5 PM royale.**

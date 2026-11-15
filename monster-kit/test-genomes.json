@@ -1,0 +1,561 @@
+[
+  {
+    "title": "Laptop",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/Laptop_collage.jpg/330px-Laptop_collage.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 4346,
+    "genome": {
+      "object": "open laptop computer",
+      "safe": true,
+      "matchesPrompt": 0.18,
+      "name": "Laptopus",
+      "lore": "This little tech beast escaped a spreadsheet and now hoards charging cables.",
+      "element": "metal",
+      "shape": "box",
+      "proportions": "wide",
+      "colors": {
+        "body": "#34383b",
+        "accent": "#a8aaab"
+      },
+      "eyes": "dot",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "rest",
+      "parts": [
+        {
+          "type": "screen",
+          "color": "#343d55"
+        }
+      ],
+      "traits": {
+        "hard": 0.8,
+        "sharp": 0.2,
+        "fast": 0.4,
+        "big": 0.6,
+        "soft": 0.1
+      }
+    }
+  },
+  {
+    "title": "Smartphone",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/Wikipedia_homepage_on_a_large_Android_phone%2C_2015-04-16.jpg/330px-Wikipedia_homepage_on_a_large_Android_phone%2C_2015-04-16.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 5036,
+    "genome": {
+      "object": "Black smartphone with a bright article screen",
+      "safe": true,
+      "matchesPrompt": 0.08,
+      "name": "Phonestein",
+      "lore": "It came to life after one too many late-night scrolls and now haunts the charger drawer.",
+      "element": "metal",
+      "shape": "box",
+      "proportions": "tall",
+      "colors": {
+        "body": "#242326",
+        "accent": "#e9e8df"
+      },
+      "eyes": "big",
+      "mouth": "o",
+      "limbStyle": "stick",
+      "pose": "wave",
+      "parts": [
+        {
+          "type": "screen",
+          "color": "#e9e8df"
+        }
+      ],
+      "traits": {
+        "hard": 0.75,
+        "sharp": 0.15,
+        "fast": 0.55,
+        "big": 0.35,
+        "soft": 0.1
+      }
+    }
+  },
+  {
+    "title": "Water_bottle",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Multi-use_water_bottle.JPG/330px-Multi-use_water_bottle.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 4950,
+    "genome": {
+      "object": "Tall orange-red reusable water bottle with a dark screw cap",
+      "safe": true,
+      "matchesPrompt": 0.9,
+      "name": "Bottlefiend",
+      "lore": "It was born when a campfire’s last ember got trapped in a thirsty bottle.",
+      "element": "fire",
+      "shape": "cylinder",
+      "proportions": "tall",
+      "colors": {
+        "body": "#f05a1e",
+        "accent": "#292b2c"
+      },
+      "eyes": "dot",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "wave",
+      "parts": [
+        {
+          "type": "cap",
+          "color": "#292b2c"
+        }
+      ],
+      "traits": {
+        "hard": 0.65,
+        "sharp": 0.05,
+        "fast": 0.25,
+        "big": 0.45,
+        "soft": 0.1
+      }
+    }
+  },
+  {
+    "title": "Cavendish_banana",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Cavendish_Banana_DS.jpg/330px-Cavendish_Banana_DS.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 4529,
+    "genome": {
+      "object": "A bunch of ripe yellow bananas",
+      "safe": true,
+      "matchesPrompt": 0.05,
+      "name": "Bananaconda",
+      "lore": "It slithered out of a jungle fruit bowl after eating all the other snacks.",
+      "element": "plant",
+      "shape": "bean",
+      "proportions": "wide",
+      "colors": {
+        "body": "#f5d34f",
+        "accent": "#8d6547"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stub",
+      "pose": "cheer",
+      "parts": [
+        {
+          "type": "stem",
+          "color": "#8d6547"
+        }
+      ],
+      "traits": {
+        "hard": 0.15,
+        "sharp": 0.05,
+        "fast": 0.25,
+        "big": 0.55,
+        "soft": 0.75
+      }
+    }
+  },
+  {
+    "title": "Apple",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a6/Pink_lady_and_cross_section.jpg/330px-Pink_lady_and_cross_section.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 4415,
+    "genome": {
+      "object": "Red and yellow apples, including one cut in half",
+      "safe": true,
+      "matchesPrompt": 0.95,
+      "name": "Applegoyle",
+      "lore": "It grew from a seed that thought it was destined to become a tiny dragon.",
+      "element": "plant",
+      "shape": "blob",
+      "proportions": "normal",
+      "colors": {
+        "body": "#d9574f",
+        "accent": "#e8d584"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stub",
+      "pose": "cheer",
+      "parts": [
+        {
+          "type": "stem",
+          "color": "#654b26"
+        },
+        {
+          "type": "seeds",
+          "color": "#56351f"
+        }
+      ],
+      "traits": {
+        "hard": 0.35,
+        "sharp": 0.02,
+        "fast": 0.2,
+        "big": 0.45,
+        "soft": 0.5
+      }
+    }
+  },
+  {
+    "title": "Rubber_duck",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/Rubber_duckies_So_many_ducks.jpg/330px-Rubber_duckies_So_many_ducks.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 4426,
+    "genome": {
+      "object": "A crowd of orange-yellow rubber duck toys",
+      "safe": true,
+      "matchesPrompt": 0.25,
+      "name": "Duckula",
+      "lore": "Born in a bubble bath, Duckula gathered a whole flock to practice his dramatic quack.",
+      "element": "water",
+      "shape": "egg",
+      "proportions": "normal",
+      "colors": {
+        "body": "#ffad12",
+        "accent": "#f04417"
+      },
+      "eyes": "big",
+      "mouth": "open",
+      "limbStyle": "stub",
+      "pose": "cheer",
+      "parts": [
+        {
+          "type": "beak",
+          "color": "#f04417"
+        },
+        {
+          "type": "wings",
+          "color": "#ffbf2e"
+        }
+      ],
+      "traits": {
+        "hard": 0.35,
+        "sharp": 0,
+        "fast": 0.25,
+        "big": 0.3,
+        "soft": 0.55
+      }
+    }
+  },
+  {
+    "title": "Headphones",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/00/S%C5%82uchawki_referencyjne_K-701_firmy_AKG.jpg/330px-S%C5%82uchawki_referencyjne_K-701_firmy_AKG.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 5280,
+    "genome": {
+      "object": "White over-ear headphones with dark cushioned ear pads",
+      "safe": true,
+      "matchesPrompt": 0.05,
+      "name": "Headphonster",
+      "lore": "It was born from a tangled cable and now hums tiny lullabies to lost socks.",
+      "element": "metal",
+      "shape": "box",
+      "proportions": "tall",
+      "colors": {
+        "body": "#eeeeef",
+        "accent": "#292a2d"
+      },
+      "eyes": "dot",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "rest",
+      "parts": [
+        {
+          "type": "headphones",
+          "color": "#292a2d"
+        }
+      ],
+      "traits": {
+        "hard": 0.45,
+        "sharp": 0.05,
+        "fast": 0.3,
+        "big": 0.5,
+        "soft": 0.7
+      }
+    }
+  },
+  {
+    "title": "Bubble_tea",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a2/Bubble_Tea.png/330px-Bubble_Tea.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 4798,
+    "genome": {
+      "object": "Tall cup of milk tea with tapioca pearls and a straw",
+      "safe": true,
+      "matchesPrompt": 0.25,
+      "name": "Boba Goblin",
+      "lore": "This little goblin bubbled up from a tea shop after sneaking too many tapioca pearls.",
+      "element": "water",
+      "shape": "cylinder",
+      "proportions": "tall",
+      "colors": {
+        "body": "#d8c5a8",
+        "accent": "#252b2d"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stub",
+      "pose": "wave",
+      "parts": [
+        {
+          "type": "straw",
+          "color": "#e9e8da"
+        },
+        {
+          "type": "spots",
+          "color": "#252b2d"
+        },
+        {
+          "type": "cap",
+          "color": "#f2f0e8"
+        }
+      ],
+      "traits": {
+        "hard": 0.35,
+        "sharp": 0.05,
+        "fast": 0.2,
+        "big": 0.55,
+        "soft": 0.65
+      }
+    }
+  },
+  {
+    "title": "Sneakers",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/Air_Jordan_1_Banned.jpg/330px-Air_Jordan_1_Banned.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 5207,
+    "genome": {
+      "object": "Pair of red-and-black high-top sneakers",
+      "safe": true,
+      "matchesPrompt": 0.95,
+      "name": "Sneakerdemon",
+      "lore": "Born from a pair of well-worn kicks, it moonwalks wherever fresh pavement appears.",
+      "element": "fluff",
+      "shape": "box",
+      "proportions": "wide",
+      "colors": {
+        "body": "#e9273c",
+        "accent": "#202126"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stub",
+      "pose": "cheer",
+      "parts": [],
+      "traits": {
+        "hard": 0.35,
+        "sharp": 0.1,
+        "fast": 0.7,
+        "big": 0.55,
+        "soft": 0.55
+      }
+    }
+  },
+  {
+    "title": "Amanita_muscaria",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/71/Amanita_muscaria_Aberystwyth_2023.jpg/330px-Amanita_muscaria_Aberystwyth_2023.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 4663,
+    "genome": {
+      "object": "Cluster of red-and-white-spotted mushrooms",
+      "safe": true,
+      "matchesPrompt": 0.98,
+      "name": "Shroomzilla",
+      "lore": "It sprouted after a rainstorm and now guards the forest’s tiniest snack stash.",
+      "element": "plant",
+      "shape": "blob",
+      "proportions": "normal",
+      "colors": {
+        "body": "#e94338",
+        "accent": "#f5a044"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stub",
+      "pose": "cheer",
+      "parts": [
+        {
+          "type": "spots",
+          "color": "#fff4dc"
+        },
+        {
+          "type": "stem",
+          "color": "#d9c6a8"
+        }
+      ],
+      "traits": {
+        "hard": 0.18,
+        "sharp": 0.05,
+        "fast": 0.12,
+        "big": 0.55,
+        "soft": 0.72
+      }
+    }
+  },
+  {
+    "title": "Pizza",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Pizza-3007395.jpg/330px-Pizza-3007395.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 5638,
+    "genome": {
+      "object": "A round pizza cut into slices, topped with tomato sauce, cheese, olives, and vegetables.",
+      "safe": true,
+      "matchesPrompt": 0.72,
+      "name": "Pizzilla",
+      "lore": "Born when a tiny tomato sauce splash summoned a cheese-loving slice monster.",
+      "element": "fire",
+      "shape": "blob",
+      "proportions": "wide",
+      "colors": {
+        "body": "#d94b27",
+        "accent": "#f2b34e"
+      },
+      "eyes": "happy",
+      "mouth": "open",
+      "limbStyle": "stub",
+      "pose": "cheer",
+      "parts": [
+        {
+          "type": "spots",
+          "color": "#30241d"
+        }
+      ],
+      "traits": {
+        "hard": 0.2,
+        "sharp": 0.1,
+        "fast": 0.3,
+        "big": 0.7,
+        "soft": 0.6
+      }
+    }
+  },
+  {
+    "title": "Computer_mouse",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/3-Tasten-Maus_Microsoft.jpg/330px-3-Tasten-Maus_Microsoft.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 4493,
+    "genome": {
+      "object": "gray wired computer mouse",
+      "safe": true,
+      "matchesPrompt": 0.05,
+      "name": "Mousegeist",
+      "lore": "It haunted an old desktop until someone clicked its hidden scroll-wheel spell.",
+      "element": "metal",
+      "shape": "egg",
+      "proportions": "wide",
+      "colors": {
+        "body": "#c9c9c5",
+        "accent": "#34383a"
+      },
+      "eyes": "dot",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "rest",
+      "parts": [
+        {
+          "type": "tail",
+          "color": "#34383a"
+        }
+      ],
+      "traits": {
+        "hard": 0.55,
+        "sharp": 0.05,
+        "fast": 0.45,
+        "big": 0.2,
+        "soft": 0.1
+      }
+    }
+  },
+  {
+    "title": "Beverage_can",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Drinking_can_ring-pull_tab.jpg/330px-Drinking_can_ring-pull_tab.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 4867,
+    "genome": {
+      "object": "Black beverage can with a silver pull-tab lid",
+      "safe": true,
+      "matchesPrompt": 0.05,
+      "name": "Canzilla",
+      "lore": "This little tin titan was forged when a soda fizzed its way out of a monster factory.",
+      "element": "metal",
+      "shape": "cylinder",
+      "proportions": "tall",
+      "colors": {
+        "body": "#17191a",
+        "accent": "#b9b9b5"
+      },
+      "eyes": "dot",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "rest",
+      "parts": [
+        {
+          "type": "cap",
+          "color": "#b9b9b5"
+        }
+      ],
+      "traits": {
+        "hard": 0.9,
+        "sharp": 0.2,
+        "fast": 0.1,
+        "big": 0.5,
+        "soft": 0.05
+      }
+    }
+  },
+  {
+    "title": "Mug",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/Mug_of_Tea.JPG/330px-Mug_of_Tea.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 4145,
+    "genome": {
+      "object": "white ceramic mug filled with coffee",
+      "safe": true,
+      "matchesPrompt": 0.05,
+      "name": "Mugwraith",
+      "lore": "Born when a sleepy coffee swirl summoned a tiny mug monster.",
+      "element": "water",
+      "shape": "cylinder",
+      "proportions": "normal",
+      "colors": {
+        "body": "#f4f3ef",
+        "accent": "#8b5738"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stub",
+      "pose": "wave",
+      "parts": [
+        {
+          "type": "handle",
+          "color": "#f4f3ef"
+        },
+        {
+          "type": "coffee",
+          "color": "#8b5738"
+        }
+      ],
+      "traits": {
+        "hard": 0.65,
+        "sharp": 0.05,
+        "fast": 0.1,
+        "big": 0.35,
+        "soft": 0.15
+      }
+    }
+  },
+  {
+    "title": "Cactus",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Various_Cactaceae.jpg/330px-Various_Cactaceae.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 4459,
+    "genome": {
+      "object": "Tall ribbed saguaro cactus",
+      "safe": true,
+      "matchesPrompt": 0.08,
+      "name": "Saguaro-saurus",
+      "lore": "It learned to stand tall after spending a thousand years practicing its cactus pose.",
+      "element": "plant",
+      "shape": "cactus",
+      "proportions": "tall",
+      "colors": {
+        "body": "#557344",
+        "accent": "#c4b876"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stub",
+      "pose": "cheer",
+      "parts": [
+        {
+          "type": "spikes",
+          "color": "#c4b876"
+        }
+      ],
+      "traits": {
+        "hard": 0.72,
+        "sharp": 0.48,
+        "fast": 0.08,
+        "big": 0.82,
+        "soft": 0.12
+      }
+    }
+  }
+]

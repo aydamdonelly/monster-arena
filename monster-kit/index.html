@@ -14,11 +14,11 @@
   <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }</script>
 </head>
 <body>
-  <div id="ui"><button id="presets">Presets</button><button id="shuffle">Zufall</button></div>
+  <div id="ui"><button id="presets">Presets</button><button id="shuffle">Zufall</button><button id="fotos">Fotos ▶</button></div>
   <div id="labels"></div>
   <script type="module">
     import * as THREE from 'three';
-    import { buildMonster, updateMonster, PRESETS, randomGenome } from './monster.js';
+    import { buildMonster, updateMonster, PRESETS, randomGenome, genomeFromAI } from './monster.js';
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
@@ -30,16 +30,25 @@
     const fill = new THREE.DirectionalLight('#fff4ec', 0.9); fill.position.set(1.5, 1.5, 6); scene.add(fill);
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshBasicMaterial({ color: '#e8f1ec' })); floor.rotation.x = -Math.PI / 2; floor.position.y = -0.001; scene.add(floor);
 
-    let monsters = [];
+    let monsters = []; let count = 4;
     function show(genomes) {
+      count = genomes.length;
       monsters.forEach((m) => scene.remove(m)); monsters = [];
       const gap = 2.9; const start = -((genomes.length - 1) * gap) / 2;
       genomes.forEach((g, i) => { const m = buildMonster(g); m.position.x = start + i * gap; scene.add(m); monsters.push(m); });
-      document.getElementById('labels').innerHTML = genomes.map((g) => `<span>${g.name}</span>`).join('');
+      resize();
+      document.getElementById('labels').innerHTML = genomes.map((g) => `<span style="text-align:center">${g.photo ? `<img src="${g.photo}" style="height:70px;border-radius:10px;display:block;margin:0 auto 4px">` : ''}${g.name}</span>`).join('');
     }
+    let page = 0;
+    async function fotos() {
+      const rows = await (await fetch('./test-genomes.json?' + Date.now())).json();
+      const from = (page * 5) % rows.length; page++;
+      show(rows.slice(from, from + 5).map((r, i) => ({ ...genomeFromAI(r.genome, 1000 + from + i), photo: r.image })));
+    }
+    document.getElementById('fotos').onclick = fotos;
     function resize() {
       const w = window.innerWidth, h = window.innerHeight; renderer.setSize(w, h); camera.aspect = w / h;
-      const width = 12.5; const d = width / (2 * Math.tan((camera.fov * Math.PI) / 360) * camera.aspect);
+      const width = Math.max(8, count * 2.9 + 0.8); const d = width / (2 * Math.tan((camera.fov * Math.PI) / 360) * camera.aspect);
       camera.position.set(0, 2.2, Math.max(9, d)); camera.lookAt(0, 1.15, 0); camera.updateProjectionMatrix();
     }
     window.addEventListener('resize', resize); resize();

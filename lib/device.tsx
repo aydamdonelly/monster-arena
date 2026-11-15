@@ -3,35 +3,55 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 import { ActivityIndicator, Platform, View } from 'react-native';
 
 import { api } from '@/convex/_generated/api';
+import { getItem, setItem } from '@/lib/kv';
 import { Palette } from '@/lib/theme';
 
 import { getDeviceId } from './device-id';
 
-const DeviceContext = createContext<string | null>(null);
+const ONBOARDED_KEY = 'snappymon.onboarded';
+
+type DeviceState = { deviceId: string; onboarded: boolean; finishOnboarding: () => void };
+
+const DeviceContext = createContext<DeviceState | null>(null);
 
 export function DeviceProvider({ children }: { children: ReactNode }) {
-  const [deviceId, setDeviceId] = useState<string | null>(null);
+  const [state, setState] = useState<{ deviceId: string; onboarded: boolean } | null>(null);
   const ensure = useMutation(api.players.ensure);
 
   useEffect(() => {
-    getDeviceId().then(async (id) => {
+    Promise.all([getDeviceId(), getItem(ONBOARDED_KEY)]).then(async ([id, onboarded]) => {
       await ensure({ deviceId: id, source: Platform.OS }).catch(console.warn);
-      setDeviceId(id);
+      setState({ deviceId: id, onboarded: onboarded === '1' });
     });
   }, [ensure]);
 
-  if (!deviceId) {
+  if (!state) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Palette.bg }}>
         <ActivityIndicator color={Palette.ink} />
       </View>
     );
   }
-  return <DeviceContext.Provider value={deviceId}>{children}</DeviceContext.Provider>;
+
+  const finishOnboarding = () => {
+    setItem(ONBOARDED_KEY, '1');
+    setState({ ...state, onboarded: true });
+  };
+
+  return <DeviceContext.Provider value={{ ...state, finishOnboarding }}>{children}</DeviceContext.Provider>;
+}
+
+function useDevice(): DeviceState {
+  const value = useContext(DeviceContext);
+  if (!value) throw new Error('useDevice must be used inside DeviceProvider');
+  return value;
 }
 
 export function useDeviceId(): string {
-  const id = useContext(DeviceContext);
-  if (!id) throw new Error('useDeviceId must be used inside DeviceProvider');
-  return id;
+  return useDevice().deviceId;
+}
+
+export function useOnboarding() {
+  const { onboarded, finishOnboarding } = useDevice();
+  return { onboarded, finishOnboarding };
 }

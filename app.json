@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Monster Arena",
+    "name": "Snappymon",
     "slug": "monster-arena",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -23,7 +23,12 @@
     },
     "web": {
       "output": "single",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "name": "Snappymon",
+      "shortName": "Snappymon",
+      "description": "Snap anything. Hatch a monster. Battle in the daily royale.",
+      "themeColor": "#e8f1ec",
+      "backgroundColor": "#e8f1ec"
     },
     "plugins": [
       "expo-router",
@@ -35,11 +40,20 @@
           "imageWidth": 76
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Snappymon uses your photos to hatch monsters.",
+          "cameraPermission": "Snappymon uses your camera to snap things and hatch monsters.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "description": "Snap anything. Hatch a monster. Battle in the daily royale."
   }
 }

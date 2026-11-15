@@ -14,6 +14,7 @@ import { api } from '@/convex/_generated/api';
 import { clock, replayRound, royaleHour, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
 import { getItem, setItem } from '@/lib/kv';
+import { useDemoKey } from '@/lib/demo';
 import { testArgs, useTestMode } from '@/lib/test-mode';
 import { Fonts, Palette, Radii, Type } from '@/lib/theme';
 
@@ -30,6 +31,7 @@ export default function ArenaScreen() {
   const deviceId = useDeviceId();
   const [since] = useState(startOfToday);
   const testMode = useTestMode();
+  const demoKey = useDemoKey();
   const summary = useQuery(api.royale.summary, testArgs(testMode));
   const mine = useQuery(api.royale.mine, { deviceId, ...testArgs(testMode) });
   const today = summary && summary.startsAt >= since ? summary : null;
@@ -51,7 +53,7 @@ export default function ArenaScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      {testMode ? <InkSticker label="Test" light fontSize={12} rotate={-3} style={styles.testTag} /> : null}
+      {testMode ? <InkSticker label={demoKey ? 'Demo' : 'Test'} light fontSize={12} rotate={-3} style={styles.testTag} /> : null}
       {summary === undefined ? (
         <ActivityIndicator color={Palette.ink} style={styles.loading} />
       ) : today && watched === watchedKey ? (

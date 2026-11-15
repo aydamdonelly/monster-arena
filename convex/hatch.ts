@@ -17,7 +17,7 @@ export const generateUploadUrl = mutation({
   handler: async (ctx) => await ctx.storage.generateUploadUrl(),
 });
 
-type Precheck = { playerId: Id<"players">; isTest: boolean; countToday: number; dropTitle: string } | null;
+type Precheck = { playerId: Id<"players">; isTest: boolean; countToday: number; goldenEggs: number; dropTitle: string } | null;
 
 export const precheck = internalQuery({
   args: { deviceId: v.string(), now: v.number() },
@@ -42,7 +42,9 @@ export const precheck = internalQuery({
     return {
       playerId: player._id,
       isTest: player.isTest,
-      countToday: mine.filter((m) => m._creationTime > now - DAY_MS).length,
+      // Goldene Monster zählen nicht zum Tageslimit
+      countToday: mine.filter((m) => m._creationTime > now - DAY_MS && !m.genome?.golden).length,
+      goldenEggs: player.goldenEggs ?? 0,
       dropTitle,
     };
   },
@@ -51,13 +53,15 @@ export const precheck = internalQuery({
 export const hatch = action({
   args: { deviceId: v.string(), storageId: v.id("_storage") },
   returns: v.object({ monsterId: v.id("monsters"), genome: v.any() }),
-  handler: async (ctx, { deviceId, storageId }) => {
+  handler: async (ctx, { deviceId, storageId }): Promise<{ monsterId: Id<"monsters">; genome: any }> => {
     const pre: Precheck = await ctx.runQuery(internal.hatch.precheck, { deviceId, now: Date.now() });
     if (!pre) throw new ConvexError({ code: "no_player", message: "Please restart the app and try again." });
-    if (!pre.isTest && pre.countToday >= DAILY_LIMIT) {
+    // Ein Goldenes Ei wird beim nächsten Fang benutzt: Das Monster wird golden und zählt nicht zum Tageslimit.
+    const golden: boolean = pre.goldenEggs > 0;
+    if (!golden && !pre.isTest && pre.countToday >= DAILY_LIMIT) {
       throw new ConvexError({
         code: "limit",
-        message: `You hatched ${DAILY_LIMIT} monsters today. Come back for the royale and the next drop!`,
+        message: `You hatched ${DAILY_LIMIT} monsters today. Come back tomorrow, or crack a Golden Egg for one more.`,
       });
     }
     const imageUrl = await ctx.storage.getUrl(storageId);
@@ -103,7 +107,7 @@ export const hatch = action({
         message: "Monsters only hatch from objects, not people. Try something else!",
       });
     }
-    const genome = genomeFromAI(ai, hashString(storageId));
+    const genome: any = { ...genomeFromAI(ai, hashString(storageId)), ...(golden ? { golden: true } : {}) };
     const monsterId: Id<"monsters"> = await ctx.runMutation(internal.hatch.save, {
       playerId: pre.playerId,
       storageId,
@@ -111,7 +115,7 @@ export const hatch = action({
       matchesPrompt: typeof ai.matchesPrompt === "number" ? ai.matchesPrompt : 0,
       ms: Date.now() - t0,
     });
-    return { monsterId, genome };
+    return { monsterId, genome: { ...genome } };
   },
 });
 
@@ -125,19 +129,27 @@ export const save = internalMutation({
   },
   returns: v.id("monsters"),
   handler: async (ctx, a) => {
+    const genome = a.genome;
+    if (genome.golden) {
+      // Ei erst hier verbrauchen (gleiche Transaktion wie das Anlegen); ohne Guthaben wird das Monster normal
+      const player = await ctx.db.get("players", a.playerId);
+      const eggs = player?.goldenEggs ?? 0;
+      if (eggs > 0) await ctx.db.patch("players", a.playerId, { goldenEggs: eggs - 1 });
+      else delete genome.golden;
+    }
     const monsterId = await ctx.db.insert("monsters", {
       playerId: a.playerId,
-      genome: a.genome,
-      name: a.genome.name ?? "Monster",
-      element: a.genome.element ?? "spirit",
-      stats: statsFromTraits(a.genome.traits),
+      genome,
+      name: genome.name ?? "Monster",
+      element: genome.element ?? "spirit",
+      stats: statsFromTraits(genome.traits),
       stage: 1,
       photoId: a.storageId,
     });
     await ctx.db.insert("events", {
       playerId: a.playerId,
       type: "hatch",
-      meta: { monsterId, ms: a.ms, matchesPrompt: a.matchesPrompt },
+      meta: { monsterId, ms: a.ms, matchesPrompt: a.matchesPrompt, golden: !!genome.golden },
     });
     return monsterId;
   },

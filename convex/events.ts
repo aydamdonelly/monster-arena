@@ -15,6 +15,7 @@ export const log = mutation({
       // Besuch am Spieler vermerken: Die Zahlenseite liest nur die schlanken Spieler-Einträge
       const m = (args.meta ?? {}) as Record<string, unknown>;
       const patch: Record<string, unknown> = { opens: (player.opens ?? 0) + 1, lastSeen: Date.now() };
+      if (!player.plat && short(m.os, 12)) patch.plat = short(m.os, 12);
       if (!player.app && short(m.app, 16)) patch.app = short(m.app, 16);
       if (!player.dev && short(m.dev, 16)) patch.dev = short(m.dev, 16);
       if (!player.ref && short(m.ref, 64)) patch.ref = short(m.ref, 64);

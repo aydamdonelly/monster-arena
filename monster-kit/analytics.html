@@ -153,7 +153,7 @@
       $('t0').textContent = time(start); $('t1').textContent = 'now · peak ' + max + ' per 15 min';
 
       $('latest').innerHTML = '<tr><th>Time</th><th>Source</th><th>Opened in</th><th>Device</th><th>Eggs</th><th>Trainer</th><th>Visits</th><th>Time zone</th></tr>' + d.latest.map((p) => `<tr><td>${time(p.at)}</td><td>${esc(p.source || '–')}</td><td>${esc(p.app || '–')}</td><td>${esc(p.dev || '–')}</td><td>${p.eggs ? '<span class="egg"></span>'.repeat(Math.min(p.eggs, 3)) : '–'}</td><td>${esc(p.name || '–')}</td><td>${p.opens || 1}</td><td>${esc(p.tz || '–')}</td></tr>`).join('');
-      $('foot').textContent = `Not counted: ${nf(d.testVisitors)} test visitors (our own devices, agent test runs) and the wild house monsters.`;
+      $('foot').textContent = `Not counted: ${nf(d.testVisitors)} test visitors (our own devices, agent test runs), ${nf(d.nativeSessions || 0)} native app sessions (our own phone and Revyl cloud devices; the app is not public yet) and the wild house monsters.`;
       $('warn').innerHTML = d.truncated ? '<div class="warn">Showing the newest 8,000 visitors of this range.</div>' : '';
       $('updated').textContent = 'updated ' + new Date().toLocaleTimeString('en-US') + ' · refreshes every minute';
     }

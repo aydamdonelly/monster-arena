@@ -29,7 +29,11 @@ export const overview = query({
       .withIndex("by_creation_time", (q) => q.gte("_creationTime", since))
       .order("desc")
       .take(8000);
-    const real = rows.filter((p) => !p.isTest);
+    // Die native App ist noch nicht öffentlich: Dort laufen nur unser eigenes Handy und die Cloud-Geräte von Revyl.
+    // Sie zählen nicht als Besucher, werden aber getrennt ausgewiesen.
+    const isNative = (p: (typeof rows)[number]) => (p.plat ? p.plat !== "web" : p.source === "ios" || p.source === "android");
+    const real = rows.filter((p) => !p.isTest && !isNative(p));
+    const nativeSessions = rows.filter((p) => !p.isTest && isNative(p)).length;
 
     const sourcesAll: Record<string, number> = {};
     const sourcesSnap: Record<string, number> = {};
@@ -84,7 +88,8 @@ export const overview = query({
       since,
       truncated: rows.length >= 8000,
       visitors: real.length,
-      testVisitors: rows.length - real.length,
+      testVisitors: rows.length - real.length - nativeSessions,
+      nativeSessions,
       snappers,
       eggs,
       rejected,

@@ -21,6 +21,7 @@ export default defineSchema({
     firstEggAt: v.optional(v.number()),
     opens: v.optional(v.number()), // Seitenaufrufe
     lastSeen: v.optional(v.number()),
+    plat: v.optional(v.string()), // web | ios | android (native App: bisher nur unser eigenes Handy und Revyl-Testgeräte)
     app: v.optional(v.string()), // tiktok | instagram | youtube | facebook | browser (In-App-Browser)
     dev: v.optional(v.string()), // iphone | android | ipad | mac | windows | other
     ref: v.optional(v.string()), // Herkunftsseite (nur der Hostname)

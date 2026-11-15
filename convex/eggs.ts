@@ -10,7 +10,10 @@ import { statsFromTraits, hashString } from "../monster-kit/battle.js";
 const MODELS = ["gpt-6.1-sol", "gpt-6-luna"]; // erst das große Modell, bei Fehlern das schnelle
 const DAILY_LIMIT = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const MAX_ATTEMPTS = 4;
+const MAX_ATTEMPTS = 8;
+// Wartezeit vor dem nächsten Versuch in Sekunden (bei Andrang antwortet die KI mit "zu viele Anfragen")
+const RETRY_AFTER_S = [5, 15, 30, 60, 120, 240, 300, 300];
+const STALE_MS = 7 * 60 * 1000; // so lange ohne Lebenszeichen = hängen geblieben, der Aufräum-Cron stößt neu an
 
 export const lay = mutation({
   args: { deviceId: v.string(), storageId: v.id("_storage") },
@@ -46,6 +49,7 @@ export const lay = mutation({
       ready: false,
       golden,
       attempts: 0,
+      genAt: now,
     });
     await ctx.db.insert("events", { playerId: player._id, type: "egg", meta: { eggId, golden } });
     await ctx.scheduler.runAfter(0, internal.eggs.generate, { eggId });
@@ -69,14 +73,14 @@ export const remove = mutation({
   },
 });
 
-type EggInfo = { photoId: Id<"_storage"> | null; attempts: number; golden: boolean; status: string } | null;
+type EggInfo = { photoId: Id<"_storage"> | null; attempts: number; golden: boolean; status: string; ready: boolean } | null;
 
 export const info = internalQuery({
   args: { eggId: v.id("monsters") },
   handler: async (ctx, { eggId }): Promise<EggInfo> => {
     const egg = await ctx.db.get("monsters", eggId);
     if (!egg) return null;
-    return { photoId: egg.photoId ?? null, attempts: egg.attempts ?? 0, golden: egg.golden ?? false, status: egg.status ?? "hatched" };
+    return { photoId: egg.photoId ?? null, attempts: egg.attempts ?? 0, golden: egg.golden ?? false, status: egg.status ?? "hatched", ready: egg.ready ?? false };
   },
 });
 
@@ -111,7 +115,7 @@ export const generate = internalAction({
   returns: v.null(),
   handler: async (ctx, { eggId }) => {
     const egg: EggInfo = await ctx.runQuery(internal.eggs.info, { eggId });
-    if (!egg || egg.status !== "egg" || !egg.photoId) return null;
+    if (!egg || egg.status !== "egg" || egg.ready || !egg.photoId) return null;
     const imageUrl = await ctx.storage.getUrl(egg.photoId);
     if (!imageUrl) return null;
     const t0 = Date.now();
@@ -126,8 +130,10 @@ export const generate = internalAction({
     } catch (e) {
       console.error("egg generate failed", eggId, String(e).slice(0, 300));
       const attempts = egg.attempts + 1;
-      await ctx.runMutation(internal.eggs.bumpAttempts, { eggId, attempts });
-      if (attempts < MAX_ATTEMPTS) await ctx.scheduler.runAfter(4000 * attempts, internal.eggs.generate, { eggId });
+      const waitMs = RETRY_AFTER_S[Math.min(attempts, RETRY_AFTER_S.length) - 1] * 1000;
+      await ctx.runMutation(internal.eggs.bumpAttempts, { eggId, attempts, genAt: Date.now() + waitMs });
+      // Nach MAX_ATTEMPTS übernimmt der Aufräum-Cron (eggs.sweep)
+      if (attempts < MAX_ATTEMPTS) await ctx.scheduler.runAfter(waitMs, internal.eggs.generate, { eggId });
     }
     return null;
   },
@@ -138,7 +144,7 @@ export const saveGenome = internalMutation({
   returns: v.null(),
   handler: async (ctx, { eggId, genome, ms }) => {
     const egg = await ctx.db.get("monsters", eggId);
-    if (!egg || egg.status !== "egg") return null;
+    if (!egg || egg.status !== "egg" || egg.ready) return null;
     await ctx.db.patch("monsters", eggId, {
       genome,
       name: genome.name ?? "Monster",
@@ -153,11 +159,37 @@ export const saveGenome = internalMutation({
 });
 
 export const bumpAttempts = internalMutation({
-  args: { eggId: v.id("monsters"), attempts: v.number() },
+  args: { eggId: v.id("monsters"), attempts: v.number(), genAt: v.number() },
   returns: v.null(),
   handler: async (ctx, a) => {
-    await ctx.db.patch("monsters", a.eggId, { attempts: a.attempts });
+    await ctx.db.patch("monsters", a.eggId, { attempts: a.attempts, genAt: a.genAt });
     return null;
+  },
+});
+
+// Aufräum-Cron (alle 3 Minuten): Eier, deren Monster-Bau hängen geblieben ist (Zeitüberschreitung, alle Versuche verbraucht),
+// neu anstoßen. Gestaffelt, damit bei Andrang nicht alles gleichzeitig bei der KI anklopft.
+export const sweep = internalMutation({
+  args: {},
+  returns: v.number(),
+  handler: async (ctx) => {
+    const now = Date.now();
+    const recent = await ctx.db
+      .query("monsters")
+      .withIndex("by_creation_time", (q) => q.gte("_creationTime", now - 3 * DAY_MS))
+      .order("desc")
+      .take(1500);
+    let n = 0;
+    for (const m of recent) {
+      if (m.status !== "egg" || m.ready || !m.photoId) continue;
+      if ((m.genAt ?? m._creationTime) > now - STALE_MS) continue;
+      // Ab Versuch 2 baut das schnelle Modell
+      await ctx.db.patch("monsters", m._id, { attempts: 2, genAt: now });
+      await ctx.scheduler.runAfter(n * 700, internal.eggs.generate, { eggId: m._id });
+      n++;
+      if (n >= 120) break;
+    }
+    return n;
   },
 });
 
@@ -212,7 +244,7 @@ export const regenerate = internalMutation({
   handler: async (ctx, { eggId }) => {
     const egg = await ctx.db.get("monsters", eggId);
     if (!egg || egg.status !== "egg") return null;
-    await ctx.db.patch("monsters", eggId, { ready: false, attempts: 0 });
+    await ctx.db.patch("monsters", eggId, { ready: false, attempts: 0, genAt: Date.now() });
     await ctx.scheduler.runAfter(0, internal.eggs.generate, { eggId });
     return null;
   },
@@ -257,14 +289,24 @@ export const adminGallery = query({
 
 // Monster neu bauen lassen oder ein Ei von Hand ablehnen
 export const adminAction = mutation({
-  args: { key: v.string(), eggId: v.id("monsters"), action: v.union(v.literal("regenerate"), v.literal("reject")) },
+  args: {
+    key: v.string(),
+    eggId: v.id("monsters"),
+    action: v.union(v.literal("regenerate"), v.literal("reject"), v.literal("ownerTest"), v.literal("ownerReal")),
+  },
   returns: v.null(),
   handler: async (ctx, { key, eggId, action }) => {
     checkKey(key);
     const egg = await ctx.db.get("monsters", eggId);
-    if (!egg || egg.status !== "egg") return null;
+    if (!egg) return null;
+    // Besitzer als Test markieren (Probeläufe): seine Eier kämpfen nicht in der echten Royale und zählen in keiner Zahl
+    if (action === "ownerTest" || action === "ownerReal") {
+      await ctx.db.patch("players", egg.playerId, { isTest: action === "ownerTest" });
+      return null;
+    }
+    if (egg.status !== "egg") return null;
     if (action === "regenerate") {
-      await ctx.db.patch("monsters", eggId, { ready: false, attempts: 0 });
+      await ctx.db.patch("monsters", eggId, { ready: false, attempts: 0, genAt: Date.now() });
       await ctx.scheduler.runAfter(0, internal.eggs.generate, { eggId });
     } else {
       if (egg.photoId) await ctx.storage.delete(egg.photoId);

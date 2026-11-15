@@ -37,6 +37,42 @@ export const seedTest = internalMutation({
   },
 });
 
+// Wilde Monster (Hausspieler): füllen die Arena auf, wenn zu wenige Eier da sind (siehe royale.ts). Zählen nirgends als Spieler.
+// node scripts/seed-wild.mjs
+export const seedWild = internalMutation({
+  args: { rows: v.array(v.object({ title: v.string(), genome: v.any() })) },
+  returns: v.number(),
+  handler: async (ctx, { rows }) => {
+    const existing = await ctx.db
+      .query("players")
+      .withIndex("by_deviceId", (q) => q.eq("deviceId", "house-wild"))
+      .unique();
+    const playerId = existing?._id ?? (await ctx.db.insert("players", { deviceId: "house-wild", name: "Wild", source: "house", isTest: true }));
+    const have = await ctx.db
+      .query("monsters")
+      .withIndex("by_playerId", (q) => q.eq("playerId", playerId))
+      .take(200);
+    const names = new Set(have.map((m) => m.name));
+    let n = 0;
+    for (const [i, r] of rows.entries()) {
+      const genome = genomeFromAI(r.genome, 9000 + i);
+      if (names.has(genome.name)) continue;
+      await ctx.db.insert("monsters", {
+        playerId,
+        genome,
+        name: genome.name,
+        element: genome.element,
+        stats: statsFromTraits(genome.traits),
+        stage: 1,
+        status: "hatched",
+        ready: true,
+      });
+      n++;
+    }
+    return n;
+  },
+});
+
 // Vor dem Start: alle bisherigen Spieler als Test markieren (zählen nicht in Zahlen und Royale).
 // npx convex run dev:markAllTest '{"before": <Zeitstempel in ms>}'
 export const markAllTest = internalMutation({

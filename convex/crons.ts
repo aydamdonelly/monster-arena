@@ -5,5 +5,7 @@ import { internal } from "./_generated/api";
 const crons = cronJobs();
 
 crons.cron("royale 5 pm pacific", "0 1 * * *", internal.royale.run, { title: "Royale" });
+// Eier, deren Monster-Bau hängen geblieben ist, neu anstoßen
+crons.interval("revive stuck eggs", { minutes: 3 }, internal.eggs.sweep, {});
 
 export default crons;

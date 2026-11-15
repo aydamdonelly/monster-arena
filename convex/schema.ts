@@ -41,6 +41,7 @@ export default defineSchema({
     golden: v.optional(v.boolean()),
     hatchedAt: v.optional(v.number()),
     attempts: v.optional(v.number()),
+    genAt: v.optional(v.number()), // letzter (geplanter) Bauversuch, für den Aufräum-Cron
   }).index("by_playerId", ["playerId"]),
 
   drops: defineTable({

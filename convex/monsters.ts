@@ -111,6 +111,7 @@ const monsterDoc = v.object({
   golden: v.optional(v.boolean()),
   hatchedAt: v.optional(v.number()),
   attempts: v.optional(v.number()),
+  genAt: v.optional(v.number()),
 });
 
 export const create = mutation({
@@ -157,6 +158,7 @@ const monsterView = v.object({
   ready: v.optional(v.boolean()),
   hatchedAt: v.optional(v.number()),
   attempts: v.optional(v.number()),
+  genAt: v.optional(v.number()),
 });
 
 // Monster plus Foto-URL und Trainername (Testmonster tragen ihr Foto im Genom)

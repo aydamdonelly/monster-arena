@@ -264,7 +264,8 @@ export function createArena(container, opts = {}) {
     else if (mode === 'follow') {
       const target = sim.state.monsters.find((m) => m.id === (spectate || followId) && m.alive) || alive.slice().sort((a, b) => b.kills - a.kills || a.i - b.i)[0];
       if (target) { cx = target.x; cz = target.y; yaw += Math.atan2(-target.fx, -target.fy); }
-      pitch = 0.5; dist = 7.5;
+      // Im Hochformat weiter weg und höher, sonst füllt der Rücken des eigenen Monsters das halbe Bild
+      const tall = camera.aspect < 0.8; pitch = tall ? 0.66 : 0.55; dist = tall ? 13.5 : 9.5;
     } else { // auto: alle Lebenden im Bild, zieht sich mit der Zone zusammen
       if (winnerId) { const w = sim.state.monsters.find((m) => m.id === winnerId); if (w) { cx = w.x; cz = w.y; yaw = rig.userYaw + Math.atan2(w.fx, w.fy) + Math.sin(now * 0.0011) * 0.5; } pitch = 0.3; dist = 8.5; }
       else if (alive.length) {

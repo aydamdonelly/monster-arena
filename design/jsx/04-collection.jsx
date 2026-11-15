@@ -32,7 +32,7 @@ export default function CollectionScreen() {
       <div style={{ alignContent: 'start', boxSizing: 'border-box', columnGap: '14px', display: 'flex', flexWrap: 'wrap', paddingBottom: '24px', paddingInline: '20px', paddingTop: '20px', rowGap: '18px' }}>
         <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', flexShrink: 0, gap: '8px', width: '168px' }}>
           <div style={{ alignItems: 'center', backgroundColor: 'var(--color-stage)', borderRadius: '20px', boxSizing: 'border-box', display: 'flex', flexShrink: 0, height: '156px', justifyContent: 'center', minHeight: '0px', overflow: 'clip', position: 'relative' }}>
-            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/0TCCT2B3K730WM42YW5QV0YR41.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
+            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/59N91NRKAERXG72WGB0HAQDKR8.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
             <div style={{ alignItems: 'center', backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-ink)', borderRadius: '8px', borderStyle: 'solid', borderWidth: '2px', boxShadow: 'var(--color-ink) 2px 2px 0px', boxSizing: 'border-box', display: 'flex', left: '10px', paddingBlock: '3px', paddingInline: '9px', position: 'absolute', rotate: '-6deg', top: '10px', transformOrigin: '0% 0%' }}>
               <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '12px', fontWeight: 700, letterSpacing: '0.08em', lineHeight: '14px', textTransform: 'uppercase' }}>
                 New
@@ -48,7 +48,7 @@ export default function CollectionScreen() {
         </div>
         <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', flexShrink: 0, gap: '8px', width: '168px' }}>
           <div style={{ alignItems: 'center', backgroundColor: 'var(--color-stage)', borderRadius: '20px', boxSizing: 'border-box', display: 'flex', flexShrink: 0, height: '156px', justifyContent: 'center', minHeight: '0px', overflow: 'clip' }}>
-            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/2EXQW6ZRN1VGHVDNC0AWN8J97B.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
+            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/448WZCJG0338AVR7WPG6CFPMKD.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
           </div>
           <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', gap: '8px', justifyContent: 'space-between', paddingInline: '4px' }}>
             <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '17px', fontWeight: 800, letterSpacing: '-0.01em', lineHeight: '20px', whiteSpace: 'pre' }}>
@@ -59,7 +59,7 @@ export default function CollectionScreen() {
         </div>
         <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', flexShrink: 0, gap: '8px', width: '168px' }}>
           <div style={{ alignItems: 'center', backgroundColor: 'var(--color-stage)', borderRadius: '20px', boxSizing: 'border-box', display: 'flex', flexShrink: 0, height: '156px', justifyContent: 'center', minHeight: '0px', overflow: 'clip' }}>
-            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/0T1EWE3QNFBKTN58ZGK4BCFN1D.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
+            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/5MH650FC2NGVHVRMDJHZCBTKMB.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
           </div>
           <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', gap: '8px', justifyContent: 'space-between', paddingInline: '4px' }}>
             <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '17px', fontWeight: 800, letterSpacing: '-0.01em', lineHeight: '20px', whiteSpace: 'pre' }}>
@@ -70,18 +70,18 @@ export default function CollectionScreen() {
         </div>
         <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', flexShrink: 0, gap: '8px', width: '168px' }}>
           <div style={{ alignItems: 'center', backgroundColor: 'var(--color-stage)', borderRadius: '20px', boxSizing: 'border-box', display: 'flex', flexShrink: 0, height: '156px', justifyContent: 'center', minHeight: '0px', overflow: 'clip' }}>
-            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/2H2H7Y5ZE0XCQ2JB27K8TKH8X6.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
+            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/23PBYT9XYP67C5P2PNFH7GWADG.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
           </div>
           <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', gap: '8px', justifyContent: 'space-between', paddingInline: '4px' }}>
             <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '17px', fontWeight: 800, letterSpacing: '-0.01em', lineHeight: '20px', whiteSpace: 'pre' }}>
-              Duckula
+              Duckzilla
             </div>
             <div style={{ backgroundColor: 'var(--color-water)', borderColor: 'var(--color-ink)', borderRadius: '6px', borderStyle: 'solid', borderWidth: '2px', boxSizing: 'border-box', flexShrink: '0', height: '12px', width: '12px' }} />
           </div>
         </div>
         <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', flexShrink: 0, gap: '8px', width: '168px' }}>
           <div style={{ alignItems: 'center', backgroundColor: 'var(--color-stage)', borderRadius: '20px', boxSizing: 'border-box', display: 'flex', flexShrink: 0, height: '156px', justifyContent: 'center', minHeight: '0px', overflow: 'clip' }}>
-            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/5K616K5NYME6B1PY0NKAFZS6DY.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
+            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/3S9AHKSNFP9YWD3RKV6KPWW1XG.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
           </div>
           <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', gap: '8px', justifyContent: 'space-between', paddingInline: '4px' }}>
             <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '17px', fontWeight: 800, letterSpacing: '-0.01em', lineHeight: '20px', whiteSpace: 'pre' }}>
@@ -92,22 +92,22 @@ export default function CollectionScreen() {
         </div>
         <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', flexShrink: 0, gap: '8px', width: '168px' }}>
           <div style={{ alignItems: 'center', backgroundColor: 'var(--color-stage)', borderRadius: '20px', boxSizing: 'border-box', display: 'flex', flexShrink: 0, height: '156px', justifyContent: 'center', minHeight: '0px', overflow: 'clip' }}>
-            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/0KJ1EZ5DZMY6V8PJ1ND9QWRJEE.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
+            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/6G3PKF6111793SGSAEZC6EKGQF.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
           </div>
           <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', gap: '8px', justifyContent: 'space-between', paddingInline: '4px' }}>
             <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '17px', fontWeight: 800, letterSpacing: '-0.01em', lineHeight: '20px', whiteSpace: 'pre' }}>
-              Phonestein
+              Phone Phantom
             </div>
             <div style={{ backgroundColor: 'var(--color-metal)', borderColor: 'var(--color-ink)', borderRadius: '6px', borderStyle: 'solid', borderWidth: '2px', boxSizing: 'border-box', flexShrink: '0', height: '12px', width: '12px' }} />
           </div>
         </div>
         <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', flexShrink: 0, gap: '8px', width: '168px' }}>
           <div style={{ alignItems: 'center', backgroundColor: 'var(--color-stage)', borderRadius: '20px', boxSizing: 'border-box', display: 'flex', flexShrink: 0, height: '156px', justifyContent: 'center', minHeight: '0px', overflow: 'clip' }}>
-            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/0Y7Z0DJCJKTG6VC5SR2556PB25.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
+            <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/0WNZK5K27V6BAP8NTEW7R87EJX.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '164px', width: '164px' }} />
           </div>
           <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', gap: '8px', justifyContent: 'space-between', paddingInline: '4px' }}>
             <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '17px', fontWeight: 800, letterSpacing: '-0.01em', lineHeight: '20px', whiteSpace: 'pre' }}>
-              Shroomzilla
+              Toadstooloom
             </div>
             <div style={{ backgroundColor: 'var(--color-plant)', borderColor: 'var(--color-ink)', borderRadius: '6px', borderStyle: 'solid', borderWidth: '2px', boxSizing: 'border-box', flexShrink: '0', height: '12px', width: '12px' }} />
           </div>

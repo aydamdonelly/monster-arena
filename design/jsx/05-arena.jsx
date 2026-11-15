@@ -25,7 +25,7 @@ export default function ArenaScreen() {
         </div>
         <div style={{ boxSizing: 'border-box', paddingBottom: '7px' }}>
           <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em', lineHeight: '16px', textTransform: 'uppercase' }}>
-            Today 4:00 PM
+            Today 5:00 PM
           </div>
         </div>
       </div>
@@ -51,12 +51,12 @@ export default function ArenaScreen() {
         <div style={{ backgroundColor: 'var(--color-stage)', borderColor: 'var(--color-ink)', borderRadius: '24px', borderStyle: 'solid', borderWidth: '2px', boxSizing: 'border-box', display: 'flex', flexShrink: 0, height: '219px', minHeight: '0px', overflow: 'clip', position: 'relative' }}>
           <div style={{ backgroundColor: '#BFE3C5', borderRadius: '50%', boxSizing: 'border-box', height: '124px', left: '18px', position: 'absolute', top: '86px', width: '310px' }} />
           <div style={{ borderColor: '#FF5A4A', borderRadius: '50%', borderStyle: 'dashed', borderWidth: '2px', boxSizing: 'border-box', height: '90px', left: '58px', position: 'absolute', top: '102px', width: '230px' }} />
-          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/0KJ1EZ5DZMY6V8PJ1ND9QWRJEE.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '56px', left: '60px', position: 'absolute', top: '70px', width: '56px' }} />
-          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/1PCNT1PENSF0FZW38W0CH43837.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '58px', left: '132px', position: 'absolute', top: '60px', width: '58px' }} />
-          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/5K616K5NYME6B1PY0NKAFZS6DY.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '58px', left: '214px', position: 'absolute', top: '72px', width: '58px' }} />
-          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/0T1EWE3QNFBKTN58ZGK4BCFN1D.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '70px', left: '96px', position: 'absolute', top: '112px', width: '70px' }} />
-          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/0TCCT2B3K730WM42YW5QV0YR41.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '78px', left: '168px', position: 'absolute', top: '104px', width: '78px' }} />
-          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/0Y7Z0DJCJKTG6VC5SR2556PB25.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '68px', left: '246px', position: 'absolute', top: '116px', width: '68px' }} />
+          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/6G3PKF6111793SGSAEZC6EKGQF.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '56px', left: '60px', position: 'absolute', top: '70px', width: '56px' }} />
+          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/40AD302Q3ZEB6XHAYYK6ADE2Q5.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '58px', left: '132px', position: 'absolute', top: '60px', width: '58px' }} />
+          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/3S9AHKSNFP9YWD3RKV6KPWW1XG.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '58px', left: '214px', position: 'absolute', top: '72px', width: '58px' }} />
+          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/5MH650FC2NGVHVRMDJHZCBTKMB.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '70px', left: '96px', position: 'absolute', top: '112px', width: '70px' }} />
+          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/59N91NRKAERXG72WGB0HAQDKR8.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '78px', left: '168px', position: 'absolute', top: '104px', width: '78px' }} />
+          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/23PBYT9XYP67C5P2PNFH7GWADG.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '68px', left: '246px', position: 'absolute', top: '116px', width: '68px' }} />
           <div style={{ boxSizing: 'border-box', display: 'flex', gap: '5px', left: '10px', position: 'absolute', right: '10px', top: '10px' }}>
             <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', boxSizing: 'border-box', display: 'flex', flexBasis: '0%', flexDirection: 'column', flexGrow: '1', gap: '3px', paddingBottom: '5px', paddingInline: '7px', paddingTop: '4px' }}>
               <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '12px', fontWeight: 700, lineHeight: '14px', whiteSpace: 'pre' }}>
@@ -76,7 +76,7 @@ export default function ArenaScreen() {
             </div>
             <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', boxSizing: 'border-box', display: 'flex', flexBasis: '0%', flexDirection: 'column', flexGrow: '1', gap: '3px', paddingBottom: '5px', paddingInline: '7px', paddingTop: '4px' }}>
               <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '12px', fontWeight: 700, lineHeight: '14px', whiteSpace: 'pre' }}>
-                Shroomzilla
+                Duckzilla
               </div>
               <div style={{ backgroundColor: 'var(--color-hairline)', borderRadius: '3px', boxSizing: 'border-box', display: 'flex', flexShrink: 0, height: '5px', minHeight: '0px', overflow: 'clip' }}>
                 <div style={{ backgroundColor: '#FF5A4A', boxSizing: 'border-box', height: '100%', width: 'round(24%, 1px)' }} />
@@ -122,7 +122,7 @@ export default function ArenaScreen() {
       </div>
       <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', gap: '14px', paddingInline: '24px', paddingTop: '22px' }}>
         <div style={{ alignItems: 'center', backgroundColor: 'var(--color-stage)', borderRadius: '18px', boxSizing: 'border-box', display: 'flex', flexShrink: '0', height: '56px', justifyContent: 'center', minWidth: '0px', overflow: 'clip', width: '56px' }}>
-          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/0TCCT2B3K730WM42YW5QV0YR41.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '62px', width: '62px' }} />
+          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/59N91NRKAERXG72WGB0HAQDKR8.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '62px', width: '62px' }} />
         </div>
         <div style={{ boxSizing: 'border-box', display: 'flex', flexBasis: '0%', flexDirection: 'column', flexGrow: '1', gap: '1px' }}>
           <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '20px', fontWeight: 800, letterSpacing: '-0.01em', lineHeight: '24px' }}>

@@ -44,13 +44,14 @@ const CSS = `
 .sa-banner.win { top: 13%; }
 .sa-banner img { display: block; width: 2.4em; height: 2.4em; object-fit: cover; margin: .25em auto 0; border-radius: .35em; border: .09em solid #fff; box-shadow: 0 .08em .3em rgba(0,0,0,.3); transform: rotate(-4deg); }
 .sa-banner small { display: block; font-size: .42em; -webkit-text-stroke: .28em ${INK}; margin-top: .3em; }
-.sa-callout { position: absolute; left: 50%; bottom: 17%; transform: translateX(-50%) rotate(-2deg) scale(.5); opacity: 0; transition: opacity .12s, transform .22s cubic-bezier(.2,1.7,.4,1); font-size: 2.3em; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; color: #fff; padding: .12em .7em .16em; border-radius: .32em; border: .13em solid ${INK}; box-shadow: .18em .18em 0 ${INK}; -webkit-text-stroke: .05em ${INK}; paint-order: stroke fill; }
+.sa-callout { position: absolute; left: 50%; bottom: 24%; transform: translateX(-50%) rotate(-2deg) scale(.5); opacity: 0; transition: opacity .12s, transform .22s cubic-bezier(.2,1.7,.4,1); font-size: 2.3em; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; color: #fff; padding: .12em .7em .16em; border-radius: .32em; border: .13em solid ${INK}; box-shadow: .18em .18em 0 ${INK}; -webkit-text-stroke: .05em ${INK}; paint-order: stroke fill; }
 .sa-callout.on { opacity: 1; transform: translateX(-50%) rotate(-2deg) scale(1); }
 .sa-callout small { display: block; font-size: .42em; letter-spacing: .08em; -webkit-text-stroke: 0; margin-bottom: -.2em; opacity: .95; }
 .sa-cams { position: absolute; right: .8em; bottom: 1em; display: flex; gap: .4em; pointer-events: auto; }
 .sa-cams button { border: 0; border-radius: 999px; padding: .5em .95em; font: 700 1.1em 'Fredoka', system-ui, sans-serif; background: rgba(255,255,255,.88); color: ${INK}; cursor: pointer; }
 .sa-cams button.on { background: ${INK}; color: #fff; }
-.sa-left { position: absolute; left: 50%; transform: translateX(-50%); bottom: 1em; font-size: 1.15em; font-weight: 700; background: rgba(255,255,255,.85); padding: .25em .8em; border-radius: 999px; }
+.sa-map { position: absolute; right: .8em; bottom: 1em; width: 7.4em; height: 7.4em; border-radius: 50%; background: rgba(255,255,255,.82); border: .16em solid ${INK}; box-shadow: .2em .2em 0 ${INK}; }
+.sa-left { position: absolute; right: 1.5em; bottom: 9.4em; font-size: 1.15em; font-weight: 700; background: rgba(255,255,255,.85); padding: .25em .8em; border-radius: 999px; }
 @keyframes sa-pop { from { transform: translate(-50%, -100%) scale(.5); opacity: 0; } to { transform: translate(-50%, -100%) scale(1); opacity: 1; } }
 @keyframes sa-in { from { transform: translateX(-1em); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes sa-up { from { opacity: 1; margin-top: 0; } to { opacity: 0; margin-top: -3.2em; } }
@@ -93,6 +94,7 @@ export function createArena(container, opts = {}) {
   const camsEl = el('div', 'sa-cams', ui); if (!o.controls) camsEl.style.display = 'none';
   const leftEl = el('div', 'sa-left', ui); leftEl.style.display = 'none';
   const calloutEl = el('div', 'sa-callout', ui);
+  const mapEl = el('canvas', 'sa-map', ui); mapEl.width = mapEl.height = 160; const mapCtx = mapEl.getContext('2d'); mapEl.style.display = 'none';
 
   let sim, R, world, actors, shots, fx, started, ended, acc, introLeft, bannerTimer, winnerId;
   let mode = o.camera; let followId = o.followId || null; let speed = o.speed;
@@ -168,6 +170,9 @@ export function createArena(container, opts = {}) {
 
   // ---------- Ereignisse aus der Simulation ----------
   let calloutTimer = null; let slowLeft = 0; let slowCool = 0; let eggs = [];
+  // Regie-Kamera (Hochformat): merkt sich, wo gerade etwas passiert, und fährt dort nah heran. Die Minimap zeigt den Überblick.
+  const hot = []; const focus = { x: 0, z: 0, r: 4, hold: 0, score: 0 };
+  const heat = (x, z, w) => { hot.push({ x, z, w, t: simTime }); if (hot.length > 60) hot.shift(); };
   function callout(owner, name, element) { // großer Namensruf für Spezialangriffe
     calloutEl.innerHTML = `<small>${escapeHtml(owner)} uses</small>${escapeHtml(name)}!`; calloutEl.style.background = colorOf(element); calloutEl.classList.add('on');
     cancel(calloutTimer); calloutTimer = later(() => calloutEl.classList.remove('on'), 1150);
@@ -214,6 +219,9 @@ export function createArena(container, opts = {}) {
       banner(`${a ? escapeHtml(a.e.name) : 'Nobody'} WINS!${a?.e.photoUrl ? `<img src="${a.e.photoUrl}" alt="">` : ''}<small>${[a?.e.ownerName ? `trainer ${escapeHtml(a.e.ownerName)}` : '', born].filter(Boolean).join(' · ')}</small>`, 0); bannerEl.classList.add('win');
       const m = st(e.id); if (m) for (let i = 0; i < 5; i++) later(() => !disposed && FX.confetti(m.x, m.y), i * 300);
     }
+    if (e.type === 'cast') { heat(e.x, e.y, e.special ? 3 : 1); if (e.special) focus.hold = Math.min(focus.hold, 0.15); }
+    else if (e.type === 'hit') { const m = st(e.target); if (m) heat(m.x, m.y, e.crit ? 2.2 : 1.4); }
+    else if (e.type === 'ko') { const m = st(e.id); if (m) heat(m.x, m.y, 3); }
     o.onEvent?.(e);
   }
   let spectate = null;
@@ -227,6 +235,7 @@ export function createArena(container, opts = {}) {
     return Math.max(r / Math.tan(hf), (r * Math.max(0.45, Math.sin(pitch))) / Math.tan(vf)) * 1.04;
   }
   function updateCamera(dt, now) {
+    const directing = o.director === true || (o.director !== false && camera.aspect < 0.8);
     const alive = sim.state.monsters.filter((m) => m.alive);
     let cx = 0, cz = 0, dist, pitch, yaw = rig.userYaw;
     const zr = Math.min(R, sim.state.zone.r + 1.2);
@@ -242,10 +251,26 @@ export function createArena(container, opts = {}) {
         for (const m of alive) { cx += m.x; cz += m.y; } cx /= alive.length; cz /= alive.length;
         let far = 0; for (const m of alive) far = Math.max(far, Math.sqrt((m.x - cx) * (m.x - cx) + (m.y - cz) * (m.y - cz)));
         pitch = alive.length <= 2 ? 0.55 : 0.82; dist = fitDist(Math.max(3, far + 1.15), pitch); yaw += now * 0.00005;
+        if (directing && alive.length > 3) { // Regie: auf den heißesten Kampf fahren statt alles klein zu zeigen
+          focus.hold -= dt;
+          if (focus.hold <= 0) {
+            let best = null; let bestScore = 0;
+            for (const m of alive) { let sc = m.id === followId ? 0.8 : 0; for (const h of hot) { const age = simTime - h.t; if (age > 1.8) continue; const d2 = (h.x - m.x) * (h.x - m.x) + (h.z - m.y) * (h.z - m.y); if (d2 < 12) sc += h.w * (1 - age / 1.8); } if (sc > bestScore) { bestScore = sc; best = m; } }
+            if (best && (bestScore > focus.score * 1.3 || simTime - focus.since > 2.2)) {
+              const t = alive.find((m) => m.id === best.targetId); const fx2 = t ? (best.x + t.x) / 2 : best.x; const fz2 = t ? (best.y + t.y) / 2 : best.y;
+              const span = t ? Math.sqrt((best.x - t.x) * (best.x - t.x) + (best.y - t.y) * (best.y - t.y)) / 2 : 0;
+              const jump = focus.since === undefined ? 99 : Math.sqrt((fx2 - focus.x) * (fx2 - focus.x) + (fz2 - focus.z) * (fz2 - focus.z));
+              if (t) focus.yaw = Math.atan2(best.x - t.x, best.y - t.y) + 0.62; // schräg hinter dem Angreifer: man sieht dem Ziel ins Gesicht
+              if (jump > 3.4) rig.cut = true; // weit entfernter Kampf: Schnitt statt Schwenk
+              focus.x = fx2; focus.z = fz2; focus.r = Math.min(5.4, Math.max(3.7, span + 2.3)); focus.score = bestScore; focus.since = simTime; focus.hold = 1.25;
+            } else { focus.score *= 0.9; focus.hold = 0.3; }
+          }
+          if (focus.since !== undefined) { cx = focus.x; cz = focus.z; pitch = 0.7; dist = fitDist(focus.r, pitch); if (focus.yaw !== undefined) yaw = rig.userYaw + focus.yaw; }
+        }
       } else { pitch = 0.8; dist = fitDist(R, pitch); }
     }
     if (!started) { pitch = 0.62; dist = fitDist(R + 0.5, pitch); cx = 0; cz = 0; yaw = rig.userYaw + now * 0.00025; }
-    const k = 1 - Math.pow(0.0015, dt); // weiche Nachführung
+    const k = rig.cut ? 1 : 1 - Math.pow(0.0015, dt); rig.cut = false; // weiche Nachführung, bei einem Schnitt sofort
     rig.cx = lerp(rig.cx, cx, k); rig.cz = lerp(rig.cz, cz, k); rig.dist = lerp(rig.dist, dist * rig.zoom, k); rig.pitch = lerp(rig.pitch, pitch, k); rig.yaw = mode === 'follow' && started ? lerpAngle(rig.yaw, yaw, k * 0.6) : lerpAngle(rig.yaw, yaw, k);
     rig.kick = Math.max(0, rig.kick - dt * 3);
     const d = rig.dist * (1 - rig.kick * 0.035); const cp = Math.cos(rig.pitch);
@@ -274,6 +299,7 @@ export function createArena(container, opts = {}) {
     for (const egg of eggs) scene.remove(egg); eggs = [];
     sim = createSim({ entrants: entrants.map(({ id, name, element, stats, traits, moves }) => ({ id, name, element, stats, traits, moves })), seed: o.seed, dayElement: o.dayElement });
     R = sim.state.arena.r; world = buildWorld(); buildActors(); shots = new Map(); fx = fx || []; feedEl.innerHTML = ''; calloutEl.classList.remove('on');
+    hot.length = 0; focus.since = undefined; focus.yaw = undefined; focus.score = 0; focus.hold = 0;
     started = false; ended = false; acc = 0; winnerId = null; spectate = null; introLeft = o.intro; rig.kick = 0;
     for (const m of sim.state.monsters) { const a = actors.get(m.id); if (a) a.yaw = Math.atan2(-m.x, -m.y); }
     drawCamButtons();
@@ -337,6 +363,17 @@ export function createArena(container, opts = {}) {
     for (const [id, shot] of shots) if (!seen.has(id)) { shot.dispose(); shots.delete(id); }
     for (let i = fx.length - 1; i >= 0; i--) if (!fx[i](sdt)) fx.splice(i, 1);
     const aliveCount = sim.state.monsters.reduce((c, m) => c + (m.alive ? 1 : 0), 0);
+    const showMap = started && !winnerId && aliveCount > 3 && mode === 'auto' && (o.director === true || (o.director !== false && camera.aspect < 0.8));
+    if (mapEl.style.display !== (showMap ? 'block' : 'none')) mapEl.style.display = showMap ? 'block' : 'none';
+    if (showMap) {
+      const c = mapCtx; const k = 70 / (R + 0.6); c.clearRect(0, 0, 160, 160); c.save(); c.translate(80, 80);
+      c.fillStyle = '#cdeccf'; c.beginPath(); c.arc(0, 0, R * k, 0, 7); c.fill();
+      if (sim.state.zone.r < R - 0.05) { c.strokeStyle = '#ff3b30'; c.lineWidth = 3; c.beginPath(); c.arc(0, 0, sim.state.zone.r * k, 0, 7); c.stroke(); }
+      const sn = Math.sin(-rig.yaw), cs = Math.cos(-rig.yaw); // Karte dreht mit der Kamera
+      for (const m of sim.state.monsters) { if (!m.alive) continue; const x = (m.x * cs - m.y * sn) * k, y = (m.x * sn + m.y * cs) * k; c.fillStyle = colorOf(m.element); c.strokeStyle = '#2b2523'; c.lineWidth = m.id === followId ? 4 : 2; c.beginPath(); c.arc(x, y, m.id === followId ? 8 : 6, 0, 7); c.fill(); c.stroke(); }
+      if (focus.since !== undefined) { const x = (focus.x * cs - focus.z * sn) * k, y = (focus.x * sn + focus.z * cs) * k; c.strokeStyle = 'rgba(43,37,35,.75)'; c.lineWidth = 2.5; c.setLineDash([6, 5]); c.beginPath(); c.arc(x, y, focus.r * k, 0, 7); c.stroke(); }
+      c.restore();
+    }
     if (leftEl.dataset.n !== String(aliveCount)) { leftEl.dataset.n = String(aliveCount); leftEl.textContent = `${aliveCount} left`; }
     leftEl.style.display = started && !winnerId && aliveCount > 2 ? 'block' : 'none';
     updateCamera(dt, now);

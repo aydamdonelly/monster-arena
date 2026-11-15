@@ -75,3 +75,39 @@ React Native: do not use `elevation` or `shadowRadius`. Render a second view beh
 3. Mint appears only behind monsters (stage blocks, thumbs, arena view). The MonsterView background stays `#E8F1EC` so it melts into the stage.
 4. Element colors only on chips, the stat bar fill, the special attack sticker and the element dot. Text on element colors is ink, never white.
 5. Type contrast does the hierarchy: 900 display next to 500 body and 13px caps labels. Nothing smaller than 12, and 12 only in caps.
+
+## Round 2: flow
+
+Same tokens and rules as above. New since round 1: monsters have black comic outlines (renders in `renders/` are the outlined versions, plus `golden-<name>.png` with a floating crown), the royale is at **5:00 PM**, and a first-time visitor is never stopped by a form.
+
+The flow: land on **07** → tap the camera → **02** hatching → **08** reveal → "Watch it fight" (instant practice arena). The trainer name is asked on 08, after the hatch, as the way into the royale. At the daily limit the Catch tab shows **11**, which opens the **09** sheet. After a royale the Arena tab shows **10**. The projector runs **12**.
+
+| Screen | File | Route / state |
+| --- | --- | --- |
+| 07 Landing | `07-landing` | first visit on `/` (no player name yet, no monsters). Replaces the onboarding wall: 06 Onboarding is no longer shown before the first hatch. No tab bar, no form. |
+| 08 Reveal | `08-reveal` | right after hatching (replaces the plain 03 layout for the reveal moment; 03 stays the detail screen). Scrolls: stats and born-from sit below the fold. |
+| 09 Golden Egg | `09-golden-egg` | bottom sheet over the dimmed Catch screen, opened from 11 (or when a 4th hatch is attempted). |
+| 10 Royale result | `10-royale-result` | Arena tab once the royale is done. |
+| 11 Limit | `11-limit` | Catch tab when 3 of 3 hatches are used. |
+| 12 TV | `12-tv` | `/tv`, 1920 x 1080 for the projector, before the royale starts. |
+
+### Copy, exactly
+
+- **07 Landing**: wordmark `snappymon` · sticker `ROYALE TODAY 5 PM` · pitch `Snap anything.` / `Hatch a monster.` · under the button `No app. No signup. Five seconds.` · proof `1,204 monsters hatched today` (live count from the backend, with a small green dot).
+- **08 Reveal**: sticker `IT HATCHED!` · element chip (e.g. `WATER`) · monster name · lore line · attack stickers (name plus `MELEE` / `SPECIAL · BURST`) · primary `Watch it fight` · outline `Text me the result` (speech-bubble icon) and `Share` · line `Name your trainer to enter the 5 PM royale` · field placeholder `Trainer name` · ink button `Enter` · below the fold `STATS` and `BORN FROM`.
+- **09 Golden Egg**: stickers `+1 HATCH` and `CROWN INCLUDED` · title `Golden Egg` · price `$0.99` · lines `One more hatch today`, `Hatches golden, crown included`, `Same stats. Just fancier.` · primary `Crack one open · $0.99` · link `Maybe tomorrow`.
+- **10 Royale result**: labels `ROYALE · TODAY 5:00 PM` and `16 FOUGHT` · title `<Champion>` / `wins.` · sticker `CHAMPION` · polaroid caption `BORN` · `trainer <name> · 5 knockouts` · `You finished #4 of 16` · quip `Mugzilla went down swinging.` · primary `Watch the replay` · outline `Share your monster` · quiet line `Next drop tomorrow, 9 AM`.
+- **11 Limit**: drop card label `TODAY'S DROP`, title of the drop, sticker `3 OF 3` · three thumbs of today's hatches · `0 OF 3 HATCHES LEFT TODAY` with three empty egg dots · headline `That's three for today.` · sub `Come back tomorrow, or crack a Golden Egg.` · primary `Golden Egg · $0.99` (egg icon) · outline `Watch the arena`.
+- **12 TV**: wordmark `snappymon` · title `SNAPPYMON ROYALE` · `148 monsters entered` · yellow block `STARTS IN` `12:44` · QR code, then `snap an object at` / `snappymon.com` / `to enter` · arena block with roster strip (`+144` for the rest).
+
+### What an implementer must know
+
+1. **Yellow moves, the rule stays**: on 07 the camera button itself is yellow (ink icon, ink hard-shadow circle offset by 10). On 01 Catch the drop card is yellow and the camera button is ink. On 11 the drop card turns into an outlined, non-yellow "done" card because the Golden Egg button is the yellow moment. On 12 the countdown block is the yellow moment.
+2. **Gold is not a UI color.** It appears only through the golden render on 09 (and on golden monsters wherever they are shown). Buttons stay chrome yellow `#FFD60A`.
+3. **Peeking monsters** (07) are absolutely positioned, partly outside the screen, tilted 9 to 16 degrees, at clearly different sizes (116 to 184). They must never cover the pitch, the button or the proof line. Use today's most recent real monsters if available, otherwise the bundled renders.
+4. **Starburst stickers**: 14-point star polygons. Yellow with ink outline behind the egg (02), white with ink outline behind the fresh monster (08). On 08 the monster overlaps the stage edge slightly on purpose.
+5. **Bottom sheet (09)**: ground fill, 2px ink top border, top radius 28, dim layer `rgba(17,17,17,0.55)` over the screen behind. The golden render stands on a small stage and its crown pokes out above the stage, staying below the grabber.
+6. **Trainer name after the hatch**: on 08 the field and `Enter` are inline (field height 50, radius 14, 2px ink border; `Enter` is ink fill with white label). Entering a name calls `players.setProfile` and confirms the royale entry. Skipping must still let the user watch the practice fight.
+7. **Buttons on 08**: one primary (`Watch it fight`, bolt icon), then the two outline buttons side by side at height 48 with 15px labels (`Text me the result` takes about 63 % of the row).
+8. **TV sizes** (12): title 128/112 at weight 900 uppercase, timer 190/176, URL 66, roster names 22, outlines 4px, hard shadows 8 to 10px, outer padding 72 top and bottom, 96 left and right. The arena block is where the live `monster-kit/arena.js` view goes; the QR is a placeholder for a real code to `https://snappymon.com`.
+9. Changed in round 1 screens: outlined renders everywhere (01 mascot, 03 stage, 04 tiles, 05 arena and thumb, 06 mascot), names updated to Duckzilla, Phone Phantom and Toadstooloom, and 05 Arena now says `TODAY 5:00 PM`.

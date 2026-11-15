@@ -26,7 +26,7 @@ export default function OnboardingScreen() {
         <div style={{ boxSizing: 'border-box', color: 'var(--color-muted)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '17px', fontWeight: 500, lineHeight: '24px' }}>
           Your monsters need someone to blame.
         </div>
-        <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/0T1EWE3QNFBKTN58ZGK4BCFN1D.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '176px', position: 'absolute', right: '-30px', rotate: '12deg', top: '-34px', transformOrigin: '0% 0%', width: '176px' }} />
+        <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/5MH650FC2NGVHVRMDJHZCBTKMB.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '176px', position: 'absolute', right: '-30px', rotate: '12deg', top: '-34px', transformOrigin: '0% 0%', width: '176px' }} />
       </div>
       <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', paddingInline: '24px', paddingTop: '22px' }}>
         <div style={{ alignItems: 'center', backgroundColor: 'var(--color-ground)', borderColor: 'var(--color-ink)', borderRadius: '16px', borderStyle: 'solid', borderWidth: '2px', boxShadow: 'var(--color-ink) 4px 4px 0px', boxSizing: 'border-box', display: 'flex', flexShrink: 0, gap: '2px', height: '60px', paddingInline: '18px' }}>

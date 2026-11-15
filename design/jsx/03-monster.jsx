@@ -30,7 +30,7 @@ export default function MonsterScreen() {
       </div>
       <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', paddingInline: '20px' }}>
         <div style={{ alignItems: 'center', backgroundColor: 'var(--color-stage)', borderRadius: '28px', boxSizing: 'border-box', display: 'flex', flexShrink: 0, height: '226px', justifyContent: 'center', minHeight: '0px', overflow: 'clip', position: 'relative' }}>
-          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/0TCCT2B3K730WM42YW5QV0YR41.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '246px', width: '246px' }} />
+          <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/59N91NRKAERXG72WGB0HAQDKR8.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', flexShrink: '0', height: '246px', width: '246px' }} />
           <div style={{ alignItems: 'center', backgroundColor: 'var(--color-water)', borderColor: 'var(--color-ink)', borderRadius: '8px', borderStyle: 'solid', borderWidth: '2px', boxShadow: 'var(--color-ink) 2px 2px 0px', boxSizing: 'border-box', display: 'flex', left: '16px', paddingBlock: '4px', paddingInline: '10px', position: 'absolute', rotate: '-4deg', top: '16px', transformOrigin: '0% 0%' }}>
             <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', lineHeight: '16px', textTransform: 'uppercase' }}>
               Water

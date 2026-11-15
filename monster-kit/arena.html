@@ -63,7 +63,7 @@
     if (P.get('photos') === '0') for (const e of entrants) e.photoUrl = null; // z. B. für Testmonster mit fremden Fotos
     const arena = createArena(stage, {
       entrants, seed: SEED, dayElement: DAY, camera: P.get('cam') || 'auto', followId: P.get('follow') || null,
-      speed: Number(P.get('speed') || 1), intro: Number(P.get('intro') ?? 3), title: TITLE, controls: P.get('controls') !== '0', manual: P.get('manual') === '1', uiScale: Number(P.get('ui') || 1),
+      speed: Number(P.get('speed') || 1), intro: Number(P.get('intro') ?? 3), title: TITLE, controls: P.get('controls') !== '0', manual: P.get('manual') === '1', director: P.has('director') ? P.get('director') === '1' : undefined, uiScale: Number(P.get('ui') || 1),
       onEnd: (r) => { console.log('[arena] end', JSON.stringify(r)); window.__arenaDone = true; if (P.get('cta')) arena.later(() => { const c = document.getElementById('cta'); c.innerHTML = `snap anything. hatch a monster.<br><b>${P.get('cta')}</b>`; c.classList.add('on'); }, 1800); },
       onEvent: (e) => { if (e.type === 'cast') document.getElementById('hook').classList.remove('on'); },
     });

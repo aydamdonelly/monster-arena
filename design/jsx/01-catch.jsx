@@ -55,7 +55,7 @@ export default function CatchScreen() {
         </div>
       </div>
       <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', flexBasis: '0%', flexDirection: 'column', flexGrow: '1', gap: '22px', justifyContent: 'center', paddingInline: '24px', paddingTop: '8px', position: 'relative' }}>
-        <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/2H2H7Y5ZE0XCQ2JB27K8TKH8X6.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '150px', position: 'absolute', right: '-52px', rotate: '-2deg', top: '64px', transformOrigin: '0% 0%', width: '150px' }} />
+        <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/23PBYT9XYP67C5P2PNFH7GWADG.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '150px', position: 'absolute', right: '-52px', rotate: '-16deg', top: '64px', transformOrigin: '0% 0%', width: '150px' }} />
         <div style={{ boxSizing: 'border-box', display: 'flex', flexShrink: '0', height: '190px', position: 'relative', width: '190px' }}>
           <div style={{ backgroundColor: 'var(--color-ground)', borderColor: 'var(--color-ink)', borderRadius: '90px', borderStyle: 'solid', borderWidth: '2px', boxSizing: 'border-box', height: '180px', left: '10px', position: 'absolute', top: '10px', width: '180px' }} />
           <div style={{ alignItems: 'center', backgroundColor: 'var(--color-ink)', borderRadius: '90px', boxSizing: 'border-box', display: 'flex', height: '180px', justifyContent: 'center', left: '0px', position: 'absolute', top: '0px', width: '180px' }}>

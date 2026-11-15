@@ -36,7 +36,7 @@
     .cols { display: grid; grid-template-columns: 1fr; gap: 0 28px; }
     @media (min-width: 620px) { .cols { grid-template-columns: 1fr 1fr; } }
     #timeline { display: flex; align-items: flex-end; gap: 3px; height: 130px; border-bottom: 2px solid var(--ink); background: var(--mint); border-radius: 14px 14px 0 0; padding: 10px 10px 0; overflow-x: auto; }
-    .tcol { flex: 1 0 9px; min-width: 9px; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; position: relative; }
+    .tcol { flex: 1 0 9px; min-width: 9px; max-width: 44px; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; position: relative; }
     .tcol .v { background: var(--ink); border-radius: 3px 3px 0 0; }
     .tcol .s { background: var(--yellow); border: 1.5px solid var(--ink); border-bottom: 0; position: absolute; bottom: 0; left: 15%; right: 15%; border-radius: 3px 3px 0 0; }
     .axis { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
@@ -144,7 +144,8 @@
       // Zeitverlauf: lückenlose 15-Minuten-Schritte vom ersten Eintrag bis jetzt
       const step = 15 * 60 * 1000; const now = Date.now();
       const first = d.timeline.length ? d.timeline[0].t : Math.floor(now / step) * step;
-      const start = Math.max(first, Math.floor((now - 12 * 3600 * 1000) / step) * step);
+      // mindestens die letzten 3 Stunden zeigen (sonst wird ein einzelner Schritt zu einem riesigen Balken), höchstens 12
+      const start = Math.max(Math.min(first, Math.floor((now - 3 * 3600 * 1000) / step) * step), Math.floor((now - 12 * 3600 * 1000) / step) * step);
       const byT = new Map(d.timeline.map((b) => [b.t, b]));
       const cols = []; for (let t = start; t <= now; t += step) cols.push(byT.get(t) || { t, visitors: 0, snappers: 0 });
       const max = Math.max(1, ...cols.map((c) => c.visitors), ...cols.map((c) => c.snappers));

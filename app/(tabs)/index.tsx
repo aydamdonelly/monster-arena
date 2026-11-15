@@ -240,10 +240,9 @@ function Limit({ mine, now, canGolden, onGolden }: { mine: Entry[]; now: number;
       </Appear>
       <Appear delay={200} style={styles.limitCopy}>
         <Text style={styles.limitTitle}>{canGolden ? 'Your egg is in.' : 'Both eggs are in.'}</Text>
+        <HatchClock />
         <Text style={Type.muted}>
-          {canGolden
-            ? `It hatches at ${royaleHour()}. One egg per royale. Want a second one in the fight?`
-            : `They hatch at ${royaleHour()}. See you in the arena.`}
+          {canGolden ? 'One egg per royale. Want a second one in the fight?' : 'See you in the arena.'}
         </Text>
       </Appear>
       <Appear delay={260} style={styles.limitActions}>
@@ -258,6 +257,18 @@ function Limit({ mine, now, canGolden, onGolden }: { mine: Entry[]; now: number;
         /> : null}
         <OutlineButton label="Watch the arena" onPress={() => router.navigate('/arena')} style={styles.arenaButton} labelStyle={styles.arenaLabel} />
       </Appear>
+    </View>
+  );
+}
+
+// Countdown bis zum Schlüpfen, groß und ohne Erklärung
+function HatchClock() {
+  const now = useNow();
+  const left = royaleTimeToday() - now;
+  return (
+    <View style={styles.hatchClock}>
+      <Text style={styles.hatchClockTime}>{left > 0 ? clock(left) : 'LIVE'}</Text>
+      <Text style={[Type.label, styles.mutedLabel]}>{left > 0 ? `until it hatches · ${royaleHour()}` : 'in the arena now'}</Text>
     </View>
   );
 }
@@ -280,6 +291,8 @@ function DropCard() {
 }
 
 const styles = StyleSheet.create({
+  hatchClock: { flexDirection: 'row', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' },
+  hatchClockTime: { fontFamily: Fonts.black, fontSize: 46, lineHeight: 50, letterSpacing: -1.6, color: Palette.ink, fontVariant: ['tabular-nums'] },
   safe: { flex: 1, backgroundColor: Palette.ground },
   container: { paddingBottom: 24, flexGrow: 1, width: '100%', maxWidth: 560, alignSelf: 'center' },
   header: { paddingHorizontal: 24, paddingTop: 14 },

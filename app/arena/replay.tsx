@@ -5,16 +5,18 @@ import { ActivityIndicator, Text, View } from 'react-native';
 
 import ArenaStage, { closeArena, ResultPanel } from '@/components/ArenaStage';
 import { api } from '@/convex/_generated/api';
-import type { ArenaResult } from '@/lib/arena';
+import { royaleHour, type ArenaResult } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
+import { testArgs, useTestMode } from '@/lib/test-mode';
 import { Palette, Type } from '@/lib/theme';
 
 export default function ReplayScreen() {
   const deviceId = useDeviceId();
   const params = useLocalSearchParams<{ round?: string; live?: string }>();
   const index = Number(params.round ?? -1);
-  const round = useQuery(api.royale.round, { index });
-  const mine = useQuery(api.royale.mine, { deviceId });
+  const testMode = useTestMode();
+  const round = useQuery(api.royale.round, { index, ...testArgs(testMode) });
+  const mine = useQuery(api.royale.mine, { deviceId, ...testArgs(testMode) });
   const [result, setResult] = useState<ArenaResult | null>(null);
   const [take, setTake] = useState(0);
 
@@ -40,7 +42,7 @@ export default function ReplayScreen() {
       dayElement={round.dayElement}
       followId={followId}
       title={title}
-      label={`5:00 PM · ${round.isFinal ? 'Final' : `Heat ${round.index + 1}`} · ${round.entrants.length} eggs`}
+      label={`${royaleHour()} · ${round.isFinal ? 'Final' : `Heat ${round.index + 1}`} · ${round.entrants.length} eggs`}
       live={params.live === '1'}
       caption={followId ? mine?.entered ? mine.monsterName : null : null}
       onEnd={setResult}>

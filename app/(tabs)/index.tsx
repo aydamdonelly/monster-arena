@@ -189,7 +189,7 @@ function EggTile({ entry }: { entry: Entry }) {
   return (
     <Pressable accessibilityRole="button" onPress={() => router.push(`/egg/${entry._id}`)} style={styles.eggTile}>
       <Egg seed={entry._id} width={58} golden={entry.golden} rotate={-4} />
-      <InkSticker label="5 PM" rotate={-4} fontSize={12} style={styles.tileSticker} />
+      <InkSticker label={royaleHour()} rotate={-4} fontSize={12} style={styles.tileSticker} />
       {entry.photoUrl ? (
         <View style={styles.tilePhoto}>
           <HardShadow offset={3} radius={6} rotate={8}>
@@ -209,32 +209,14 @@ function Limit({ mine, now, canGolden, onGolden }: { mine: Entry[]; now: number;
   return (
     <View style={styles.limit}>
       <MonsterSnapshots items={pending} onSnapshot={onSnapshot} dom={{ style: styles.snapshotter }} />
-      <Appear style={styles.limitLane}>
-        <View style={styles.doneCard}>
-          <View style={styles.doneText}>
-            <Text style={[Type.label, styles.mutedLabel]}>{"Today's drop"}</Text>
-            <Text style={styles.doneTitle} numberOfLines={1}>
-              Anything
-            </Text>
-          </View>
-          <InkSticker label={today.length > 1 ? 'Both in' : "You're in"} rotate={3} />
-        </View>
-      </Appear>
-      <Appear delay={80} style={styles.thumbs}>
+      <Appear style={styles.thumbs}>
         {today.map((m) => (
           <StageBlock key={m._id} radius={Radii.tile} style={styles.thumb}>
             {m.status === 'hatched' ? (
               snapshot(m._id) ? <Image source={{ uri: snapshot(m._id) }} style={styles.thumbImage} contentFit="cover" transition={200} /> : null
             ) : (
-              <Egg seed={m._id} width={52} rotate={-4} />
+              <Egg seed={m._id} width={today.length > 1 ? 80 : 104} golden={m.golden} photoUrl={m.photoUrl} rotate={-4} />
             )}
-            {m.photoUrl ? (
-              <View style={styles.tilePhoto}>
-                <View style={[styles.tilePolaroid, { transform: [{ rotate: '8deg' }] }]}>
-                  <Image source={{ uri: m.photoUrl }} style={styles.tilePhotoImage} contentFit="cover" />
-                </View>
-              </View>
-            ) : null}
           </StageBlock>
         ))}
       </Appear>
@@ -366,23 +348,9 @@ const styles = StyleSheet.create({
   },
   limit: { flexGrow: 1 },
   snapshotter: { position: 'absolute', width: 1, height: 1, opacity: 0 },
-  limitLane: { paddingHorizontal: 20, paddingTop: 20 },
-  doneCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    borderWidth: 2,
-    borderColor: Palette.ink,
-    borderRadius: Radii.tile,
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-  },
-  doneText: { flexShrink: 1, gap: 2 },
   mutedLabel: { color: Palette.muted },
-  doneTitle: { fontFamily: Fonts.black, fontSize: 26, lineHeight: 28, letterSpacing: -0.8, color: Palette.ink },
-  thumbs: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingTop: 16 },
-  thumb: { flex: 1, height: 104, alignItems: 'center', justifyContent: 'center' },
+  thumbs: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingTop: 20 },
+  thumb: { flex: 1, height: 176, alignItems: 'center', justifyContent: 'center' },
   thumbImage: { width: 112, height: 112 },
   limitEggs: { paddingHorizontal: 24, paddingTop: 16 },
   limitCopy: { gap: 8, paddingHorizontal: 24, paddingTop: 22 },

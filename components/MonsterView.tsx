@@ -1,6 +1,6 @@
 'use dom';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 import { updateMonster } from '../monster-kit/monster.js';
@@ -21,58 +21,20 @@ type Props = {
 export default function MonsterView({ genome, burst }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const genomeKey = JSON.stringify(genome);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const host = ref.current;
     if (!host) return;
     try {
-      return mount(host);
+      return mount(host, genomeKey, burst);
     } catch (e) {
-      setError(String(e));
+      const note = document.createElement('p');
+      note.style.cssText = 'font: 12px sans-serif; padding: 8px; margin: 0;';
+      note.textContent = String(e);
+      host.appendChild(note);
+      return () => note.remove();
     }
   }, [genomeKey, burst]);
-
-  function mount(host: HTMLDivElement) {
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: burst });
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
-    renderer.domElement.style.display = 'block';
-    renderer.domElement.style.position = 'relative';
-    host.appendChild(renderer.domElement);
-
-    const { scene, camera, monster, frame, dispose } = createMonsterScene(JSON.parse(genomeKey));
-    if (burst) {
-      scene.background = null;
-      scene.children.forEach((o) => o instanceof THREE.Mesh && (o.visible = false));
-    }
-
-    const resize = () => {
-      const w = host.clientWidth || window.innerWidth || 1;
-      const h = host.clientHeight || window.innerHeight || 1;
-      renderer.setSize(w, h);
-      frame(w / h);
-    };
-    const observer = new ResizeObserver(resize);
-    observer.observe(host);
-    resize();
-
-    const clock = new THREE.Clock();
-    renderer.setAnimationLoop(() => {
-      const t = clock.getElapsedTime();
-      updateMonster(monster, t);
-      monster.rotation.y = Math.sin(t * 0.6) * 0.35;
-      renderer.render(scene, camera);
-    });
-
-    return () => {
-      observer.disconnect();
-      renderer.setAnimationLoop(null);
-      renderer.dispose();
-      dispose();
-      host.removeChild(renderer.domElement);
-    };
-  }
 
   return (
     <>
@@ -83,8 +45,47 @@ export default function MonsterView({ genome, burst }: Props) {
             <polygon points={BURST} fill="#FFFFFF" stroke="#111111" strokeWidth={2.5} strokeLinejoin="round" />
           </svg>
         ) : null}
-        {error ? <p style={{ font: '12px sans-serif', padding: 8 }}>{error}</p> : null}
       </div>
     </>
   );
+}
+
+function mount(host: HTMLDivElement, genomeKey: string, burst?: boolean) {
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: burst });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+  renderer.domElement.style.display = 'block';
+  renderer.domElement.style.position = 'relative';
+  host.appendChild(renderer.domElement);
+
+  const { scene, camera, monster, frame, dispose } = createMonsterScene(JSON.parse(genomeKey));
+  if (burst) {
+    scene.background = null;
+    scene.children.forEach((o) => o instanceof THREE.Mesh && (o.visible = false));
+  }
+
+  const resize = () => {
+    const w = host.clientWidth || window.innerWidth || 1;
+    const h = host.clientHeight || window.innerHeight || 1;
+    renderer.setSize(w, h);
+    frame(w / h);
+  };
+  const observer = new ResizeObserver(resize);
+  observer.observe(host);
+  resize();
+
+  const clock = new THREE.Clock();
+  renderer.setAnimationLoop(() => {
+    const t = clock.getElapsedTime();
+    updateMonster(monster, t);
+    monster.rotation.y = Math.sin(t * 0.6) * 0.35;
+    renderer.render(scene, camera);
+  });
+
+  return () => {
+    observer.disconnect();
+    renderer.setAnimationLoop(null);
+    renderer.dispose();
+    dispose();
+    host.removeChild(renderer.domElement);
+  };
 }

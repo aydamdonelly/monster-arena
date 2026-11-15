@@ -7,6 +7,7 @@ import { Image } from 'expo-image';
 import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
+import { HatchNowButton } from '@/components/DemoMode';
 import Egg from '@/components/Egg';
 import GoldenEggSheet from '@/components/GoldenEggSheet';
 import { useLiveRoyale } from '@/components/RoyaleTakeover';
@@ -17,6 +18,7 @@ import { Appear, InkSticker, OutlineButton, PrimaryButton } from '@/components/u
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 import { clock, royaleHour, royaleLocalNote, royaleTimeToday, useNow } from '@/lib/arena';
+import { useDemoKey } from '@/lib/demo';
 import { useDeviceId } from '@/lib/device';
 import { Fonts, Palette, Radii, Type } from '@/lib/theme';
 
@@ -47,7 +49,8 @@ export default function EggScreen({
   const [now] = useState(() => Date.now());
   const me = useQuery(api.players.me, { deviceId, now });
   const [sheet, setSheet] = useState(false);
-  const offer = !!me && me.hatchesLeft === 0 && me.canGolden && me.goldenEggs === 0;
+  const demoKey = useDemoKey();
+  const offer = !demoKey && !!me && me.hatchesLeft === 0 && me.canGolden && me.goldenEggs === 0;
 
   if (entry?.status === 'rejected') {
     return (
@@ -124,11 +127,11 @@ export default function EggScreen({
         <TrainerRow />
       </Appear>
       <Appear delay={layIn ? 1100 : 160} style={styles.actions}>
-        {SMS_NUMBER ? <TextMe deviceId={deviceId} quiet={offer} /> : null}
+        {demoKey ? <HatchNowButton /> : SMS_NUMBER ? <TextMe deviceId={deviceId} quiet={offer} /> : null}
         <ShareButton
-          variant={SMS_NUMBER || offer ? 'outline' : 'primary'}
-          style={SMS_NUMBER || offer ? styles.share : undefined}
-          labelStyle={SMS_NUMBER || offer ? styles.shareLabel : undefined}
+          variant={demoKey || SMS_NUMBER || offer ? 'outline' : 'primary'}
+          style={demoKey || SMS_NUMBER || offer ? styles.share : undefined}
+          labelStyle={demoKey || SMS_NUMBER || offer ? styles.shareLabel : undefined}
         />
       </Appear>
       <GoldenEggSheet visible={sheet} from="egg" onClose={() => setSheet(false)} />

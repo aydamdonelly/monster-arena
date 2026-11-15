@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import CameraButton from '@/components/CameraButton';
+import { HatchNowButton } from '@/components/DemoMode';
 import Egg from '@/components/Egg';
 import EggScreen, { type Entry } from '@/components/EggScreen';
 import GoldenEggSheet from '@/components/GoldenEggSheet';
@@ -19,6 +20,7 @@ import { Appear, HardShadow, InkSticker, OutlineButton, PrimaryButton, StageBloc
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 import { clock, royaleHour, royaleTimeToday, useNow } from '@/lib/arena';
+import { useDemoKey } from '@/lib/demo';
 import { useDeviceId } from '@/lib/device';
 import { celebrate, tap } from '@/lib/haptics';
 import { pickPhoto, toThumbJpeg, toUploadJpeg, uploadJpeg } from '@/lib/photo';
@@ -52,7 +54,7 @@ export default function CatchScreen() {
   const goldenSettled = !!me && !goldenReady && !me.canGolden;
   const returning = golden === '1' && !goldenSettled;
   const firstVisit = phase.kind === 'idle' && mine?.length === 0;
-  const atLimit = !!me && me.hatchesLeft === 0 && (me.goldenEggs === 0 || !me.canGolden);
+  const atLimit = !!me && !me.unlimited && me.hatchesLeft === 0 && (me.goldenEggs === 0 || !me.canGolden);
   const fullScreen = firstVisit || phase.kind === 'egg';
   const lastRoyale = royaleTimeToday() > now ? royaleTimeToday() - DAY_MS : royaleTimeToday();
   const hatchedToday = mine?.find((m) => m.status === 'hatched' && m._creationTime < lastRoyale && m._creationTime >= lastRoyale - DAY_MS);
@@ -178,6 +180,7 @@ function Idle({
   goldenEggs: number;
   eggs: Entry[];
 }) {
+  const demoKey = useDemoKey();
   const { height } = useWindowDimensions();
   const size = Math.min(155, Math.max(124, Math.round(height * 0.184)));
   return (
@@ -194,6 +197,11 @@ function Idle({
         </View>
         <Text style={Type.label}>{hatchesLeft === 0 && goldenEggs > 0 ? 'Your golden egg is ready. Snap it.' : 'One egg per royale. Make it count.'}</Text>
       </Appear>
+      {demoKey && eggs.length > 0 ? (
+        <Appear delay={150} style={styles.hatchNow}>
+          <HatchNowButton />
+        </Appear>
+      ) : null}
       {eggs.length > 0 ? (
         <Appear delay={180} style={styles.yourEggs}>
           <Text style={[Type.label, styles.yourEggsLabel]}>Your eggs</Text>
@@ -416,6 +424,7 @@ const styles = StyleSheet.create({
     borderColor: Palette.ink,
   },
   eggFull: { backgroundColor: Palette.ink },
+  hatchNow: { gap: 8, paddingHorizontal: 20, paddingBottom: 16 },
   yourEggs: { gap: 10, paddingHorizontal: 20, paddingBottom: 18 },
   yourEggsLabel: { paddingHorizontal: 4 },
   eggTiles: { flexDirection: 'row', gap: 12 },

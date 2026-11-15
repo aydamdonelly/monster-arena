@@ -8,11 +8,12 @@
 // entrants: [{ id, name, element, stats, traits?, moves?, genome, photoUrl?, ownerName? }]
 import * as THREE from 'three';
 import { buildMonster, updateMonster } from './monster.js';
-import { createSim, DT } from './royale-sim.js';
+import { createSim, DT, MOVE_SPECS } from './royale-sim.js';
+import { createFx } from './arena-fx.js';
 
 export const ELEMENT_COLORS = { fire: '#ff6b4a', water: '#3d9df3', plant: '#4cb867', metal: '#8c97a6', fluff: '#e98bc4', spirit: '#9a7bf0', leaf: '#4cb867', spark: '#f5c542', rock: '#a08a6a', normal: '#b0b6b3' };
 const colorOf = (el) => ELEMENT_COLORS[el] || '#b0b6b3';
-const S = 0.56; // Monster-Maßstab in der Arena
+const S = 0.6; // Monster-Maßstab in der Arena
 const INK = '#2b2523';
 
 const CSS = `
@@ -43,6 +44,9 @@ const CSS = `
 .sa-banner.win { top: 13%; }
 .sa-banner img { display: block; width: 2.4em; height: 2.4em; object-fit: cover; margin: .25em auto 0; border-radius: .35em; border: .09em solid #fff; box-shadow: 0 .08em .3em rgba(0,0,0,.3); transform: rotate(-4deg); }
 .sa-banner small { display: block; font-size: .42em; -webkit-text-stroke: .28em ${INK}; margin-top: .3em; }
+.sa-callout { position: absolute; left: 50%; bottom: 17%; transform: translateX(-50%) rotate(-2deg) scale(.5); opacity: 0; transition: opacity .12s, transform .22s cubic-bezier(.2,1.7,.4,1); font-size: 2.3em; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; color: #fff; padding: .12em .7em .16em; border-radius: .32em; border: .13em solid ${INK}; box-shadow: .18em .18em 0 ${INK}; -webkit-text-stroke: .05em ${INK}; paint-order: stroke fill; }
+.sa-callout.on { opacity: 1; transform: translateX(-50%) rotate(-2deg) scale(1); }
+.sa-callout small { display: block; font-size: .42em; letter-spacing: .08em; -webkit-text-stroke: 0; margin-bottom: -.2em; opacity: .95; }
 .sa-cams { position: absolute; right: .8em; bottom: 1em; display: flex; gap: .4em; pointer-events: auto; }
 .sa-cams button { border: 0; border-radius: 999px; padding: .5em .95em; font: 700 1.1em 'Fredoka', system-ui, sans-serif; background: rgba(255,255,255,.88); color: ${INK}; cursor: pointer; }
 .sa-cams button.on { background: ${INK}; color: #fff; }
@@ -88,6 +92,7 @@ export function createArena(container, opts = {}) {
   const bannerEl = el('div', 'sa-banner', ui);
   const camsEl = el('div', 'sa-cams', ui); if (!o.controls) camsEl.style.display = 'none';
   const leftEl = el('div', 'sa-left', ui); leftEl.style.display = 'none';
+  const calloutEl = el('div', 'sa-callout', ui);
 
   let sim, R, world, actors, shots, fx, started, ended, acc, introLeft, bannerTimer, winnerId;
   let mode = o.camera; let followId = o.followId || null; let speed = o.speed;
@@ -142,28 +147,9 @@ export function createArena(container, opts = {}) {
 
   // ---------- Effekte ----------
   function addFx(update) { fx.push(update); }
-  function burst(x, y, z, color, n = 10, power = 3) {
-    for (let i = 0; i < n; i++) {
-      const m = new THREE.Mesh(GEO.tetra, basicMat(i % 3 === 0 ? '#ffffff' : color)); const s = 0.06 + Math.random() * 0.09; m.scale.setScalar(s); m.position.set(x, y, z);
-      const v = new THREE.Vector3((Math.random() - 0.5) * power, Math.random() * power * 0.9 + 0.6, (Math.random() - 0.5) * power); let life = 0.5 + Math.random() * 0.25; const total = life;
-      scene.add(m);
-      addFx((dt) => { life -= dt; v.y -= 9 * dt; m.position.addScaledVector(v, dt); m.rotation.x += 9 * dt; m.rotation.y += 7 * dt; m.scale.setScalar(s * Math.max(0, life / total)); if (life <= 0) { scene.remove(m); return false; } return true; });
-    }
-  }
-  function ring(x, z, r0, r1, color, dur = 0.35, opacity = 0.85) {
-    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, side: THREE.DoubleSide, depthWrite: false });
-    const m = new THREE.Mesh(GEO.ring, mat); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.05, z); scene.add(m); let t = 0;
-    addFx((dt) => { t += dt; const k = Math.min(1, t / dur); m.scale.setScalar(lerp(r0, r1, 1 - (1 - k) * (1 - k))); mat.opacity = opacity * (1 - k); if (k >= 1) { scene.remove(m); mat.dispose(); return false; } return true; });
-  }
-  function beam(x0, z0, x1, z1, color) {
-    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, depthWrite: false });
-    const core = new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.95, depthWrite: false });
-    const dir = new THREE.Vector3(x1 - x0, 0, z1 - z0); const len = dir.length() || 1; dir.normalize();
-    const mk = (material, w) => { const m = new THREE.Mesh(GEO.cyl, material); m.position.set((x0 + x1) / 2, 0.55, (z0 + z1) / 2); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir); m.scale.set(w, len, w); scene.add(m); return m; };
-    const a = mk(mat, 0.26); const b = mk(core, 0.1); let t = 0; const dur = 0.4;
-    addFx((dt) => { t += dt; const k = Math.min(1, t / dur); const w = 0.26 * (1 - k) * (1 + Math.sin(t * 60) * 0.15); a.scale.x = a.scale.z = Math.max(0.001, w); b.scale.x = b.scale.z = Math.max(0.001, w * 0.4); mat.opacity = core.opacity = 0.95 * (1 - k * k); if (k >= 1) { scene.remove(a, b); mat.dispose(); core.dispose(); return false; } return true; });
-    burst(x1, 0.5, z1, color, 6, 2.2);
-  }
+  const FX = createFx(scene, addFx); // Angriffs-Effekte je Element und Angriffsart (arena-fx.js)
+  const ring = FX.ring;
+  const puff = (x, y, z, n = 8, power = 3) => FX.spray('normal', x, y, z, n, power, 0.2);
   function flash(actor) {
     const mat = new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.75, depthWrite: false });
     const m = new THREE.Mesh(GEO.sphere, mat); m.scale.setScalar(actor.height * 0.62); m.position.set(0, actor.height * 0.5, 0); actor.holder.add(m); let t = 0;
@@ -181,24 +167,33 @@ export function createArena(container, opts = {}) {
   function escapeHtml(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
   // ---------- Ereignisse aus der Simulation ----------
+  let calloutTimer = null; let slowLeft = 0; let slowCool = 0; let eggs = [];
+  function callout(owner, name, element) { // großer Namensruf für Spezialangriffe
+    calloutEl.innerHTML = `<small>${escapeHtml(owner)} uses</small>${escapeHtml(name)}!`; calloutEl.style.background = colorOf(element); calloutEl.classList.add('on');
+    cancel(calloutTimer); calloutTimer = later(() => calloutEl.classList.remove('on'), 1150);
+  }
   function handle(e) {
     const st = (id) => sim.state.monsters.find((m) => m.id === id);
+    const aliveN = sim.state.monsters.reduce((c, m) => c + (m.alive ? 1 : 0), 0);
+    const dirTo = (x, y, tx, ty) => { const dx = tx - x, dy = ty - y; const d = Math.sqrt(dx * dx + dy * dy) || 1; return [dx / d, dy / d]; };
     if (e.type === 'cast') {
       const a = actors.get(e.id); if (!a) return;
-      const aliveN = sim.state.monsters.reduce((c, m) => c + (m.alive ? 1 : 0), 0);
-      if (e.special || o.labels === 'all' || e.id === followId || (o.labels === 'auto' && aliveN <= 6)) moveLabel(a, e.name, e.element, e.special);
-      if (e.special) { rig.kick = Math.max(rig.kick, 0.5); ring(e.x, e.y, 0.2, 1.1, colorOf(e.element), 0.4, 0.7); }
+      if (e.special) { callout(a.e.name, e.name, e.element); rig.kick = Math.max(rig.kick, 0.5); ring(e.x, e.y, 0.2, 1.2, colorOf(e.element), 0.4, 0.8); }
+      else if (o.labels === 'all' || e.id === followId || (o.labels === 'auto' && aliveN <= 6)) moveLabel(a, e.name, e.element, false);
+      if (e.kind === 'beam') { const [dx, dz] = dirTo(e.x, e.y, e.tx, e.ty); FX.charge(e.x, e.y, dx, dz, e.element, MOVE_SPECS.beam.windup, e.special); }
     } else if (e.type === 'fire') {
-      const a = actors.get(e.id); const c = colorOf(e.element);
-      if (e.kind === 'melee' && a) { a.lunge = 1; }
-      else if (e.kind === 'beam') beam(e.x, e.y, e.tx, e.ty, c);
-      else if (e.kind === 'burst') { ring(e.x, e.y, 0.3, 2.3, c, 0.4); ring(e.x, e.y, 0.2, 1.6, '#ffffff', 0.3, 0.6); burst(e.x, 0.4, e.y, c, 16, 4.5); }
-      else if (e.kind === 'dash') { ring(e.tx, e.ty, 0.2, 1.3, c, 0.3); ring(e.tx, e.ty, 0.1, 0.9, '#ffffff', 0.25, 0.6); burst(e.tx, 0.3, e.ty, c, 12, 3.4); rig.kick = Math.max(rig.kick, 0.4); }
-    } else if (e.type === 'leap') { ring(e.x, e.y, 0.2, 0.9, '#ffffff', 0.25, 0.6); burst(e.x, 0.2, e.y, '#ffffff', 5, 2);
+      const a = actors.get(e.id); const big = e.move === 1; const [dx, dz] = dirTo(e.x, e.y, e.tx ?? e.x, e.ty ?? e.y + 1);
+      if (e.kind === 'melee') { if (a) a.lunge = 1; FX.slash(e.x, e.y, dx, dz, e.element, big); }
+      else if (e.kind === 'beam') { FX.beam(e.x, e.y, e.tx, e.ty, e.element, big); rig.kick = Math.max(rig.kick, big ? 0.9 : 0.5); }
+      else if (e.kind === 'burst') { FX.eruption(e.x, e.y, MOVE_SPECS.burst.range, e.element, big); rig.kick = Math.max(rig.kick, big ? 0.9 : 0.5); }
+      else if (e.kind === 'dash') { FX.landing(e.tx, e.ty, e.element, big); rig.kick = Math.max(rig.kick, 0.6); }
+      // Zeitlupe für große Momente: Spezialangriffe im Endkampf oder vom eigenen Monster, höchstens alle 3 s
+      if (big && e.kind !== 'shot' && slowCool <= 0 && (aliveN <= 4 || e.id === followId)) { slowLeft = 0.22; slowCool = 3; }
+    } else if (e.type === 'leap') { FX.streak(e.x, e.y, e.tx, e.ty, e.element); ring(e.x, e.y, 0.2, 0.9, '#ffffff', 0.25, 0.6);
     } else if (e.type === 'hit') {
       const t = actors.get(e.target); const m = st(e.target); if (!t || !m) return;
-      const by = st(e.by); const c = colorOf(by?.moves?.[e.move]?.element || by?.element);
-      t.hurt = 1; flash(t); burst(m.x, t.height * 0.6, m.y, c, e.crit ? 14 : 7, e.crit ? 4 : 2.6);
+      const by = st(e.by); const element = by?.moves?.[e.move]?.element || by?.element;
+      t.hurt = 1; flash(t); FX.impact(m.x, t.height * 0.6, m.y, element, e.crit || e.move === 1);
       floatText(`-${e.dmg}`, m.x, t.height + 0.3, m.y, e.crit ? 'crit' : '');
       if (e.crit) rig.kick = Math.max(rig.kick, 0.7);
       if (e.eff > 1) floatText('super effective!', m.x, t.height + 0.9, m.y, 'note');
@@ -207,17 +202,17 @@ export function createArena(container, opts = {}) {
     } else if (e.type === 'ko') {
       const a = actors.get(e.id); const m = st(e.id); if (!a) return;
       a.dead = 0.001; a.cell.classList.add('dead'); a.fillEl.style.width = '0%';
-      if (m) { burst(m.x, 0.6, m.y, '#ffffff', 18, 4); ring(m.x, m.y, 0.2, 1.4, '#ffffff', 0.4); }
+      if (m) { puff(m.x, 0.6, m.y, 16, 4); ring(m.x, m.y, 0.2, 1.4, '#ffffff', 0.4); later(() => { if (!disposed) eggs.push(FX.koEgg(m.x, m.y, a.e.genome?.body?.color || colorOf(a.e.element))); }, 420); }
       feed(`${e.by === 'zone' ? '<b style="color:#ff8a80">the zone</b>' : nameHtml(e.by)} ▸ ${nameHtml(e.id)}`);
       rig.kick = Math.max(rig.kick, 1);
       if (e.id === followId && e.by !== 'zone' && mode === 'follow') spectate = e.by;
     } else if (e.type === 'zone') { if (e.phase === 'start') banner('THE ZONE IS CLOSING', 1.6); }
     else if (e.type === 'final') banner('FINAL TWO', 1.8);
     else if (e.type === 'win') {
-      winnerId = e.id; const a = actors.get(e.id);
+      winnerId = e.id; const a = actors.get(e.id); calloutEl.classList.remove('on');
       const born = a?.e.genome?.object ? `born from ${escapeHtml(String(a.e.genome.object).toLowerCase().replace(/^an? /, 'a ')).slice(0, 60)}` : '';
       banner(`${a ? escapeHtml(a.e.name) : 'Nobody'} WINS!${a?.e.photoUrl ? `<img src="${a.e.photoUrl}" alt="">` : ''}<small>${[a?.e.ownerName ? `trainer ${escapeHtml(a.e.ownerName)}` : '', born].filter(Boolean).join(' · ')}</small>`, 0); bannerEl.classList.add('win');
-      const m = st(e.id); if (m) for (let i = 0; i < 5; i++) later(() => !disposed && burst(m.x + (Math.random() - 0.5) * 2, 2.2, m.y + (Math.random() - 0.5) * 2, ['#ffd23f', '#ff6b4a', '#3d9df3', '#4cb867', '#e98bc4'][i], 16, 5), i * 260);
+      const m = st(e.id); if (m) for (let i = 0; i < 5; i++) later(() => !disposed && FX.confetti(m.x, m.y), i * 300);
     }
     o.onEvent?.(e);
   }
@@ -275,9 +270,10 @@ export function createArena(container, opts = {}) {
   function reset() {
     if (world) scene.remove(world.g);
     if (actors) for (const a of actors.values()) scene.remove(a.holder);
-    if (shots) for (const s of shots.values()) scene.remove(s);
+    if (shots) for (const s of shots.values()) s.dispose();
+    for (const egg of eggs) scene.remove(egg); eggs = [];
     sim = createSim({ entrants: entrants.map(({ id, name, element, stats, traits, moves }) => ({ id, name, element, stats, traits, moves })), seed: o.seed, dayElement: o.dayElement });
-    R = sim.state.arena.r; world = buildWorld(); buildActors(); shots = new Map(); fx = []; feedEl.innerHTML = '';
+    R = sim.state.arena.r; world = buildWorld(); buildActors(); shots = new Map(); fx = fx || []; feedEl.innerHTML = ''; calloutEl.classList.remove('on');
     started = false; ended = false; acc = 0; winnerId = null; spectate = null; introLeft = o.intro; rig.kick = 0;
     for (const m of sim.state.monsters) { const a = actors.get(m.id); if (a) a.yaw = Math.atan2(-m.x, -m.y); }
     drawCamButtons();
@@ -293,12 +289,13 @@ export function createArena(container, opts = {}) {
     if (renderer.domElement.width !== Math.floor(w * renderer.getPixelRatio()) || renderer.domElement.height !== Math.floor(h * renderer.getPixelRatio())) { renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
     const base = Math.max(10, Math.min(20, Math.min(w, h * 1.2) / 52)) * (o.uiScale || 1); if (ui.dataset.base !== String(base)) { ui.dataset.base = String(base); ui.style.fontSize = base + 'px'; }
     if (!started && o.intro > 0 && o.autoStart !== false) { introLeft -= dt; if (introLeft <= 0) start(); }
+    slowCool -= dt; const sdt = slowLeft > 0 ? dt * 0.3 : dt; slowLeft -= dt; // kurze Zeitlupe bei großen Angriffen
     if (started && !sim.state.done) {
-      acc += dt * speed; let guard = 0;
+      acc += sdt * speed; let guard = 0;
       while (acc >= DT && guard++ < 12 && !sim.state.done) { acc -= DT; for (const e of sim.step()) handle(e); }
       if (sim.state.done && !ended) { ended = true; const placements = sim.state.monsters.slice().sort((a, b) => (a.place ?? 1) - (b.place ?? 1)).map((m) => m.id); o.onEnd?.({ winnerId: sim.state.winnerId, placements }); }
     }
-    const alpha = started && !sim.state.done ? acc / DT : 1; simTime += dt;
+    const alpha = started && !sim.state.done ? acc / DT : 1; simTime += sdt;
     // Zone
     const zr = sim.state.zone.r; world.edge.scale.setScalar(zr); world.edge.material.opacity = 0.6 + 0.3 * Math.sin(now * 0.008);
     if (Math.abs(zr - world.zr) > 0.03 && zr < R) { world.zr = zr; world.danger.geometry.dispose(); world.danger.geometry = new THREE.RingGeometry(zr, R + 1.5, 56); }
@@ -332,15 +329,13 @@ export function createArena(container, opts = {}) {
     }
     // Geschosse
     const seen = new Set();
-    for (const s of sim.state.projectiles) {
-      seen.add(s.id); let mesh = shots.get(s.id);
-      if (!mesh) { mesh = new THREE.Mesh(GEO.ico, basicMat(colorOf(s.element))); mesh.scale.setScalar(0.2); const glow = new THREE.Mesh(GEO.sphere, basicMat(colorOf(s.element), 0.3)); glow.scale.setScalar(1.9); mesh.add(glow); scene.add(mesh); shots.set(s.id, mesh); }
-      const x = lerp(s.px ?? s.x, s.x, alpha), z = lerp(s.py ?? s.y, s.y, alpha);
-      mesh.position.set(x, 0.6, z); mesh.rotation.x += dt * 12; mesh.rotation.y += dt * 9;
-      if (Math.random() < 0.5) { const c = colorOf(s.element); const t = new THREE.Mesh(GEO.sphere, basicMat(c, 0.5)); t.position.copy(mesh.position); let life = 0.25; scene.add(t); addFx((d) => { life -= d; t.scale.setScalar(0.13 * Math.max(0, life / 0.25)); if (life <= 0) { scene.remove(t); return false; } return true; }); }
+    for (const p of sim.state.projectiles) {
+      seen.add(p.id); let shot = shots.get(p.id);
+      if (!shot) { shot = FX.shot(p.element, p.move === 1); shots.set(p.id, shot); }
+      shot.group.position.set(lerp(p.px ?? p.x, p.x, alpha), 0.62, lerp(p.py ?? p.y, p.y, alpha)); shot.update(sdt);
     }
-    for (const [id, mesh] of shots) if (!seen.has(id)) { burst(mesh.position.x, 0.6, mesh.position.z, '#ffffff', 4, 2); scene.remove(mesh); shots.delete(id); }
-    for (let i = fx.length - 1; i >= 0; i--) if (!fx[i](dt)) fx.splice(i, 1);
+    for (const [id, shot] of shots) if (!seen.has(id)) { shot.dispose(); shots.delete(id); }
+    for (let i = fx.length - 1; i >= 0; i--) if (!fx[i](sdt)) fx.splice(i, 1);
     const aliveCount = sim.state.monsters.reduce((c, m) => c + (m.alive ? 1 : 0), 0);
     if (leftEl.dataset.n !== String(aliveCount)) { leftEl.dataset.n = String(aliveCount); leftEl.textContent = `${aliveCount} left`; }
     leftEl.style.display = started && !winnerId && aliveCount > 2 ? 'block' : 'none';

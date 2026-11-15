@@ -65,7 +65,7 @@ function lerpAngle(a, b, k) { let d = b - a; while (d > Math.PI) d -= Math.PI * 
 function fallbackGenome(e) { return { name: e.name, seed: 1, body: { shape: 'blob', color: colorOf(e.element) }, face: { eyes: 'dot', mouth: 'smile' }, limbs: { style: 'stub', pose: 'rest' }, parts: [] }; }
 
 export function createArena(container, opts = {}) {
-  const o = { camera: 'auto', speed: 1, intro: 3, controls: true, roster: true, seed: 1, labels: 'auto', ...opts }; // labels: 'all' | 'special' | 'auto' (alle erst ab 6 Überlebenden)
+  const o = { camera: 'auto', speed: 1, intro: 3, controls: true, roster: true, seed: 1, labels: 'auto', hatch: true, ...opts }; // labels: 'all' | 'special' | 'auto' (alle erst ab 6 Überlebenden)
   const entrants = o.entrants || [];
   if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
   container.style.overflow = 'hidden';
@@ -131,6 +131,20 @@ export function createArena(container, opts = {}) {
   }
 
   // ---------- Monster ----------
+  // Hauptfarbe eines Monsters (für sein Ei): beim frei gebauten Modell die Farbe des größten Bauteils
+  function mainColor(e) {
+    const parts = e.genome?.blueprint?.parts;
+    if (parts?.length) { let best = parts[0]; for (const p of parts) if (Math.abs(p.w * p.h * p.d) > Math.abs(best.w * best.h * best.d)) best = p; return /^#[0-9a-f]{6}$/i.test(best.color || '') ? best.color : colorOf(e.element); }
+    return e.genome?.body?.color || colorOf(e.element);
+  }
+  const EGG_GEO = (() => { const g = new THREE.IcosahedronGeometry(0.5, 1); const pos = g.attributes.position; for (let i = 0; i < pos.count; i++) { const y = pos.getY(i); const k = 1 - 0.22 * Math.max(0, y / 0.5); pos.setXYZ(i, pos.getX(i) * k, y * 1.32, pos.getZ(i) * k); } g.computeVertexNormals(); return g; })();
+  function makeEgg(color, golden) {
+    const g = new THREE.Group(); const shell = new THREE.Color(golden ? '#f7c531' : color).lerp(new THREE.Color('#ffffff'), golden ? 0.15 : 0.62);
+    const m = new THREE.Mesh(EGG_GEO, new THREE.MeshStandardMaterial({ color: shell, flatShading: true, roughness: 0.85, emissive: shell, emissiveIntensity: 0.12 })); m.position.y = 0.66; g.add(m);
+    const ol = new THREE.Mesh(EGG_GEO, MINI_OUTLINE); ol.scale.setScalar(1.09); ol.position.y = 0.66; g.add(ol);
+    for (let i = 0; i < 5; i++) { const sp = new THREE.Mesh(GEO.sphere, basicMat(golden ? '#fff3b0' : color)); const a = i * 2.3 + 0.4; const y = 0.36 + (i % 3) * 0.26; const r = 0.4 * (1 - Math.abs(y - 0.62) * 0.75); sp.scale.set(0.085, 0.085, 0.03); sp.position.set(Math.cos(a) * r, y, Math.sin(a) * r + 0.02); sp.lookAt(0, y, 0); g.add(sp); }
+    return g;
+  }
   function buildActors() {
     actors = new Map(); rosterEl.innerHTML = ''; floatEl.innerHTML = '';
     for (const e of entrants) {
@@ -140,14 +154,16 @@ export function createArena(container, opts = {}) {
       const height = (root.userData.monster?.height ?? 2.2) * S;
       // Mini-Kopie des Körpers für Geschosse und Eruptionen (gleiche Geometrie und Farbe, eigene Kontur)
       let bodyMesh = null; root.traverse((n) => { if (n.isMesh && n.userData.isBody) bodyMesh = n; });
-      const mini = bodyMesh ? () => { const g = new THREE.Group(); g.add(new THREE.Mesh(bodyMesh.geometry, bodyMesh.material)); const ol = new THREE.Mesh(bodyMesh.geometry, MINI_OUTLINE); ol.scale.setScalar(1.14); g.add(ol); return g; } : null;
+      const model = root.userData.monster?.model; const modelH = model ? (model.userData.bb.max.y - model.userData.bb.min.y) : 2.3;
+      const mini = model ? () => { const g = new THREE.Group(); const c = model.clone(true); const k = 2 / modelH; c.scale.multiplyScalar(k); c.position.multiplyScalar(k); c.position.y -= 1; g.add(c); return g; } : bodyMesh ? () => { const g = new THREE.Group(); g.add(new THREE.Mesh(bodyMesh.geometry, bodyMesh.material)); const ol = new THREE.Mesh(bodyMesh.geometry, MINI_OUTLINE); ol.scale.setScalar(1.14); g.add(ol); return g; } : null;
       const cell = el('div', 'sa-cell' + (e.id === followId ? ' me' : ''), rosterEl);
       const thumb = el('div', 'sa-thumb', cell); if (e.photoUrl) thumb.style.backgroundImage = `url("${e.photoUrl}")`; else thumb.style.background = colorOf(e.element);
       const body = el('div', 'sa-cellbody', cell); el('div', 'sa-cellname', body, e.name);
       const fillEl = el('div', 'sa-fill', el('div', 'sa-track', body));
       const hp = el('div', 'sa-hp', floatEl); const hpFill = el('i', null, hp);
       const tag = el('div', 'sa-tag' + (e.id === followId ? ' me' : ''), floatEl, e.id === followId ? `YOU · ${e.name}` : e.name);
-      actors.set(e.id, { e, root, holder, height, mini, cell, fillEl, hp, hpFill, tag, yaw: 0, lunge: 0, hurt: 0, dead: 0, shownHp: -1 });
+      const egg = o.hatch ? makeEgg(mainColor(e), !!e.genome?.golden) : null; if (egg) { scene.add(egg); holder.visible = false; }
+      actors.set(e.id, { e, root, holder, height, mini, egg, hatched: !o.hatch, pop: o.hatch ? 0 : 1, hatchAt: 0, cell, fillEl, hp, hpFill, tag, yaw: 0, lunge: 0, hurt: 0, dead: 0, shownHp: -1 });
     }
   }
 
@@ -173,7 +189,7 @@ export function createArena(container, opts = {}) {
   function escapeHtml(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
   // ---------- Ereignisse aus der Simulation ----------
-  let calloutTimer = null; let slowLeft = 0; let slowCool = 0; let eggs = [];
+  let calloutTimer = null; let slowLeft = 0; let slowCool = 0; let eggs = []; let introT = 0; let hatchEnd = 0;
   // Regie-Kamera (Hochformat): merkt sich, wo gerade etwas passiert, und fährt dort nah heran. Die Minimap zeigt den Überblick.
   const hot = []; const focus = { x: 0, z: 0, r: 4, hold: 0, score: 0 };
   const heat = (x, z, w) => { hot.push({ x, z, w, t: simTime }); if (hot.length > 60) hot.shift(); };
@@ -298,7 +314,7 @@ export function createArena(container, opts = {}) {
   // ---------- Ablauf ----------
   function reset() {
     if (world) scene.remove(world.g);
-    if (actors) for (const a of actors.values()) scene.remove(a.holder);
+    if (actors) for (const a of actors.values()) { scene.remove(a.holder); if (a.egg) scene.remove(a.egg); }
     if (shots) for (const s of shots.values()) s.dispose();
     for (const egg of eggs) scene.remove(egg); eggs = [];
     sim = createSim({ entrants: entrants.map(({ id, name, element, stats, traits, moves }) => ({ id, name, element, stats, traits, moves })), seed: o.seed, dayElement: o.dayElement });
@@ -306,8 +322,13 @@ export function createArena(container, opts = {}) {
     hot.length = 0; focus.since = undefined; focus.yaw = undefined; focus.score = 0; focus.hold = 0;
     started = false; ended = false; acc = 0; winnerId = null; spectate = null; introLeft = o.intro; rig.kick = 0;
     for (const m of sim.state.monsters) { const a = actors.get(m.id); if (a) a.yaw = Math.atan2(-m.x, -m.y); }
-    drawCamButtons();
-    if (o.intro > 0) banner(o.title || 'CHOOSE YOUR MONSTER!', 0); else start();
+    drawCamButtons(); introT = 0;
+    if (o.hatch) { // Eier stehen an den Startplätzen und platzen nacheinander auf, das eigene zuletzt
+      const order = sim.state.monsters.map((m) => m.id).sort((a, b) => (a === followId ? 1 : 0) - (b === followId ? 1 : 0)); const gap = Math.min(0.32, 4.2 / Math.max(1, order.length));
+      order.forEach((id, i) => { const a = actors.get(id); const m = sim.state.monsters.find((x) => x.id === id); if (!a || !m) return; a.hatchAt = 1.6 + i * gap + (id === followId ? 0.5 : 0); a.egg.position.set(m.x, 0, m.y); a.egg.scale.setScalar(0.001); a.dropAt = i * 0.05; });
+      hatchEnd = 1.6 + order.length * gap + (followId ? 0.5 : 0) + 1.5;
+      banner(o.title || 'THE EGGS ARE IN', 1.4);
+    } else if (o.intro > 0) banner(o.title || 'CHOOSE YOUR MONSTER!', 0); else start();
   }
   function start() { if (started) return; started = true; introLeft = 0; banner('FIGHT!', 0.9); }
 
@@ -318,7 +339,21 @@ export function createArena(container, opts = {}) {
     const w = container.clientWidth || 1, h = container.clientHeight || 1;
     if (renderer.domElement.width !== Math.floor(w * renderer.getPixelRatio()) || renderer.domElement.height !== Math.floor(h * renderer.getPixelRatio())) { renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
     const base = Math.max(10, Math.min(20, Math.min(w, h * 1.2) / 52)) * (o.uiScale || 1); if (ui.dataset.base !== String(base)) { ui.dataset.base = String(base); ui.style.fontSize = base + 'px'; }
-    if (!started && o.intro > 0 && o.autoStart !== false) { introLeft -= dt; if (introLeft <= 0) start(); }
+    if (!started && o.hatch) { // Eier fallen herein, wackeln immer stärker und platzen auf
+      introT += dt;
+      for (const a of actors.values()) {
+        if (a.hatched || !a.egg) continue;
+        const since = introT - (a.dropAt || 0); const near = Math.max(0, 1 - (a.hatchAt - introT) / 1.2);
+        a.egg.scale.setScalar(since <= 0 ? 0.001 : since < 0.35 ? (since / 0.35) * 1.15 : 1 + Math.sin(introT * 9 + a.hatchAt * 7) * 0.02);
+        a.egg.rotation.z = Math.sin(introT * (10 + near * 16) + a.hatchAt * 5) * (0.04 + near * 0.2); a.egg.position.y = Math.abs(Math.sin(introT * (8 + near * 10) + a.hatchAt)) * near * 0.14;
+        if (introT >= a.hatchAt) {
+          a.hatched = true; a.pop = 0.001; a.holder.visible = true; const p = a.egg.position; const c = mainColor(a.e);
+          FX.spray('normal', p.x, 0.7, p.z, 14, 4.2, 0.2); FX.stars(p.x, 0.9, p.z, c, 4, 0.55); ring(p.x, p.z, 0.2, 1.3, c, 0.35, 0.9); scene.remove(a.egg); a.egg = null; rig.kick = Math.max(rig.kick, a.e.id === followId ? 1 : 0.25);
+          if (a.e.id === followId) banner(`${escapeHtml(a.e.name)}!<small>your egg hatched</small>`, 1.4);
+        }
+      }
+      if (introT >= hatchEnd && o.autoStart !== false) start();
+    } else if (!started && o.intro > 0 && o.autoStart !== false) { introLeft -= dt; if (introLeft <= 0) start(); }
     slowCool -= dt; const sdt = slowLeft > 0 ? dt * 0.3 : dt; slowLeft -= dt; // kurze Zeitlupe bei großen Angriffen
     if (started && !sim.state.done) {
       acc += sdt * speed; let guard = 0;
@@ -340,7 +375,7 @@ export function createArena(container, opts = {}) {
       const lx = m.fx * a.lunge * 0.45, lz = m.fy * a.lunge * 0.45;
       a.holder.position.set(x + lx + (a.hurt ? Math.sin(now * 0.09) * 0.05 * a.hurt : 0), y, z + lz);
       a.yaw = lerpAngle(a.yaw, Math.atan2(m.fx, m.fy), Math.min(1, dt * 10)); a.holder.rotation.y = a.yaw;
-      let sc = 1;
+      let sc = 1; if (a.pop < 1) { a.pop = Math.min(1, a.pop + dt * 2.6); const k = a.pop; sc = k === 1 ? 1 : 1 + Math.pow(2, -9 * k) * Math.sin((k * 9 - 0.75) * 2.094) * 1.0 - (1 - k) * 0.25; sc = Math.max(0.05, sc); }
       if (m.cast) { const k = 1 - m.cast.t / (m.cast.total || 0.3); sc = 1 + 0.14 * Math.sin(k * Math.PI); }
       if (a.dead) { a.dead = Math.min(1, a.dead + dt * 2.2); sc = Math.max(0.001, 1 - a.dead); a.holder.rotation.y += a.dead * 9; a.holder.position.y = a.dead * 0.8; if (a.dead >= 1) a.holder.visible = false; }
       if (m.id === winnerId) a.holder.position.y = Math.abs(Math.sin(now * 0.008)) * 0.6;
@@ -352,7 +387,7 @@ export function createArena(container, opts = {}) {
       a.hp.style.display = showHp ? 'block' : 'none';
       if (showHp) { a.hp.style.left = p.x + 'px'; a.hp.style.top = p.y + 'px'; }
       if (a.shownHp !== m.hp) { a.shownHp = m.hp; const f = Math.max(0, m.hp / m.maxHp); const col = f < 0.3 ? '#ff5a4a' : f < 0.6 ? '#f5c542' : '#4cc38a'; a.hpFill.style.width = a.fillEl.style.width = `${f * 100}%`; a.hpFill.style.background = a.fillEl.style.background = col; }
-      const showTag = m.alive && p.ok && (!started || m.id === followId);
+      const showTag = m.alive && p.ok && (started ? m.id === followId : a.hatched);
       a.tag.style.display = showTag ? 'block' : 'none';
       if (showTag) { a.tag.style.left = p.x + 'px'; a.tag.style.top = p.y - (started ? 6 : 2) + 'px'; }
       if (a.label) { a.labelLife -= dt; if (a.labelLife <= 0 || !m.alive) { a.label.remove(); a.label = null; } else { a.label.style.left = p.x + 'px'; a.label.style.top = p.y - (m.id === followId ? 24 : 6) + 'px'; a.label.style.opacity = Math.min(1, a.labelLife * 4); } }

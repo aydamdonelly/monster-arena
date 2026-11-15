@@ -357,7 +357,17 @@ export const adminAction = mutation({
     if (!egg) return null;
     // Besitzer als Test markieren (Probeläufe): seine Eier kämpfen nicht in der echten Royale und zählen in keiner Zahl
     if (action === "ownerTest" || action === "ownerReal") {
-      await ctx.db.patch("players", egg.playerId, { isTest: action === "ownerTest" });
+      const owner = await ctx.db.get("players", egg.playerId);
+      const toTest = action === "ownerTest";
+      if (!owner || owner.isTest === toTest) return null;
+      await ctx.db.patch("players", egg.playerId, { isTest: toTest });
+      // Zähler "Eier warten" nachziehen: Er zählt nur Eier echter Spieler
+      const theirs = await ctx.db
+        .query("monsters")
+        .withIndex("by_playerId", (q) => q.eq("playerId", egg.playerId))
+        .take(50);
+      const waiting = theirs.filter((m) => m.status === "egg").length;
+      if (waiting) await bumpCounter(ctx, "eggsWaiting", toTest ? -waiting : waiting);
       return null;
     }
     if (egg.status !== "egg") return null;

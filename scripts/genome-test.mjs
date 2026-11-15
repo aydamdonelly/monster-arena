@@ -54,7 +54,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       return null;
     }
   }));
-  const out = path.join(path.dirname(new URL(import.meta.url).pathname), '../monster-kit/test-genomes.json');
+  const out = path.join(path.dirname(new URL(import.meta.url).pathname), '../monster-kit/', process.env.OUT || 'test-genomes.json');
   fs.writeFileSync(out, JSON.stringify(results.filter(Boolean), null, 2));
   console.log(`-> ${out}`);
 }

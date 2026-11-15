@@ -42,7 +42,7 @@
     }
     let page = 0;
     async function fotos() {
-      const rows = await (await fetch('./test-genomes.json?' + Date.now())).json();
+      const rows = await (await fetch('./' + (new URLSearchParams(location.search).get('file') || 'test-genomes.json') + '?' + Date.now())).json();
       const from = (page * 5) % rows.length; page++;
       show(rows.slice(from, from + 5).map((r, i) => ({ ...genomeFromAI(r.genome, 1000 + from + i), photo: r.image })));
     }

@@ -1,0 +1,736 @@
+[
+  {
+    "title": "Chair",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c6/Set_of_fourteen_side_chairs_MET_DP110780.jpg/330px-Set_of_fourteen_side_chairs_MET_DP110780.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 6838,
+    "genome": {
+      "object": "Ornate wooden chair with a bright red upholstered seat",
+      "safe": true,
+      "matchesPrompt": 0.94,
+      "name": "Chairzilla",
+      "lore": "Born when a royal chair swallowed a rogue red cushion and declared itself king of the room.",
+      "element": "fluff",
+      "shape": "box",
+      "proportions": "normal",
+      "colors": {
+        "body": "#c91f37",
+        "accent": "#54291f"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "rest",
+      "parts": [
+        {
+          "type": "backrest",
+          "color": "#54291f"
+        }
+      ],
+      "move1": {
+        "name": "Seat Slam",
+        "kind": "melee",
+        "element": "fluff"
+      },
+      "move2": {
+        "name": "Leg Sweep",
+        "kind": "dash",
+        "element": "metal"
+      },
+      "traits": {
+        "hard": 0.78,
+        "sharp": 0.18,
+        "fast": 0.22,
+        "big": 0.58,
+        "soft": 0.48
+      }
+    }
+  },
+  {
+    "title": "Backpack",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/Rucksack1.jpg/330px-Rucksack1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 6916,
+    "genome": {
+      "object": "A dark purple and gray hiking backpack with front pockets and shoulder straps",
+      "safe": true,
+      "matchesPrompt": 0.16,
+      "name": "Packphantom",
+      "lore": "It was born when a forgotten trail map started whispering directions from the deepest pocket.",
+      "element": "fluff",
+      "shape": "box",
+      "proportions": "normal",
+      "colors": {
+        "body": "#30233f",
+        "accent": "#a49b98"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stub",
+      "pose": "wave",
+      "parts": [
+        {
+          "type": "pocket",
+          "color": "#3b2c53"
+        }
+      ],
+      "move1": {
+        "name": "Pocket Pop",
+        "kind": "burst",
+        "element": "fluff"
+      },
+      "move2": {
+        "name": "Strap Snare",
+        "kind": "melee",
+        "element": "fluff"
+      },
+      "traits": {
+        "hard": 0.25,
+        "sharp": 0.1,
+        "fast": 0.35,
+        "big": 0.7,
+        "soft": 0.75
+      }
+    }
+  },
+  {
+    "title": "Computer_keyboard",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Typing_example.ogv/330px--Typing_example.ogv.jpg",
+    "ms": 6158,
+    "genome": {
+      "object": "Black-and-white computer keyboard",
+      "safe": true,
+      "matchesPrompt": 0.04,
+      "name": "Keybrawl",
+      "lore": "Born when a midnight typist mashed every key at once, this little bruiser now fights in perfect QWERTY.",
+      "element": "metal",
+      "shape": "box",
+      "proportions": "wide",
+      "colors": {
+        "body": "#25272a",
+        "accent": "#d5d4ce"
+      },
+      "eyes": "dot",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "cheer",
+      "parts": [
+        {
+          "type": "buttons",
+          "color": "#d5d4ce"
+        }
+      ],
+      "move1": {
+        "name": "Spacebar Slam",
+        "kind": "melee",
+        "element": "metal"
+      },
+      "move2": {
+        "name": "Keycap Volley",
+        "kind": "shot",
+        "element": "metal"
+      },
+      "traits": {
+        "hard": 0.8,
+        "sharp": 0.1,
+        "fast": 0.5,
+        "big": 0.6,
+        "soft": 0.1
+      }
+    }
+  },
+  {
+    "title": "Glasses",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/2023_Okulary_korekcyjne.jpg/330px-2023_Okulary_korekcyjne.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 6234,
+    "genome": {
+      "object": "Two pairs of rectangular eyeglasses",
+      "safe": true,
+      "matchesPrompt": 0.12,
+      "name": "Spectacool",
+      "lore": "Born in a tiny optician’s shop, Spectacool can spot a bad pun from across the room.",
+      "element": "metal",
+      "shape": "box",
+      "proportions": "wide",
+      "colors": {
+        "body": "#26383b",
+        "accent": "#38251c"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "wave",
+      "parts": [
+        {
+          "type": "glasses",
+          "color": "#26383b"
+        }
+      ],
+      "move1": {
+        "name": "Frame Slam",
+        "kind": "melee",
+        "element": "metal"
+      },
+      "move2": {
+        "name": "Focus Beam",
+        "kind": "beam",
+        "element": "spirit"
+      },
+      "traits": {
+        "hard": 0.65,
+        "sharp": 0.2,
+        "fast": 0.55,
+        "big": 0.3,
+        "soft": 0.1
+      }
+    }
+  },
+  {
+    "title": "Book",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg/330px-Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 5495,
+    "genome": {
+      "object": "An old book opened to printed pages",
+      "safe": true,
+      "matchesPrompt": 0.08,
+      "name": "Bookgeist",
+      "lore": "This dusty page-wanderer escaped from a library and still insists on keeping its place.",
+      "element": "spirit",
+      "shape": "box",
+      "proportions": "wide",
+      "colors": {
+        "body": "#795c38",
+        "accent": "#f0e5c9"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stub",
+      "pose": "wave",
+      "parts": [
+        {
+          "type": "pages",
+          "color": "#f0e5c9"
+        }
+      ],
+      "move1": {
+        "name": "Page Flip",
+        "kind": "melee",
+        "element": "spirit"
+      },
+      "move2": {
+        "name": "Bookmark Blast",
+        "kind": "burst",
+        "element": "spirit"
+      },
+      "traits": {
+        "hard": 0.35,
+        "sharp": 0.05,
+        "fast": 0.15,
+        "big": 0.55,
+        "soft": 0.25
+      }
+    }
+  },
+  {
+    "title": "Watch",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Rolex_Oyster_Perpetual_with_a_%22Jubliee%22_dial.jpg/330px-Rolex_Oyster_Perpetual_with_a_%22Jubliee%22_dial.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 5190,
+    "genome": {
+      "object": "Stainless-steel wristwatch with a colorful patterned dial",
+      "safe": true,
+      "matchesPrompt": 0.3,
+      "name": "Ticktock Golem",
+      "lore": "It woke up after counting every second in a box of confetti.",
+      "element": "metal",
+      "shape": "blob",
+      "proportions": "normal",
+      "colors": {
+        "body": "#b9b9b5",
+        "accent": "#e65b3e"
+      },
+      "eyes": "big",
+      "mouth": "o",
+      "limbStyle": "stick",
+      "pose": "wave",
+      "parts": [
+        {
+          "type": "dial",
+          "color": "#e65b3e"
+        },
+        {
+          "type": "band",
+          "color": "#a7aaa8"
+        }
+      ],
+      "move1": {
+        "name": "Second-Hand Swipe",
+        "kind": "melee",
+        "element": "metal"
+      },
+      "move2": {
+        "name": "Confetti Timebeam",
+        "kind": "beam",
+        "element": "spirit"
+      },
+      "traits": {
+        "hard": 0.9,
+        "sharp": 0.1,
+        "fast": 0.7,
+        "big": 0.2,
+        "soft": 0.1
+      }
+    }
+  },
+  {
+    "title": "Guitar",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/GuitareClassique5.png/330px-GuitareClassique5.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 7779,
+    "genome": {
+      "object": "A full-size acoustic guitar with a warm orange-brown wooden body and long dark neck",
+      "safe": true,
+      "matchesPrompt": 0.18,
+      "name": "Guitarror",
+      "lore": "It learned to haunt campfires after being strummed one too many times.",
+      "element": "spirit",
+      "shape": "egg",
+      "proportions": "tall",
+      "colors": {
+        "body": "#d98718",
+        "accent": "#43251c"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "cheer",
+      "parts": [
+        {
+          "type": "neck",
+          "color": "#493b3b"
+        },
+        {
+          "type": "stripes",
+          "color": "#c5b9a5"
+        }
+      ],
+      "move1": {
+        "name": "Chord Charge",
+        "kind": "dash",
+        "element": "spirit"
+      },
+      "move2": {
+        "name": "Strumwave",
+        "kind": "burst",
+        "element": "spirit"
+      },
+      "traits": {
+        "hard": 0.65,
+        "sharp": 0.12,
+        "fast": 0.48,
+        "big": 0.72,
+        "soft": 0.18
+      }
+    }
+  },
+  {
+    "title": "Bicycle",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Left_side_of_Flying_Pigeon.jpg/330px-Left_side_of_Flying_Pigeon.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 7365,
+    "genome": {
+      "object": "Black city bicycle with a front basket",
+      "safe": true,
+      "matchesPrompt": 0.08,
+      "name": "Cycleclops",
+      "lore": "It rolled out of a moonlit bike shed and has been pedaling in circles ever since.",
+      "element": "metal",
+      "shape": "blob",
+      "proportions": "wide",
+      "colors": {
+        "body": "#242525",
+        "accent": "#b8b8b0"
+      },
+      "eyes": "dot",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "rest",
+      "parts": [
+        {
+          "type": "wheels",
+          "color": "#242525"
+        },
+        {
+          "type": "handle",
+          "color": "#b8b8b0"
+        }
+      ],
+      "move1": {
+        "name": "Pedal Pummel",
+        "kind": "melee",
+        "element": "metal"
+      },
+      "move2": {
+        "name": "Spoke Sprint",
+        "kind": "dash",
+        "element": "metal"
+      },
+      "traits": {
+        "hard": 0.82,
+        "sharp": 0.18,
+        "fast": 0.72,
+        "big": 0.68,
+        "soft": 0.04
+      }
+    }
+  },
+  {
+    "title": "Car",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/White_Toyota_Corolla_sedan_in_San_Jose_California_dllu.jpg/330px-White_Toyota_Corolla_sedan_in_San_Jose_California_dllu.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 6803,
+    "genome": {
+      "object": "White four-door sedan",
+      "safe": true,
+      "matchesPrompt": 0.05,
+      "name": "Carzilla",
+      "lore": "Born from a sleepy suburban driveway, Carzilla dreams of becoming a race-car legend.",
+      "element": "metal",
+      "shape": "box",
+      "proportions": "wide",
+      "colors": {
+        "body": "#f2f2ee",
+        "accent": "#34383a"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stub",
+      "pose": "cheer",
+      "parts": [
+        {
+          "type": "wheels",
+          "color": "#34383a"
+        },
+        {
+          "type": "stripes",
+          "color": "#c8c9c5"
+        }
+      ],
+      "move1": {
+        "name": "Grille Grumble",
+        "kind": "melee",
+        "element": "metal"
+      },
+      "move2": {
+        "name": "Sedan Sprint",
+        "kind": "dash",
+        "element": "metal"
+      },
+      "traits": {
+        "hard": 0.8,
+        "sharp": 0.2,
+        "fast": 0.6,
+        "big": 0.8,
+        "soft": 0.1
+      }
+    }
+  },
+  {
+    "title": "Candle",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/aa/LA2_Skultuna_kontorsljusstake.jpg/330px-LA2_Skultuna_kontorsljusstake.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 6317,
+    "genome": {
+      "object": "A lit white candle in a silver candlestick",
+      "safe": true,
+      "matchesPrompt": 0.12,
+      "name": "Wickwraith",
+      "lore": "Born when a tiny fire spirit mistook a candlestick for a cozy tower.",
+      "element": "fire",
+      "shape": "cylinder",
+      "proportions": "tall",
+      "colors": {
+        "body": "#fff9f3",
+        "accent": "#b9b9b3"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "cheer",
+      "parts": [
+        {
+          "type": "flame",
+          "color": "#ff9b18"
+        },
+        {
+          "type": "handle",
+          "color": "#b9b9b3"
+        }
+      ],
+      "move1": {
+        "name": "Wick Flick",
+        "kind": "shot",
+        "element": "fire"
+      },
+      "move2": {
+        "name": "Candlelight Burst",
+        "kind": "burst",
+        "element": "fire"
+      },
+      "traits": {
+        "hard": 0.45,
+        "sharp": 0.05,
+        "fast": 0.25,
+        "big": 0.35,
+        "soft": 0.3
+      }
+    }
+  },
+  {
+    "title": "Umbrella",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/87/M0354_000727-005_1.jpg/330px-M0354_000727-005_1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 5904,
+    "genome": {
+      "object": "Open black umbrella",
+      "safe": true,
+      "matchesPrompt": 0.02,
+      "name": "Umbrellahaunt",
+      "lore": "Born from a rainy-day cloud, it insists every puddle is its personal dance floor.",
+      "element": "water",
+      "shape": "blob",
+      "proportions": "wide",
+      "colors": {
+        "body": "#252525",
+        "accent": "#454545"
+      },
+      "eyes": "dot",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "wave",
+      "parts": [
+        {
+          "type": "canopy",
+          "color": "#252525"
+        },
+        {
+          "type": "handle",
+          "color": "#353535"
+        }
+      ],
+      "move1": {
+        "name": "Canopy Clip",
+        "kind": "melee",
+        "element": "water"
+      },
+      "move2": {
+        "name": "Raincheck Rush",
+        "kind": "dash",
+        "element": "water"
+      },
+      "traits": {
+        "hard": 0.55,
+        "sharp": 0.2,
+        "fast": 0.45,
+        "big": 0.65,
+        "soft": 0.15
+      }
+    }
+  },
+  {
+    "title": "Pen",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Carandache_Ecridor.jpg/330px-Carandache_Ecridor.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 7046,
+    "genome": {
+      "object": "A silver metal ballpoint pen with its cap removed",
+      "safe": true,
+      "matchesPrompt": 0.03,
+      "name": "Pen-demon",
+      "lore": "Born when a doodle escaped the notebook, it now signs autographs with its nib.",
+      "element": "metal",
+      "shape": "cylinder",
+      "proportions": "tall",
+      "colors": {
+        "body": "#c4c7c9",
+        "accent": "#34383b"
+      },
+      "eyes": "dot",
+      "mouth": "smile",
+      "limbStyle": "stick",
+      "pose": "wave",
+      "parts": [
+        {
+          "type": "cap",
+          "color": "#c4c7c9"
+        }
+      ],
+      "move1": {
+        "name": "Nib Jab",
+        "kind": "melee",
+        "element": "metal"
+      },
+      "move2": {
+        "name": "Inkshot",
+        "kind": "shot",
+        "element": "metal"
+      },
+      "traits": {
+        "hard": 0.8,
+        "sharp": 0.7,
+        "fast": 0.5,
+        "big": 0.2,
+        "soft": 0.1
+      }
+    }
+  },
+  {
+    "title": "Key_(lock)",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Solex_99_30_padlock_with_keys_%28DSCF2659%29.jpg/330px-Solex_99_30_padlock_with_keys_%28DSCF2659%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 5765,
+    "genome": {
+      "object": "Brass padlock with two silver keys",
+      "safe": true,
+      "matchesPrompt": 0.05,
+      "name": "Lockness Monster",
+      "lore": "Born in a key-cutting shop, it guards the snack drawer and only opens for compliments.",
+      "element": "metal",
+      "shape": "box",
+      "proportions": "normal",
+      "colors": {
+        "body": "#a68a4d",
+        "accent": "#a6a9aa"
+      },
+      "eyes": "dot",
+      "mouth": "smile",
+      "limbStyle": "stub",
+      "pose": "rest",
+      "parts": [
+        {
+          "type": "handle",
+          "color": "#a6a9aa"
+        },
+        {
+          "type": "buttons",
+          "color": "#b6b8b8"
+        }
+      ],
+      "move1": {
+        "name": "Key Jingle Jab",
+        "kind": "melee",
+        "element": "metal"
+      },
+      "move2": {
+        "name": "Shackle Snap",
+        "kind": "burst",
+        "element": "metal"
+      },
+      "traits": {
+        "hard": 0.95,
+        "sharp": 0.35,
+        "fast": 0.2,
+        "big": 0.3,
+        "soft": 0.05
+      }
+    }
+  },
+  {
+    "title": "Amanita_muscaria",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/71/Amanita_muscaria_Aberystwyth_2023.jpg/330px-Amanita_muscaria_Aberystwyth_2023.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 5212,
+    "genome": {
+      "object": "Large red mushroom with white spots",
+      "safe": true,
+      "matchesPrompt": 0.98,
+      "name": "Shroompuff",
+      "lore": "It sprouted after a tiny forest dragon sneezed glittering spores across the moss.",
+      "element": "plant",
+      "shape": "blob",
+      "proportions": "wide",
+      "colors": {
+        "body": "#f34235",
+        "accent": "#f3e8d4"
+      },
+      "eyes": "happy",
+      "mouth": "o",
+      "limbStyle": "stub",
+      "pose": "cheer",
+      "parts": [
+        {
+          "type": "canopy",
+          "color": "#ed4937"
+        },
+        {
+          "type": "spots",
+          "color": "#f5ead9"
+        },
+        {
+          "type": "stem",
+          "color": "#d8c9ad"
+        }
+      ],
+      "move1": {
+        "name": "Spore Pop",
+        "kind": "burst",
+        "element": "plant"
+      },
+      "move2": {
+        "name": "Cap Toss",
+        "kind": "shot",
+        "element": "plant"
+      },
+      "traits": {
+        "hard": 0.18,
+        "sharp": 0.08,
+        "fast": 0.25,
+        "big": 0.72,
+        "soft": 0.68
+      }
+    }
+  },
+  {
+    "title": "Houseplant",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Orkide_i_finstua_mot_vest.jpg/330px-Orkide_i_finstua_mot_vest.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "ms": 6104,
+    "genome": {
+      "object": "Potted orchid with pale pink blossoms and green leaves",
+      "safe": true,
+      "matchesPrompt": 0.28,
+      "name": "Orchidzilla",
+      "lore": "It learned to bloom dramatically after being applauded by the morning sun.",
+      "element": "plant",
+      "shape": "cactus",
+      "proportions": "tall",
+      "colors": {
+        "body": "#39713f",
+        "accent": "#f2c9dc"
+      },
+      "eyes": "happy",
+      "mouth": "smile",
+      "limbStyle": "stub",
+      "pose": "cheer",
+      "parts": [
+        {
+          "type": "flower",
+          "color": "#edb9d2"
+        },
+        {
+          "type": "leafCrown",
+          "color": "#39713f"
+        },
+        {
+          "type": "stem",
+          "color": "#315a36"
+        }
+      ],
+      "move1": {
+        "name": "Petal Flick",
+        "kind": "shot",
+        "element": "plant"
+      },
+      "move2": {
+        "name": "Bloom Boom",
+        "kind": "burst",
+        "element": "plant"
+      },
+      "traits": {
+        "hard": 0.25,
+        "sharp": 0.08,
+        "fast": 0.3,
+        "big": 0.55,
+        "soft": 0.65
+      }
+    }
+  }
+]

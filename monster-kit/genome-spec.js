@@ -2,7 +2,7 @@
 // Wird von scripts/genome-test.mjs und der Convex-Action benutzt. Keine Abhängigkeiten.
 
 export const SHAPES = ['blob', 'egg', 'drop', 'cylinder', 'box', 'cactus', 'strawberry', 'bean'];
-export const PART_TYPES = ['handle', 'coffee', 'steam', 'straw', 'cap', 'stem', 'leafCrown', 'flower', 'seeds', 'spots', 'spikes', 'screen', 'headphones', 'beak', 'ears', 'horns', 'antenna', 'wings', 'tail'];
+export const PART_TYPES = ['handle', 'coffee', 'steam', 'straw', 'cap', 'stem', 'leafCrown', 'flower', 'seeds', 'spots', 'spikes', 'screen', 'headphones', 'beak', 'ears', 'horns', 'antenna', 'wings', 'tail', 'wheels', 'glasses', 'buttons', 'pages', 'flame', 'neck', 'canopy', 'dial', 'band', 'stripes', 'pocket', 'backrest'];
 export const ELEMENTS = ['fire', 'water', 'plant', 'metal', 'fluff', 'spirit'];
 export const MOVE_KINDS = ['melee', 'shot', 'beam', 'burst', 'dash'];
 const MOVE = { type: 'object', additionalProperties: false, required: ['name', 'kind', 'element'], properties: { name: { type: 'string' }, kind: { type: 'string', enum: MOVE_KINDS }, element: { type: 'string', enum: ELEMENTS } } };
@@ -48,7 +48,11 @@ Look at the MAIN object in the photo. The monster must be instantly recognizable
   cap (bottle caps, pen caps, jar lids), stem (apples, cherries, pears, bananas, chilis), leafCrown (pineapples, strawberries, carrots, potted plants), flower (flowers, flowering plants),
   seeds (strawberries, kiwis, sesame buns), spots (mushrooms, ladybugs, cookies, pizza toppings, dice, cows), spikes (cacti, hedgehogs, studs, sharp things),
   screen (phones, laptops, tablets, monitors, TVs, consoles, calculators: the face appears on the screen), headphones (headphones, earmuffs), beak (ducks, birds, chicks, penguins),
-  ears (cats, bears, bunnies, plush animals), horns (bulls, devils, spicy things), antenna (radios, robots, gadgets, insects), wings (birds, insects, planes, anything that flies), tail (animals, cables, plugs).
+  ears (cats, bears, bunnies, plush animals), horns (bulls, devils, spicy things), antenna (radios, robots, gadgets, insects), wings (birds, insects, planes, anything that flies), tail (animals, cables, plugs),
+  wheels (cars, bikes, scooters, skateboards, strollers, suitcases: replaces the legs), glasses (glasses, sunglasses, goggles, VR headsets), buttons (keyboards, remotes, controllers, calculators), pages (books, notebooks, magazines),
+  flame (candles, lighters, matches, fires), neck (guitars, violins, ukuleles), canopy (umbrellas, mushroom caps, lamp shades, tents, hats), dial (watches, clocks, scales, gauges: the face sits on the dial),
+  band (one label or belt around the body: labeled bottles and cans, jars, belts), stripes (striped things: socks, sweaters, bees, candy canes, zebras), pocket (backpacks, bags, jackets, jeans), backrest (chairs, sofas, thrones, beds).
+  Always pick at least one part. Prefer the part that names the object's defining feature over generic ones like spots or tail.
   Give each part a hex color taken from the photo.
 - eyes: dot (calm, cute), happy (cheerful), wink (cheeky), big (curious, tiny things). mouth: smile, open (excited), fang (tough, spicy, sharp), o (surprised). Match the object's personality and vary them.
 - limbStyle: stick for slim, light, fast or electronic objects; stub for round, heavy or soft objects. pose: cheer (energetic), wave (friendly), rest (lazy or heavy).

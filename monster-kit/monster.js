@@ -157,12 +157,27 @@ function addScreen(rig, body, bb, center, eyeY, color) {
   const dark = new THREE.Color(color || '#1f2633').lerp(new THREE.Color('#121620'), 0.75);
   rig.add(new THREE.Mesh(g, mat(dark, { roughness: 0.35, flatShading: false })));
 }
+// Fläche, die sich per Raycast an die Vorderseite schmiegt (Tasche, Zifferblatt). pts: [[x, y], ...] als Dreiecksgitter
+function conform(body, bb, geo, cx, cy, lift) {
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) { const x = pos.getX(i) + cx; const y = pos.getY(i) + cy; const p = frontPoint(body, x, y); pos.setXYZ(i, x, y, (p ? p.z : bb.max.z) + lift); }
+  geo.computeVertexNormals(); return geo;
+}
+// Zifferblatt (Uhr, Wecker, Waage): helle Scheibe hinter dem Gesicht mit zwölf Strichen
+function addDial(rig, body, bb, center, eyeY, color) {
+  const h = bb.max.y - bb.min.y; const w = bb.max.x - bb.min.x; const r = Math.min(w, h) * 0.37; const cy = eyeY - h * 0.05;
+  const light = new THREE.Color(color || '#fbfaf5').lerp(new THREE.Color('#ffffff'), 0.7);
+  rig.add(new THREE.Mesh(conform(body, bb, new THREE.RingGeometry(0.001, r, 28, 6), 0, cy, 0.018), mat(light, { flatShading: false, outline: false })));
+  const rim = new THREE.Mesh(conform(body, bb, new THREE.RingGeometry(r, r * 1.09, 28, 1), 0, cy, 0.02), mat(INK, { flatShading: false, outline: false })); rig.add(rim);
+  for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; const x = Math.sin(a) * r * 0.86, y = cy + Math.cos(a) * r * 0.86; const p = frontPoint(body, x, y); if (!p) continue; const t = new THREE.Mesh(new THREE.BoxGeometry(0.03, i % 3 ? 0.06 : 0.11, 0.012), basic(INK)); t.position.copy(p); t.position.z += 0.026; t.rotation.z = -a; rig.add(t); }
+}
 function addFace(rig, body, bb, center, face) {
   const h = bb.max.y - bb.min.y; const w = bb.max.x - bb.min.x;
   const eyeY = center.y + h * (face.eyeHeight ?? EYE_HEIGHT[face.shape] ?? 0.08);
   const dx = w * (face.eyeSpread ?? 0.17);
   if (face.screen) addScreen(rig, body, bb, center, eyeY, face.screen);
-  const lift = face.screen ? 0.024 : 0; // Gesicht liegt dann auf dem Bildschirm
+  else if (face.dial) addDial(rig, body, bb, center, eyeY, face.dial);
+  const lift = face.screen || face.dial ? 0.026 : 0; // Gesicht liegt dann auf dem Bildschirm oder Zifferblatt
   const ink = face.screen ? basic('#9ff3ff') : mat(INK, { roughness: 0.35, flatShading: false, outline: false });
   const mouthDark = face.screen ? '#9ff3ff' : '#5a2a2a';
   const white = basic('#ffffff');
@@ -215,7 +230,7 @@ function addFace(rig, body, bb, center, face) {
 }
 
 // ---------- Arme und Beine ----------
-function addLimbs(rig, body, bb, center, limbs, bodyColor, skipRightArm) {
+function addLimbs(rig, body, bb, center, limbs, bodyColor, skipRightArm, noLegs) {
   const out = { arms: [], legs: [] };
   const h = bb.max.y - bb.min.y; const w = bb.max.x - bb.min.x;
   const sticks = limbs.style !== 'stub';
@@ -233,7 +248,7 @@ function addLimbs(rig, body, bb, center, limbs, bodyColor, skipRightArm) {
     pivot.rotation.z = s * up; pivot.userData = { side: s, base: s * up };
     rig.add(pivot); out.arms.push(pivot);
   });
-  [-1, 1].forEach((s) => {
+  if (!noLegs) [-1, 1].forEach((s) => {
     const x = s * w * 0.2;
     const p = hit(body, new THREE.Vector3(x, -10, 0.05), new THREE.Vector3(0, 1, 0));
     const base = p ? p.y : bb.min.y;
@@ -255,6 +270,89 @@ function addParts(rig, body, bb, center, parts, bodyColor, rand, shape) {
   for (const part of parts) {
     const color = part.color || '#ffd27a';
     switch (part.type) {
+      case 'wheels': { // Auto, Fahrrad, Skateboard, Koffer: vier Räder statt Beine
+        const tire = mat(INK, { flatShading: false, outline: false }); const hub = mat(color, { flatShading: false, outline: false });
+        for (const sx of [-1, 1]) for (const z of [0.28, -0.3]) {
+          const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.17, 14), tire); wh.rotation.z = Math.PI / 2; wh.position.set(sx * w * 0.36, bb.min.y + 0.02, z); rig.add(wh);
+          const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.19, 10), hub); cap.rotation.z = Math.PI / 2; cap.position.copy(wh.position); rig.add(cap);
+        }
+        break;
+      }
+      case 'glasses': { // Brille, Sonnenbrille, Skibrille
+        const eyeY = center.y + h * (EYE_HEIGHT[shape] ?? 0.08); const dx = w * 0.17; const frame = mat(color, { flatShading: false, outline: false });
+        const dark = new THREE.Color(color).getHSL({}).l < 0.3; const pts = [];
+        [-1, 1].forEach((sd) => {
+          const p = frontPoint(body, sd * dx, eyeY); if (!p) return; const n = softNormal(p, center); pts.push(p);
+          const ringMesh = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.045, 6, 18), frame); rig.add(stickTo(ringMesh, p, n, 0.1));
+          const lens = new THREE.Mesh(new THREE.CircleGeometry(0.18, 18), basic(dark ? '#20242c' : '#dff3ff', { transparent: true, opacity: dark ? 0.55 : 0.28 })); rig.add(stickTo(lens, p, n, 0.095));
+        });
+        if (pts.length === 2) { const bridge = new THREE.Mesh(new THREE.BoxGeometry(Math.max(0.05, pts[1].x - pts[0].x - 0.36), 0.04, 0.03), frame); bridge.position.set(0, eyeY + 0.03, Math.max(pts[0].z, pts[1].z) + 0.1); rig.add(bridge); }
+        break;
+      }
+      case 'buttons': { // Tastatur, Fernbedienung, Controller, Taschenrechner
+        const light = '#' + new THREE.Color(color).lerp(new THREE.Color('#ffffff'), 0.45).getHexString();
+        for (let r = 0; r < 2; r++) for (let c = 0; c < 5; c++) {
+          const x = (c - 2) * w * 0.115; const y = bb.min.y + h * (0.12 + r * 0.085); const p = frontPoint(body, x, y); if (!p) continue;
+          const key = new THREE.Mesh(new THREE.BoxGeometry(w * 0.085, h * 0.055, 0.05), mat((r + c) % 2 ? color : light, { outline: false })); rig.add(stickTo(key, p, softNormal(p, center), 0.012));
+        }
+        break;
+      }
+      case 'pages': { // Buch, Heft, Zeitung: weiße Seiten an der Seite, Lesebändchen in der Teilfarbe
+        const sp = sidePoint(body, 1, center.y); const x = sp ? sp.x : bb.max.x; const d = bb.max.z - bb.min.z;
+        for (let i = 0; i < 3; i++) { const pg = new THREE.Mesh(new THREE.BoxGeometry(0.035, h * 0.74, d * 0.78), mat(i % 2 ? '#f3efe4' : '#ffffff', { outline: false })); pg.position.set(x - 0.03 + i * 0.03, center.y, 0); rig.add(pg); }
+        const ribbon = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.34, 0.03), mat(color)); ribbon.position.set(w * 0.22, bb.min.y - 0.1, d * 0.3); rig.add(ribbon);
+        break;
+      }
+      case 'flame': { // Kerze, Feuerzeug, Streichholz, Lagerfeuer
+        const tp = apexPoint(body); const g = new THREE.Group();
+        const outer = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.55, 6), basic(color && new THREE.Color(color).getHSL({}).s > 0.3 ? color : '#ff8a3a')); outer.position.y = 0.3; g.add(outer);
+        const inner = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.32, 6), basic('#ffe066')); inner.position.set(0, 0.22, 0.05); g.add(inner);
+        const wick = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.1, 5), basic(INK)); wick.position.y = 0.03; g.add(wick);
+        g.position.copy(tp); rig.add(g); anim.floaters.push({ mesh: g, base: g.position.y, amp: 0.03, speed: 9 });
+        break;
+      }
+      case 'neck': { // Gitarre, Geige, Ukulele: Hals mit Kopfplatte und Saiten
+        const tp = apexPoint(body); const m = mat(color);
+        const nk = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.95, 0.13), m); nk.position.copy(tp).add(new THREE.Vector3(0, 0.42, 0)); rig.add(nk);
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.26, 0.15), m); head.position.copy(tp).add(new THREE.Vector3(0, 1.0, 0)); rig.add(head);
+        for (let i = -1; i <= 1; i++) { const st = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.95, 0.01), basic('#f4f1e8')); st.position.copy(nk.position).add(new THREE.Vector3(i * 0.055, 0, 0.072)); rig.add(st); }
+        for (const sx of [-1, 1]) for (const y of [0.94, 1.06]) { const peg = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), mat('#e8e2d0', { outline: false })); peg.position.copy(tp).add(new THREE.Vector3(sx * 0.2, y, 0)); rig.add(peg); }
+        break;
+      }
+      case 'canopy': { // Regenschirm, Pilzhut, Lampenschirm, Zelt
+        const g = new THREE.SphereGeometry(w * 0.72, 9, 4, 0, Math.PI * 2, 0, Math.PI / 2).toNonIndexed(); g.computeVertexNormals();
+        const cap = new THREE.Mesh(g, mat(color)); cap.scale.y = 0.5; cap.position.set(body.userData.topX || 0, top - h * 0.03, 0); rig.add(cap); // sitzt über den Augen
+        const tip = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.16, 5), mat(color, { outline: false })); tip.position.set(cap.position.x, cap.position.y + w * 0.72 * 0.5 + 0.05, 0); rig.add(tip);
+        break;
+      }
+      case 'band': case 'stripes': { // Etikett, Gürtel, Ringelmuster: Bänder, die dem Körper folgen (unter und über dem Gesicht)
+        const levels = part.type === 'band' ? [[0.2, 0.085]] : [[0.13, 0.04], [0.27, 0.04], [0.84, 0.04]];
+        for (const [lv, hh] of levels) {
+          const N = 30; const verts = []; let last = [w / 2, w / 2];
+          for (let i = 0; i <= N; i++) {
+            const a = (i / N) * Math.PI * 2; const dir = new THREE.Vector3(Math.cos(a), 0, Math.sin(a));
+            [bb.min.y + h * (lv - hh), bb.min.y + h * (lv + hh)].forEach((y, k) => {
+              const o = new THREE.Vector3(center.x, y, center.z); const p = hit(body, o.clone().addScaledVector(dir, 10), dir.clone().negate());
+              const r = p ? Math.sqrt((p.x - center.x) ** 2 + (p.z - center.z) ** 2) : last[k]; last[k] = r; verts.push(center.x + dir.x * (r + 0.016), y, center.z + dir.z * (r + 0.016));
+            });
+          }
+          const idx = []; for (let i = 0; i < N; i++) { const a0 = i * 2, b0 = i * 2 + 1, a1 = i * 2 + 2, b1 = i * 2 + 3; idx.push(a0, b0, a1, a1, b0, b1); }
+          const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3)); g.setIndex(idx); g.computeVertexNormals();
+          rig.add(new THREE.Mesh(g, mat(color, { side: THREE.DoubleSide, flatShading: false })));
+        }
+        break;
+      }
+      case 'pocket': { // Rucksack, Tasche, Jacke: Fronttasche mit Reißverschluss
+        const pw = w * 0.44; const ph = h * 0.2; const cy = bb.min.y + h * 0.2;
+        rig.add(new THREE.Mesh(conform(body, bb, new THREE.PlaneGeometry(pw, ph, 10, 5), 0, cy, 0.02), mat(color, { flatShading: false, outline: false })));
+        rig.add(new THREE.Mesh(conform(body, bb, new THREE.PlaneGeometry(pw * 1.04, ph * 0.13, 10, 1), 0, cy + ph * 0.5, 0.028), mat(INK, { flatShading: false, outline: false })));
+        const pull = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.11, 0.03), mat('#d9d4c4', { outline: false })); const pp = frontPoint(body, pw * 0.42, cy + ph * 0.42); if (pp) { pull.position.copy(pp); pull.position.z += 0.04; rig.add(pull); }
+        break;
+      }
+      case 'backrest': { // Stuhl, Sofa, Thron, Bett
+        const br = new THREE.Mesh(new THREE.BoxGeometry(w * 0.9, h * 0.8, 0.2), mat(color)); br.position.set(0, center.y + h * 0.45, bb.min.z + 0.04); br.rotation.x = -0.08; rig.add(br);
+        break;
+      }
       case 'headphones': {
         const m = mat(color); const y0 = center.y + h * 0.1;
         const sp = sidePoint(body, 1, y0); const cx = (sp ? Math.abs(sp.x) : w / 2) + 0.07;
@@ -427,8 +525,8 @@ export function buildMonster(genome, opts = {}) {
   const bb = body.geometry.boundingBox.clone(); const center = bb.getCenter(new THREE.Vector3());
   const parts = genome.parts || [];
   const has = (t) => parts.some((p) => p.type === t); const colorOf = (t, d) => parts.find((p) => p.type === t)?.color || d;
-  const eyes = addFace(rig, body, bb, center, { shape, ...(genome.face || {}), beak: has('beak') ? colorOf('beak', '#ffa23a') : null, screen: has('screen') ? colorOf('screen', '#1f2633') : null });
-  const limbs = addLimbs(rig, body, bb, center, genome.limbs || {}, bodyColor, has('handle'));
+  const eyes = addFace(rig, body, bb, center, { shape, ...(genome.face || {}), beak: has('beak') ? colorOf('beak', '#ffa23a') : null, screen: has('screen') ? colorOf('screen', '#1f2633') : null, dial: has('dial') ? colorOf('dial', '#fbfaf5') : null });
+  const limbs = addLimbs(rig, body, bb, center, genome.limbs || {}, bodyColor, has('handle'), has('wheels'));
   const anim = addParts(rig, body, bb, center, parts, bodyColor, rand, shape);
   if (golden) addGolden(rig, body, bb, anim);
   rig.add(body);
@@ -471,7 +569,7 @@ const SHAPES = ['blob', 'egg', 'drop', 'cylinder', 'box', 'cactus', 'strawberry'
 const COLORS = ['#f2a3b3', '#8fd3c1', '#ffd27a', '#a9c7ff', '#c7a6ff', '#ff9a7a', '#9be08a', '#f4efe6', '#e5503f', '#5fae6e'];
 const EYES = ['dot', 'happy', 'wink', 'big'];
 const MOUTHS = ['smile', 'open', 'fang', 'o'];
-const PARTS = ['horns', 'ears', 'antenna', 'leafCrown', 'spikes', 'tail', 'wings', 'steam', 'seeds', 'flower', 'spots', 'stem', 'beak', 'headphones'];
+const PARTS = ['horns', 'ears', 'antenna', 'leafCrown', 'spikes', 'tail', 'wings', 'steam', 'seeds', 'flower', 'spots', 'stem', 'beak', 'headphones', 'glasses', 'stripes', 'band', 'flame', 'canopy', 'wheels'];
 export function randomGenome(seed) {
   const r = rng(seed); const pick = (a) => a[Math.floor(r() * a.length)];
   const parts = []; const n = 1 + Math.floor(r() * 2);

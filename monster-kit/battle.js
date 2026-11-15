@@ -25,6 +25,7 @@ export function effectiveness(attacker, defender) {
 }
 
 // Festes Budget von 300 Punkten: 40 Basis je Wert, 140 verteilt nach den Eigenschaften des Objekts
+/** @param {any} [t] @returns {{hp: number, atk: number, def: number, spd: number}} */
 export function statsFromTraits(t = {}) {
   const v = (k) => Math.min(1, Math.max(0, Number(t[k] ?? 0.5)));
   const w = {
@@ -42,6 +43,7 @@ export function statsFromTraits(t = {}) {
 
 // a, b: { id, name, element, stats: {hp, atk, def, spd}, traits? }
 // opts.dayElement: Element des Tages bekommt +10 % Angriff
+/** @param {any} a @param {any} b @param {number} seed @param {{dayElement?: string}} [opts] */
 export function runBattle(a, b, seed, opts = {}) {
   const r = rng(seed);
   const side = (m, key) => ({
@@ -77,6 +79,7 @@ export function runBattle(a, b, seed, opts = {}) {
 
 // K.-o.-Royale: alle Kämpfe auf einmal berechnet, Gewinner heilen zwischen den Runden.
 // entrants: [{ id, name, element, stats, traits? }]
+/** @param {any[]} entrants @param {number} seed @param {{dayElement?: string}} [opts] @returns {{rounds: any[][], battles: any[], championId: string | null}} */
 export function runRoyale(entrants, seed, opts = {}) {
   const r = rng(seed);
   const pool = [...entrants];

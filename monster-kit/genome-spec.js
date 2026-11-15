@@ -27,6 +27,7 @@ export const GENOME_SCHEMA = {
   },
 };
 
+/** @param {string} [dropPrompt] */
 export function genomeInstructions(dropPrompt = 'anything') {
   return `You turn a real-world photo into a cute low-poly kawaii monster for a daily photo game.
 Look at the MAIN object in the photo. The monster must be instantly recognizable as that object.
@@ -55,6 +56,7 @@ Look at the MAIN object in the photo. The monster must be instantly recognizable
 }
 
 // KI-Antwort (GENOME_SCHEMA) -> Genom für buildMonster(). seed: Zahl, z. B. hashString(storageId)
+/** @param {any} ai @param {number} seed @returns {any} */
 export function genomeFromAI(ai, seed) {
   return {
     name: ai.name, seed, element: ai.element, lore: ai.lore, object: ai.object, traits: ai.traits,

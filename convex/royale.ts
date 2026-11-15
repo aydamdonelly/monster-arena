@@ -13,7 +13,7 @@ import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { runSim } from "../monster-kit/royale-sim.js";
 import { hashString } from "../monster-kit/battle.js";
-import { FIGHT_SPEED, ROYALE_UTC_MIN } from "./schedule";
+import { FIGHT_SPEED, ROYALE_UTC_MIN, fightSpeed } from "./schedule";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const EGG_WINDOW_MS = 3 * DAY_MS; // ein Ei, das zur Royale noch nicht fertig war, schlüpft in der nächsten
@@ -435,7 +435,7 @@ export const round = query({
     if (!rd) return null;
     return {
       royaleId: r.doc._id, startsAt: r.doc.startsAt, title: r.data.title, dayElement: r.data.dayElement, isFinal: index < 0,
-      speed: FIGHT_SPEED, // Abspieltempo für die Apps
+      speed: fightSpeed(rd.duration), // Abspieltempo für die Apps: jeder Kampf dauert etwa gleich lang
       ...(await publicRound(ctx, rd, index)),
     };
   },

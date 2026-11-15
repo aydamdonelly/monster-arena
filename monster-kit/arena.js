@@ -37,7 +37,7 @@ const CSS = `
 .sa-dmg { position: absolute; transform: translate(-50%, -50%); font-size: 1.6em; font-weight: 700; color: #fff; -webkit-text-stroke: .22em ${INK}; paint-order: stroke fill; white-space: nowrap; animation: sa-up .8s ease-out forwards; }
 .sa-dmg.crit { font-size: 2.3em; color: #ffd23f; }
 .sa-dmg.note { font-size: 1.15em; color: #9ff3c6; }
-.sa-feed { position: absolute; left: .8em; bottom: 1em; display: flex; flex-direction: column; gap: .3em; font-size: 1.1em; font-weight: 700; }
+.sa-feed { position: absolute; left: .8em; bottom: calc(1em + var(--sa-b, 0px)); display: flex; flex-direction: column; gap: .3em; font-size: 1.1em; font-weight: 700; }
 .sa-feed > div { background: rgba(43,37,35,.74); color: #fff; padding: .2em .75em; border-radius: .55em; width: fit-content; animation: sa-in .2s ease-out; }
 .sa-feed b { font-weight: 700; }
 .sa-banner { position: absolute; left: 0; right: 0; top: 36%; text-align: center; font-size: 3.4em; font-weight: 700; line-height: 1.05; color: #fff; -webkit-text-stroke: .18em ${INK}; paint-order: stroke fill; letter-spacing: .02em; opacity: 0; transform: scale(.6); transition: opacity .2s, transform .3s cubic-bezier(.2,1.6,.4,1); padding: 0 .4em; }
@@ -48,11 +48,11 @@ const CSS = `
 .sa-callout { position: absolute; left: 50%; bottom: 24%; transform: translateX(-50%) rotate(-2deg) scale(.5); opacity: 0; transition: opacity .12s, transform .22s cubic-bezier(.2,1.7,.4,1); font-size: 2.3em; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; color: #fff; padding: .12em .7em .16em; border-radius: .32em; border: .13em solid ${INK}; box-shadow: .18em .18em 0 ${INK}; -webkit-text-stroke: .05em ${INK}; paint-order: stroke fill; }
 .sa-callout.on { opacity: 1; transform: translateX(-50%) rotate(-2deg) scale(1); }
 .sa-callout small { display: block; font-size: .42em; letter-spacing: .08em; -webkit-text-stroke: 0; margin-bottom: -.2em; opacity: .95; }
-.sa-cams { position: absolute; right: .8em; bottom: 1em; display: flex; gap: .4em; pointer-events: auto; }
+.sa-cams { position: absolute; right: .8em; bottom: calc(1em + var(--sa-b, 0px)); display: flex; gap: .4em; pointer-events: auto; }
 .sa-cams button { border: 0; border-radius: 999px; padding: .5em .95em; font: 700 1.1em 'Fredoka', system-ui, sans-serif; background: rgba(255,255,255,.88); color: ${INK}; cursor: pointer; }
 .sa-cams button.on { background: ${INK}; color: #fff; }
-.sa-map { position: absolute; right: .8em; bottom: 1em; width: 7.4em; height: 7.4em; border-radius: 50%; background: rgba(255,255,255,.82); border: .16em solid ${INK}; box-shadow: .2em .2em 0 ${INK}; }
-.sa-left { position: absolute; right: 1.5em; bottom: 9.4em; font-size: 1.15em; font-weight: 700; background: rgba(255,255,255,.85); padding: .25em .8em; border-radius: 999px; }
+.sa-map { position: absolute; right: .8em; bottom: calc(1em + var(--sa-b, 0px)); width: 7.4em; height: 7.4em; border-radius: 50%; background: rgba(255,255,255,.82); border: .16em solid ${INK}; box-shadow: .2em .2em 0 ${INK}; }
+.sa-left { position: absolute; right: 1.5em; bottom: calc(9.4em + var(--sa-b, 0px)); font-size: 1.15em; font-weight: 700; background: rgba(255,255,255,.85); padding: .25em .8em; border-radius: 999px; }
 @keyframes sa-pop { from { transform: translate(-50%, -100%) scale(.5); opacity: 0; } to { transform: translate(-50%, -100%) scale(1); opacity: 1; } }
 @keyframes sa-in { from { transform: translateX(-1em); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes sa-up { from { opacity: 1; margin-top: 0; } to { opacity: 0; margin-top: -3.2em; } }
@@ -88,6 +88,8 @@ export function createArena(container, opts = {}) {
   const fill = new THREE.DirectionalLight('#fff4ec', 0.7); fill.position.set(4, 4, 10); scene.add(fill);
 
   const ui = el('div', 'sa-ui', container);
+  // opts.bottom: so viele Pixel am unteren Rand gehören der App (z. B. die Leiste "Your egg"); Feed und Kameraknöpfe rücken darüber
+  ui.style.setProperty('--sa-b', `${Math.max(0, o.bottom || 0)}px`);
   const rosterEl = el('div', 'sa-roster', ui); if (!o.roster) rosterEl.style.display = 'none';
   const floatEl = el('div', null, ui);
   const feedEl = el('div', 'sa-feed', ui);
@@ -335,9 +337,9 @@ export function createArena(container, opts = {}) {
     for (const m of sim.state.monsters) { const a = actors.get(m.id); if (a) a.yaw = Math.atan2(-m.x, -m.y); }
     drawCamButtons(); introT = 0;
     if (o.hatch) { // Eier stehen an den Startplätzen und platzen nacheinander auf, das eigene zuletzt
-      const order = sim.state.monsters.map((m) => m.id).sort((a, b) => (a === followId ? 1 : 0) - (b === followId ? 1 : 0)); const gap = Math.min(0.32, 4.2 / Math.max(1, order.length));
-      order.forEach((id, i) => { const a = actors.get(id); const m = sim.state.monsters.find((x) => x.id === id); if (!a || !m) return; a.hatchAt = 1.6 + i * gap + (id === followId ? 0.5 : 0); a.egg.position.set(m.x, 0, m.y); a.egg.scale.setScalar(0.001); a.dropAt = i * 0.05; });
-      hatchEnd = 1.6 + order.length * gap + (followId ? 0.5 : 0) + 1.5;
+      const order = sim.state.monsters.map((m) => m.id).sort((a, b) => (a === followId ? 1 : 0) - (b === followId ? 1 : 0)); const gap = Math.min(0.26, 3.0 / Math.max(1, order.length));
+      order.forEach((id, i) => { const a = actors.get(id); const m = sim.state.monsters.find((x) => x.id === id); if (!a || !m) return; a.hatchAt = 1.3 + i * gap + (id === followId ? 0.5 : 0); a.egg.position.set(m.x, 0, m.y); a.egg.scale.setScalar(0.001); a.dropAt = i * 0.05; });
+      hatchEnd = 1.3 + order.length * gap + (followId ? 0.5 : 0) + 1.1;
       banner(o.title || 'THE EGGS ARE IN', 1.4);
     } else if (o.intro > 0) banner(o.title || 'CHOOSE YOUR MONSTER!', 0); else start();
   }
@@ -439,6 +441,7 @@ export function createArena(container, opts = {}) {
     setCamera,
     setFollow(id) { followId = id; },
     setSpeed(x) { speed = x; },
+    setBottom(px) { ui.style.setProperty('--sa-b', `${Math.max(0, px || 0)}px`); },
     restart() { reset(); },
     later,
     // Nur mit opts.manual: ein Bild weiter (ms = Bilddauer). Reihenfolge: laufende CSS-Animationen vorziehen, Timer, Bild, neue Animationen anhalten.

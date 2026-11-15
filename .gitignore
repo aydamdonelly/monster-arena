@@ -50,3 +50,6 @@ example
 
 # lokale Testdaten (nicht ins Repo)
 monster-kit/_*
+
+# JS-Teile früherer Web-Veröffentlichungen (scripts/deploy-web.sh legt sie jeder neuen bei)
+.web-chunks/

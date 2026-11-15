@@ -5,6 +5,17 @@ set -e
 cd "$(dirname "$0")/.."
 set -a; . ./.env.deploy; set +a
 npx expo export -p web
+# Die Seite lädt jede Ansicht (Arena, Sammlung, Kampf) erst bei Bedarf nach, unter einem Namen mit Prüfsumme.
+# Wer einen Tab von vor dieser Veröffentlichung offen hat, fragt weiter nach den alten Namen. Darum liegen die
+# nachgeladenen Teile früherer Veröffentlichungen jeder neuen bei (Archiv .web-chunks, nicht im Repo).
+mkdir -p .web-chunks
+cp dist/_expo/static/js/web/*.js .web-chunks/
+for f in .web-chunks/*.js; do
+  case "$(basename "$f")" in
+    __common-*|entry-*|__expo-metro-runtime-*) ;; # schon beim Seitenstart geladen, alte Tabs brauchen sie nicht mehr
+    *) [ -e "dist/_expo/static/js/web/$(basename "$f")" ] || cp "$f" dist/_expo/static/js/web/ ;;
+  esac
+done
 # monster-kit als statische Seiten unter /kit (Reel, Arena, Testseite)
 mkdir -p dist/kit
 cp monster-kit/*.js monster-kit/*.html monster-kit/*.json dist/kit/

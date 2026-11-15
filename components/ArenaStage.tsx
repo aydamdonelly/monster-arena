@@ -64,6 +64,7 @@ export default function ArenaStage({ entrants, seed, dayElement, followId, title
           followId={followId}
           camera={followId ? 'follow' : 'auto'}
           speed={speed ?? getFightSpeed()}
+          bottom={!children && caption ? insets.bottom + 88 : 0}
           title={title}
           onEnd={async (r) => onEnd(r)}
           dom={{ scrollEnabled: false, bounces: false, style: { flex: 1 } }}

@@ -6,8 +6,15 @@
 export const ROYALE_UTC_MIN = 120;
 
 // Abspieltempo der Kämpfe in den Apps. Die Simulation bleibt dieselbe (gleicher Seed, gleiches Ergebnis),
-// sie läuft nur schneller ab: Ein Kampf dauert so 20 bis 30 Sekunden statt einer Minute.
-export const FIGHT_SPEED = 2;
+// sie läuft nur schneller ab. Jede Runde bekommt das Tempo, mit dem ihr Kampf etwa FIGHT_SECONDS dauert;
+// mit dem Schlüpfen davor sind das knapp 30 Sekunden statt über einer Minute.
+export const FIGHT_SECONDS = 21;
+export const FIGHT_SPEED = 2.5; // Ausgangswert, solange die Dauer einer Runde nicht bekannt ist
+
+export function fightSpeed(simSeconds: number | undefined) {
+  if (!simSeconds || !Number.isFinite(simSeconds)) return FIGHT_SPEED;
+  return Math.round(Math.min(3.2, Math.max(1.5, simSeconds / FIGHT_SECONDS)) * 100) / 100;
+}
 
 export function royaleCron() {
   return `${ROYALE_UTC_MIN % 60} ${Math.floor(ROYALE_UTC_MIN / 60)} * * *`;

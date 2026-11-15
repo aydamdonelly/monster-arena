@@ -94,10 +94,10 @@ export default function CatchScreen() {
     }
   };
 
-  // Zurück vom Whop-Checkout (?golden=1): warten, bis der Webhook das Ei gutschreibt. Ist es schon gelegt, Adresse aufräumen.
+  // Zurück vom Whop-Checkout (?golden=1): warten, bis der Webhook das Ei gutschreibt. Sobald das goldene Ei gelegt wird, Adresse aufräumen.
   useEffect(() => {
-    if (golden && goldenSettled) router.setParams({ golden: undefined });
-  }, [golden, goldenSettled]);
+    if (golden && (goldenSettled || phase.kind === 'egg')) router.setParams({ golden: undefined });
+  }, [golden, goldenSettled, phase.kind]);
 
   const reset = () => setPhase({ kind: 'idle' });
 
@@ -120,15 +120,7 @@ export default function CatchScreen() {
           </View>
 
           {phase.kind === 'idle' && (!mine || !me) ? <ActivityIndicator color={Palette.ink} style={styles.loading} /> : null}
-          {phase.kind === 'idle' && returning && me ? (
-            <GoldenReturn
-              ready={goldenReady}
-              onSnap={() => {
-                router.setParams({ golden: undefined });
-                onCatch('camera');
-              }}
-            />
-          ) : null}
+          {phase.kind === 'idle' && returning && me ? <GoldenReturn ready={goldenReady} onSnap={() => onCatch('camera')} /> : null}
           {phase.kind === 'idle' && !returning && mine && me && atLimit ? <Limit mine={mine} now={now} canGolden={me.canGolden} onGolden={() => setSheet(true)} /> : null}
           {phase.kind === 'idle' && !returning && mine && me && !atLimit ? (
             <Idle

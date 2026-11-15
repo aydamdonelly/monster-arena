@@ -264,7 +264,7 @@ function EggStage({ seed, photo, golden, layIn }: { seed: string; photo: string 
           />
           {layIn && photo ? (
             <Animated.View style={[styles.landed, { opacity: pop.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 0, 1] }) }]}>
-              <Egg seed={seed} width={168} photoUrl={photo} caption="Your snap" crack="none" rotate={0} />
+              <Egg seed={seed} width={168} golden={golden} photoUrl={photo} caption="Your snap" crack="none" rotate={0} />
             </Animated.View>
           ) : null}
         </Animated.View>

@@ -73,6 +73,33 @@ export const seedWild = internalMutation({
   },
 });
 
+// Wilde Monster sind nur Füllung: Sie kämpfen mit weniger Leben und Angriff, damit möglichst ein echtes Ei gewinnt.
+// Die Werte stehen am Monster, also rechnen Server und Clients mit denselben Zahlen. npx convex run dev:nerfWild '{"factor":0.65}'
+export const nerfWild = internalMutation({
+  args: { factor: v.number() },
+  returns: v.number(),
+  handler: async (ctx, { factor }) => {
+    const house = await ctx.db
+      .query("players")
+      .withIndex("by_deviceId", (q) => q.eq("deviceId", "house-wild"))
+      .unique();
+    if (!house) return 0;
+    const pool = await ctx.db
+      .query("monsters")
+      .withIndex("by_playerId", (q) => q.eq("playerId", house._id))
+      .take(200);
+    let n = 0;
+    for (const m of pool) {
+      const base = statsFromTraits(m.genome?.traits);
+      await ctx.db.patch("monsters", m._id, {
+        stats: { ...base, hp: Math.round(base.hp * factor), atk: Math.round(base.atk * factor) },
+      });
+      n++;
+    }
+    return n;
+  },
+});
+
 // Vor dem Start: alle bisherigen Spieler als Test markieren (zählen nicht in Zahlen und Royale).
 // npx convex run dev:markAllTest '{"before": <Zeitstempel in ms>}'
 export const markAllTest = internalMutation({

@@ -8,6 +8,8 @@ npx expo export -p web
 # monster-kit als statische Seiten unter /kit (Reel, Arena, Testseite)
 mkdir -p dist/kit
 cp monster-kit/*.js monster-kit/*.html monster-kit/*.json dist/kit/
+# Lokale Arbeitsdateien (Unterstrich am Anfang, z. B. der Export der Kontrollseite) gehören nicht ins Netz
+rm -f dist/kit/_*
 # Vercel lädt keine Ordner namens node_modules hoch. Schriften und Icons liegen im Export aber unter assets/node_modules:
 # Ordner umbenennen und die alten Pfade per Rewrite darauf zeigen lassen.
 if [ -d dist/assets/node_modules ]; then mv dist/assets/node_modules dist/assets/nm; fi

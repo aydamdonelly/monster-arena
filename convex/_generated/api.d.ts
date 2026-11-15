@@ -10,6 +10,7 @@
 
 import type * as drops from "../drops.js";
 import type * as events from "../events.js";
+import type * as hatch from "../hatch.js";
 import type * as monsters from "../monsters.js";
 import type * as players from "../players.js";
 
@@ -22,6 +23,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   drops: typeof drops;
   events: typeof events;
+  hatch: typeof hatch;
   monsters: typeof monsters;
   players: typeof players;
 }>;

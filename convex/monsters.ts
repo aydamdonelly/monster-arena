@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, QueryCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { playerByDevice } from "./players";
 
 const STAT_BUDGET = 300;
@@ -134,31 +135,69 @@ export const create = mutation({
   },
 });
 
+const monsterView = v.object({
+  _id: v.id("monsters"),
+  _creationTime: v.number(),
+  playerId: v.id("players"),
+  genome: v.any(),
+  name: v.string(),
+  element: v.string(),
+  stats: v.object({ hp: v.number(), atk: v.number(), def: v.number(), spd: v.number() }),
+  stage: v.number(),
+  photoId: v.optional(v.id("_storage")),
+  photoUrl: v.union(v.string(), v.null()),
+  ownerName: v.union(v.string(), v.null()),
+});
+
+// Monster plus Foto-URL und Trainername (Testmonster tragen ihr Foto im Genom)
+async function view(ctx: QueryCtx, m: Doc<"monsters">, owner?: Doc<"players"> | null) {
+  const player = owner === undefined ? await ctx.db.get("players", m.playerId) : owner;
+  const photoUrl = m.photoId ? await ctx.storage.getUrl(m.photoId) : ((m.genome?.photoUrl as string | undefined) ?? null);
+  return { ...m, photoUrl, ownerName: player?.name ?? null };
+}
+
 export const listMine = query({
   args: { deviceId: v.string() },
-  returns: v.array(monsterDoc),
+  returns: v.array(monsterView),
   handler: async (ctx, args) => {
     const player = await ctx.db
       .query("players")
       .withIndex("by_deviceId", (q) => q.eq("deviceId", args.deviceId))
       .unique();
     if (!player) return [];
-    return await ctx.db
+    const monsters = await ctx.db
       .query("monsters")
       .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
       .order("desc")
       .take(200);
+    return await Promise.all(monsters.map((m) => view(ctx, m, player)));
   },
 });
 
 export const listToday = query({
-  args: { since: v.number() },
-  returns: v.array(monsterDoc),
+  args: { since: v.number(), includeTest: v.optional(v.boolean()) },
+  returns: v.array(monsterView),
   handler: async (ctx, args) => {
-    return await ctx.db
+    const monsters = await ctx.db
       .query("monsters")
       .withIndex("by_creation_time", (q) => q.gte("_creationTime", args.since))
       .order("desc")
-      .take(100);
+      .take(150);
+    const out = [];
+    for (const m of monsters) {
+      const owner = await ctx.db.get("players", m.playerId);
+      if (owner?.isTest && !args.includeTest) continue;
+      out.push(await view(ctx, m, owner));
+    }
+    return out;
+  },
+});
+
+export const get = query({
+  args: { id: v.id("monsters") },
+  returns: v.union(monsterView, v.null()),
+  handler: async (ctx, args) => {
+    const m = await ctx.db.get("monsters", args.id);
+    return m ? await view(ctx, m) : null;
   },
 });

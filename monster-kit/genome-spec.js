@@ -4,10 +4,12 @@
 export const SHAPES = ['blob', 'egg', 'drop', 'cylinder', 'box', 'cactus', 'strawberry', 'bean'];
 export const PART_TYPES = ['handle', 'coffee', 'steam', 'straw', 'cap', 'stem', 'leafCrown', 'flower', 'seeds', 'spots', 'spikes', 'screen', 'headphones', 'beak', 'ears', 'horns', 'antenna', 'wings', 'tail'];
 export const ELEMENTS = ['fire', 'water', 'plant', 'metal', 'fluff', 'spirit'];
+export const MOVE_KINDS = ['melee', 'shot', 'beam', 'burst', 'dash'];
+const MOVE = { type: 'object', additionalProperties: false, required: ['name', 'kind', 'element'], properties: { name: { type: 'string' }, kind: { type: 'string', enum: MOVE_KINDS }, element: { type: 'string', enum: ELEMENTS } } };
 
 export const GENOME_SCHEMA = {
   type: 'object', additionalProperties: false,
-  required: ['object', 'safe', 'matchesPrompt', 'name', 'lore', 'element', 'shape', 'proportions', 'colors', 'eyes', 'mouth', 'limbStyle', 'pose', 'parts', 'traits'],
+  required: ['object', 'safe', 'matchesPrompt', 'name', 'lore', 'element', 'shape', 'proportions', 'colors', 'eyes', 'mouth', 'limbStyle', 'pose', 'parts', 'traits', 'move1', 'move2'],
   properties: {
     object: { type: 'string' },
     safe: { type: 'boolean' },
@@ -23,6 +25,8 @@ export const GENOME_SCHEMA = {
     limbStyle: { type: 'string', enum: ['stick', 'stub'] },
     pose: { type: 'string', enum: ['cheer', 'wave', 'rest'] },
     parts: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['type', 'color'], properties: { type: { type: 'string', enum: PART_TYPES }, color: { type: 'string' } } } },
+    move1: MOVE,
+    move2: MOVE,
     traits: { type: 'object', additionalProperties: false, required: ['hard', 'sharp', 'fast', 'big', 'soft'], properties: { hard: { type: 'number' }, sharp: { type: 'number' }, fast: { type: 'number' }, big: { type: 'number' }, soft: { type: 'number' } } },
   },
 };
@@ -51,6 +55,9 @@ Look at the MAIN object in the photo. The monster must be instantly recognizable
 - name: a punny 1-2 word monster name mixing the object and a monster word (e.g. "Mugzilla", "Bananaconda"). Vary the monster word. lore: one short funny sentence about its origin.
 - element: fire (red, hot, spicy), water (blue, liquid, glass, drinks), plant (green, natural, fruit, veggies), metal (electronics, metal, hard tools), fluff (soft, fabric, plush), spirit (old, strange, sentimental).
 - traits: numbers from 0 to 1 for hard, sharp, fast, big, soft, judged from the real object.
+- move1 (basic attack) and move2 (special attack): two unique attacks that only THIS object could have. name: punchy, 1 to 3 words, a pun on what the object does (mug: "Espresso Splash" and "Handle Hook"; banana: "Peel Slip" and "Potassium Beam"; laptop: "Ctrl Alt Delete" and "Blue Screen").
+  kind: melee (hits, bites, slaps at close range), shot (throws or spits one projectile), beam (laser, ray or stream in a long line), burst (explosion, splash or shockwave around itself), dash (charges or leaps at the target). move1 and move2 must have different kinds.
+  element: usually the monster's own element; the special may use another fitting element.
 - safe: false if the photo mainly shows a human person or face, nudity, weapons, drugs or anything inappropriate; otherwise true.
 - matchesPrompt: 0 to 1, how well the object fits today's drop task: "${dropPrompt}".`;
 }
@@ -64,5 +71,6 @@ export function genomeFromAI(ai, seed) {
     face: { eyes: ai.eyes, mouth: ai.mouth },
     limbs: { style: ai.limbStyle, pose: ai.pose },
     parts: (ai.parts || []).slice(0, 3),
+    moves: [ai.move1, ai.move2].filter(Boolean),
   };
 }

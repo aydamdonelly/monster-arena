@@ -42,7 +42,7 @@
     }
     async function loadEntrants() {
       if (P.get('src') === 'royale') { // gespeicherte Runde der letzten Royale: round=-1 ist das Finale, sonst die Vorrunde
-        const r = await convexQuery('royale:round', { index: Number(P.get('round') ?? -1) });
+        const r = await convexQuery('royale:round', { index: Number(P.get('round') ?? -1), ...(P.get('test') === '1' ? { test: true } : {}) }); // test=1 zeigt die letzte Probe-Royale
         if (!r) return [];
         SEED = r.seed; DAY = r.dayElement || undefined; TITLE = TITLE || (r.isFinal ? `${r.title} · FINAL` : `${r.title} · HEAT ${r.index + 1}`);
         return r.entrants;

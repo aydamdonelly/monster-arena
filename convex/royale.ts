@@ -99,10 +99,8 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
   const hatching: Doc<"monsters">[] = [];
   for (const m of recent) {
     if (!m.genome) continue;
-    const isEgg = m.status === "egg" && m.ready === true;
-    // Monster aus dem alten Sofort-Ablauf (ohne status) von heute kämpfen einmal mit
-    const isLegacy = a.mode === "live" && m.status === undefined && m._creationTime > now - DAY_MS;
-    if (!isEgg && !isLegacy) continue;
+    // Nur fertige Eier schlüpfen. Einträge ohne Status (alter Sofort-Ablauf) gibt es nicht mehr.
+    if (m.status !== "egg" || m.ready !== true) continue;
     if (!owners.has(m.playerId)) owners.set(m.playerId, await ctx.db.get("players", m.playerId));
     const owner = owners.get(m.playerId);
     if (!owner || owner.deviceId === WILD_DEVICE) continue;

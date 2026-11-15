@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query, QueryCtx } from "./_generated/server";
+import { internalMutation, query, QueryCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { playerByDevice } from "./players";
 
@@ -115,7 +115,8 @@ const monsterDoc = v.object({
   genAt: v.optional(v.number()),
 });
 
-export const create = mutation({
+// Nur intern: Von außen entsteht ein Monster ausschließlich über eggs.lay (sonst ließen sich Monster an der Royale vorbei einschleusen).
+export const create = internalMutation({
   args: {
     deviceId: v.string(),
     genome: v.any(),

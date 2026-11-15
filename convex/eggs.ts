@@ -11,6 +11,7 @@ import { statsFromTraits, hashString } from "../monster-kit/battle.js";
 const MODELS = ["gpt-6.1-sol", "gpt-6-luna"]; // erst das große Modell, bei Fehlern das schnelle
 export const DAILY_LIMIT = 1; // ein Ei pro Royale; ein zweites gibt es nur als Goldenes Ei (gekauft)
 export const GOLDEN_LIMIT = 1;
+const FLOOD_LIMIT = 150; // Eier in 10 Minuten über alle Spieler
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Beginn des laufenden Royale-Tages: die letzte volle 01:00 UTC (= 17:00 Uhr Pacific im Winter).
@@ -78,6 +79,16 @@ export const lay = mutation({
       .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
       .order("desc")
       .take(40);
+    // Notbremse: Schickt jemand massenhaft Eier (jedes kostet einen KI-Aufruf), ist das Nest kurz voll
+    if (!player.isTest) {
+      const burst = await ctx.db
+        .query("monsters")
+        .withIndex("by_creation_time", (q) => q.gte("_creationTime", now - 10 * 60 * 1000))
+        .take(FLOOD_LIMIT + 1);
+      if (burst.length > FLOOD_LIMIT) {
+        throw new ConvexError({ code: "busy", message: "The nest is packed right now. Try again in a few minutes!" });
+      }
+    }
     const dayStart = royaleDayStart(now);
     const mineToday = mine.filter((m) => m._creationTime >= dayStart && m.status !== "rejected");
     const freeToday = mineToday.filter((m) => !(m.golden ?? m.genome?.golden)).length;

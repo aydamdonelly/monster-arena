@@ -2,8 +2,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMutation, useQuery } from 'convex/react';
 import { ConvexError } from 'convex/values';
 import { Image } from 'expo-image';
-import { router, useLocalSearchParams, useNavigation } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
@@ -14,6 +14,7 @@ import EggScreen, { type Entry } from '@/components/EggScreen';
 import GoldenEggSheet from '@/components/GoldenEggSheet';
 import Landing from '@/components/Landing';
 import MonsterSnapshots from '@/components/MonsterSnapshots';
+import { useLiveRoyale } from '@/components/RoyaleTakeover';
 import { Appear, HardShadow, InkSticker, OutlineButton, PrimaryButton, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
@@ -41,7 +42,7 @@ export default function CatchScreen() {
   const navigation = useNavigation();
   const generateUploadUrl = useMutation(api.hatch.generateUploadUrl);
   const lay = useMutation(api.eggs.lay);
-  const [now] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
   const mine = useQuery(api.monsters.listMine, { deviceId });
   const me = useQuery(api.players.me, { deviceId, now });
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
@@ -53,6 +54,14 @@ export default function CatchScreen() {
   const firstVisit = phase.kind === 'idle' && mine?.length === 0;
   const atLimit = !!me && me.hatchesLeft === 0 && (me.goldenEggs === 0 || !me.canGolden);
   const fullScreen = firstVisit || phase.kind === 'egg';
+  const lastRoyale = royaleTimeToday() > now ? royaleTimeToday() - DAY_MS : royaleTimeToday();
+  const hatchedToday = mine?.find((m) => m.status === 'hatched' && m._creationTime < lastRoyale && m._creationTime >= lastRoyale - DAY_MS);
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60 * 1000);
+    return () => clearInterval(t);
+  }, []);
+  useFocusEffect(useCallback(() => setNow(Date.now()), []));
 
   useEffect(() => {
     navigation.setOptions({ tabBarStyle: fullScreen ? { display: 'none' } : undefined } as object);
@@ -124,6 +133,7 @@ export default function CatchScreen() {
           {phase.kind === 'idle' && !returning && mine && me && atLimit ? <Limit mine={mine} now={now} canGolden={me.canGolden} onGolden={() => setSheet(true)} /> : null}
           {phase.kind === 'idle' && !returning && mine && me && !atLimit ? (
             <Idle
+              hatched={hatchedToday}
               onCatch={onCatch}
               hatchesLeft={me.hatchesLeft}
               dailyLimit={me.dailyLimit}
@@ -154,12 +164,14 @@ export default function CatchScreen() {
 }
 
 function Idle({
+  hatched,
   onCatch,
   hatchesLeft,
   dailyLimit,
   goldenEggs,
   eggs,
 }: {
+  hatched?: Entry;
   onCatch: (source: 'camera' | 'library') => void;
   hatchesLeft: number;
   dailyLimit: number;
@@ -170,6 +182,7 @@ function Idle({
   const size = Math.min(155, Math.max(124, Math.round(height * 0.184)));
   return (
     <View style={styles.idle}>
+      {hatched ? <HatchedToday monster={hatched} /> : null}
       <Appear style={styles.lane}>
         <DropCard />
       </Appear>
@@ -288,14 +301,44 @@ function GoldenReturn({ ready, onSnap }: { ready: boolean; onSnap: () => void })
   );
 }
 
+function HatchedToday({ monster }: { monster: Entry }) {
+  const { pending, onSnapshot, snapshot } = useSnapshots([monster]);
+  return (
+    <Appear style={styles.lane}>
+      <MonsterSnapshots items={pending} onSnapshot={onSnapshot} dom={{ style: styles.snapshotter }} />
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => router.push({ pathname: '/monster/[id]', params: { id: monster._id } })}
+        style={styles.hatchedRow}>
+        <StageBlock radius={18} style={styles.hatchedThumb}>
+          {snapshot(monster._id) ? <Image source={{ uri: snapshot(monster._id) }} style={styles.hatchedImage} contentFit="cover" /> : null}
+        </StageBlock>
+        <View style={styles.hatchedText}>
+          <Text style={[Type.label, styles.mutedLabel]}>Your egg hatched</Text>
+          <Text style={styles.hatchedName} numberOfLines={1}>
+            {monster.name}
+          </Text>
+        </View>
+      </Pressable>
+    </Appear>
+  );
+}
+
 // Countdown bis zum Schlüpfen, groß und ohne Erklärung
 function HatchClock() {
   const now = useNow();
   const left = royaleTimeToday() - now;
+  const { live, watch } = useLiveRoyale();
   return (
     <View style={styles.hatchClock}>
-      <Text style={styles.hatchClockTime} numberOfLines={1} adjustsFontSizeToFit>{left > 0 ? clock(left) : 'HATCHING…'}</Text>
-      <Text style={[Type.label, styles.mutedLabel]}>{left > 0 ? `until it hatches · ${royaleHour()}` : 'in the arena now'}</Text>
+      <Text style={styles.hatchClockTime} numberOfLines={1} adjustsFontSizeToFit>
+        {left > 0 ? clock(left) : live ? 'LIVE NOW' : 'HATCHING…'}
+      </Text>
+      {left <= 0 && live ? (
+        <OutlineButton small label="Watch live" onPress={watch} />
+      ) : (
+        <Text style={[Type.label, styles.mutedLabel]}>{left > 0 ? `until it hatches · ${royaleHour()}` : 'in the arena now'}</Text>
+      )}
     </View>
   );
 }
@@ -415,6 +458,11 @@ const styles = StyleSheet.create({
   goldenSnap: { alignSelf: 'stretch' },
   snapshotter: { position: 'absolute', width: 1, height: 1, opacity: 0 },
   mutedLabel: { color: Palette.muted },
+  hatchedRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  hatchedThumb: { width: 64, height: 64, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  hatchedImage: { width: 72, height: 72 },
+  hatchedText: { flex: 1, gap: 2 },
+  hatchedName: { fontFamily: Fonts.extrabold, fontSize: 20, lineHeight: 24, color: Palette.ink },
   thumbs: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingTop: 20 },
   thumb: { flex: 1, height: 176, alignItems: 'center', justifyContent: 'center' },
   thumbImage: { width: 112, height: 112 },

@@ -79,7 +79,7 @@ function Lobby({ since, includeTest, adminKey }: { since: number; includeTest: b
             </HardShadow>
             <View style={{ gap: 4 * u, flexShrink: 1 }}>
               <Text style={[styles.semibold, { fontSize: 34 * u, lineHeight: 40 * u }]}>snap an object at</Text>
-              <Text style={[styles.black, { fontSize: 66 * u, lineHeight: 66 * u, letterSpacing: -2.3 * u }]} numberOfLines={1}>
+              <Text style={[styles.black, { fontSize: 52 * u, lineHeight: 56 * u, letterSpacing: -1.8 * u }]} numberOfLines={1} adjustsFontSizeToFit>
                 {webUrl.replace(/^https?:\/\//, '')}
               </Text>
               <Text style={[styles.semibold, { fontSize: 34 * u, lineHeight: 40 * u }]}>to enter</Text>

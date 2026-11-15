@@ -3,7 +3,7 @@ import { router, usePathname } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
 import { api } from '@/convex/_generated/api';
-import { replayRound, useNow } from '@/lib/arena';
+import { replayRound, royaleTimeToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
 import { getItem, setItem } from '@/lib/kv';
 import { photoFlowActive } from '@/lib/photo';
@@ -34,4 +34,18 @@ export default function RoyaleTakeover() {
   }, [summary, mine, now, pathname]);
 
   return null;
+}
+
+export function useLiveRoyale() {
+  const deviceId = useDeviceId();
+  const testMode = useTestMode();
+  const summary = useQuery(api.royale.summary, testArgs(testMode));
+  const mine = useQuery(api.royale.mine, deviceId ? { deviceId, ...testArgs(testMode) } : 'skip');
+  const live = !!summary && summary.startsAt >= royaleTimeToday() - 5 * 60 * 1000;
+  const watch = () => {
+    if (!summary) return;
+    setItem(`snappymon.watched.${summary._id}`, '1');
+    router.push({ pathname: '/arena/replay', params: { round: replayRound(mine), live: '1' } });
+  };
+  return { live, watch };
 }

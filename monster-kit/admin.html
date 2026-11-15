@@ -31,6 +31,7 @@
     const P = new URLSearchParams(location.search);
     // Der Schlüssel steht nie in der Adresse: Er wird einmal eingetippt und nur für diese Browser-Sitzung gemerkt.
     let KEY = ''; try { KEY = sessionStorage.getItem('snappymon-admin') || ''; } catch {}
+    const fromHash = new URLSearchParams(location.hash.slice(1)).get('k'); if (fromHash) { KEY = fromHash; try { sessionStorage.setItem('snappymon-admin', KEY); } catch {} history.replaceState(null, '', location.pathname + location.search); }
     const CONVEX = P.get('convex') || 'https://superb-buzzard-616.convex.cloud';
     const call = async (kind, path, args) => { const r = await fetch(`${CONVEX}/api/${kind}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path, args, format: 'json' }) }); const j = await r.json(); if (j.status !== 'success') throw new Error(j.errorMessage || 'Fehler'); return j.value; };
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); renderer.setPixelRatio(1); renderer.setSize(360, 360);
@@ -54,7 +55,7 @@
           <div class="info"><h3>${esc(g?.name || '…')}</h3><div class="muted">${esc(g?.object || '')}</div>
           <div style="margin-top:4px">${state}${r.golden ? '<span class="tag egg">golden</span>' : ''}${r.isTest ? '<span class="tag">test</span>' : ''}<span class="muted">${esc(r.owner || 'ohne Namen')} · ${esc(r.source || '')} · ${new Date(r.createdAt).toLocaleTimeString()} · ${g?.blueprint?.parts?.length || 0} Teile</span></div>
           <div class="muted">${esc(g?.moves?.map((m) => `${m.name} (${m.kind})`).join(' · ') || '')}</div>
-          ${r.status === 'egg' ? `<button data-a="regenerate" data-id="${r.id}">Neu bauen</button><button data-a="reject" data-id="${r.id}">Ablehnen</button>` : ''}</div>`;
+          ${r.status === 'egg' ? `<button data-a="regenerate" data-id="${r.id}">Neu bauen</button><button data-a="reject" data-id="${r.id}">Ablehnen</button>` : ''}${r.owner === 'Wild' ? '' : `<button data-a="${r.isTest ? 'ownerReal' : 'ownerTest'}" data-id="${r.id}" title="Testspieler kämpfen nicht in der echten Royale und zählen in keiner Zahl">${r.isTest ? 'Besitzer ist echt' : 'Besitzer ist Test'}</button>`}</div>`;
         grid.appendChild(card);
       }
     }

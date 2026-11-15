@@ -8,7 +8,7 @@ import { useDeviceId } from '@/lib/device';
 import { buyGoldenEgg } from '@/lib/golden';
 import { Fonts, Palette } from '@/lib/theme';
 
-const PERKS = ['One more hatch today', 'Hatches golden, crown included', 'Same stats. Just fancier.'];
+const PERKS = ['One more egg today', 'Hatches golden, crown included', 'Same stats. Just fancier.'];
 
 export default function GoldenEggSheet({ visible, onClose: close }: { visible: boolean; onClose: () => void }) {
   const deviceId = useDeviceId();
@@ -52,8 +52,8 @@ export default function GoldenEggSheet({ visible, onClose: close }: { visible: b
         <View style={styles.grabber} />
         <View style={styles.stageLane}>
           <View style={styles.stage}>
-            <Image source={require('@/assets/images/renders/golden-mugzilla.png')} style={styles.render} contentFit="contain" />
-            <InkSticker label="+1 hatch" rotate={-5} style={styles.plus} />
+            <Image source={require('@/assets/images/renders/bp-golden-capyboogey.png')} style={styles.render} contentFit="contain" />
+            <InkSticker label="+1 egg" rotate={-5} style={styles.plus} />
             <InkSticker label="Crown included" light rotate={4} style={styles.crown} />
           </View>
         </View>

@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import CameraButton from '@/components/CameraButton';
-import EggArt from '@/components/EggArt';
+import Egg from '@/components/Egg';
 import EggScreen, { type Entry } from '@/components/EggScreen';
 import GoldenEggSheet from '@/components/GoldenEggSheet';
 import Landing from '@/components/Landing';
@@ -103,7 +103,13 @@ export default function CatchScreen() {
           {phase.kind === 'idle' && (!mine || !me) ? <ActivityIndicator color={Palette.ink} style={styles.loading} /> : null}
           {phase.kind === 'idle' && mine && me && atLimit ? <Limit mine={mine} now={now} onGolden={() => setSheet(true)} /> : null}
           {phase.kind === 'idle' && mine && me && !atLimit ? (
-            <Idle onCatch={onCatch} hatchesLeft={me.hatchesLeft} dailyLimit={me.dailyLimit} goldenEggs={me.goldenEggs} />
+            <Idle
+              onCatch={onCatch}
+              hatchesLeft={me.hatchesLeft}
+              dailyLimit={me.dailyLimit}
+              goldenEggs={me.goldenEggs}
+              eggs={mine.filter((m) => m.status === 'egg')}
+            />
           ) : null}
 
           {phase.kind === 'error' ? (
@@ -132,35 +138,63 @@ function Idle({
   hatchesLeft,
   dailyLimit,
   goldenEggs,
+  eggs,
 }: {
   onCatch: (source: 'camera' | 'library') => void;
   hatchesLeft: number;
   dailyLimit: number;
   goldenEggs: number;
+  eggs: Entry[];
 }) {
   const { height } = useWindowDimensions();
-  const size = Math.min(180, Math.max(136, Math.round(height * 0.213)));
+  const size = Math.min(155, Math.max(124, Math.round(height * 0.184)));
   return (
     <View style={styles.idle}>
       <Appear style={styles.lane}>
         <DropCard />
       </Appear>
       <Appear delay={120} style={styles.cameraArea}>
-        <Image source={require('@/assets/images/renders/duckzilla.png')} style={styles.mascot} contentFit="contain" />
+        <Image source={require('@/assets/images/renders/bp-cuddlebara.png')} style={styles.mascot} contentFit="contain" />
         <View>
           <CameraButton size={size} onPress={() => onCatch('camera')} />
           {goldenEggs > 0 ? <InkSticker label="Golden egg ready" rotate={6} style={styles.goldenReady} /> : null}
         </View>
-        <View style={styles.ctaText}>
-          <Text style={[Type.heading, styles.centerText]}>Snap any object.</Text>
-          <Text style={[Type.muted, styles.centerText]}>{goldenEggs > 0 ? 'This one hatches golden.' : 'It hatches at 5 PM.'}</Text>
-        </View>
         <HatchesLeft left={hatchesLeft} limit={dailyLimit} />
-        <Pressable accessibilityRole="button" onPress={() => onCatch('library')} hitSlop={12}>
-          <Text style={styles.link}>or pick from your library</Text>
-        </Pressable>
       </Appear>
+      {eggs.length > 0 ? (
+        <Appear delay={180} style={styles.yourEggs}>
+          <Text style={[Type.label, styles.yourEggsLabel]}>Your eggs</Text>
+          <View style={styles.eggTiles}>
+            {eggs.slice(0, 3).map((e) => (
+              <EggTile key={e._id} entry={e} />
+            ))}
+            {eggs.length < 3 && hatchesLeft > 0 ? (
+              <Pressable accessibilityRole="button" onPress={() => onCatch('camera')} style={styles.moreSlot}>
+                <Text style={[Type.label, styles.mutedLabel]}>{Math.min(hatchesLeft, 3 - eggs.length)} more</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        </Appear>
+      ) : null}
     </View>
+  );
+}
+
+function EggTile({ entry }: { entry: Entry }) {
+  return (
+    <Pressable accessibilityRole="button" onPress={() => router.push(`/egg/${entry._id}`)} style={styles.eggTile}>
+      <Egg seed={entry._id} width={58} golden={entry.golden} rotate={-4} />
+      <InkSticker label="5 PM" rotate={-4} fontSize={12} style={styles.tileSticker} />
+      {entry.photoUrl ? (
+        <View style={styles.tilePhoto}>
+          <HardShadow offset={3} radius={6} rotate={8}>
+            <View style={styles.tilePolaroid}>
+              <Image source={{ uri: entry.photoUrl }} style={styles.tilePhotoImage} contentFit="cover" />
+            </View>
+          </HardShadow>
+        </View>
+      ) : null}
+    </Pressable>
   );
 }
 
@@ -173,7 +207,7 @@ function HatchesLeft({ left, limit }: { left: number; limit: number }) {
         ))}
       </View>
       <Text style={Type.label}>
-        {left} of {limit} hatches left today
+        {left} of {limit} eggs left today
       </Text>
     </View>
   );
@@ -202,8 +236,15 @@ function Limit({ mine, now, onGolden }: { mine: Entry[]; now: number; onGolden: 
             {m.status === 'hatched' ? (
               snapshot(m._id) ? <Image source={{ uri: snapshot(m._id) }} style={styles.thumbImage} contentFit="cover" transition={200} /> : null
             ) : (
-              <EggArt width={58} />
+              <Egg seed={m._id} width={52} rotate={-4} />
             )}
+            {m.photoUrl ? (
+              <View style={styles.tilePhoto}>
+                <View style={[styles.tilePolaroid, { transform: [{ rotate: '8deg' }] }]}>
+                  <Image source={{ uri: m.photoUrl }} style={styles.tilePhotoImage} contentFit="cover" />
+                </View>
+              </View>
+            ) : null}
           </StageBlock>
         ))}
       </Appear>
@@ -238,9 +279,10 @@ function DropCard() {
       <View style={styles.drop}>
         <View style={styles.dropTop}>
           <Text style={Type.label}>{"Today's drop"}</Text>
-          <Text style={styles.timer}>{left > 0 ? `hatches in ${clock(left)}` : 'hatching now'}</Text>
+          <Text style={styles.timer}>{left > 0 ? `royale in ${clock(left)}` : 'royale live now'}</Text>
         </View>
         <Text style={styles.dropTitle}>Anything</Text>
+        <Text style={styles.dropLine}>Snap it. Get an egg. It hatches at 5 PM.</Text>
       </View>
     </HardShadow>
   );
@@ -260,33 +302,33 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: Palette.ink,
     borderRadius: Radii.card,
-    paddingTop: 18,
-    paddingBottom: 22,
+    paddingTop: 16,
+    paddingBottom: 18,
     paddingHorizontal: 20,
-    gap: 10,
+    gap: 6,
   },
   dropTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   timer: {
     fontFamily: Fonts.semibold,
     fontSize: 13,
     lineHeight: 16,
-    letterSpacing: 0.5,
+    letterSpacing: 0.52,
     color: Palette.ink,
     fontVariant: ['tabular-nums'],
   },
-  dropTitle: { fontFamily: Fonts.black, fontSize: 46, lineHeight: 44, letterSpacing: -1.6, color: Palette.ink, paddingTop: 4 },
+  dropTitle: { fontFamily: Fonts.black, fontSize: 52, lineHeight: 50, letterSpacing: -2.08, color: Palette.ink },
+  dropLine: { fontFamily: Fonts.medium, fontSize: 15, lineHeight: 20, color: Palette.ink },
   cameraArea: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 20,
+    gap: 16,
     paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingVertical: 20,
     overflow: 'hidden',
   },
-  mascot: { position: 'absolute', width: 150, height: 150, right: -52, top: 72, transform: [{ rotate: '-2deg' }] },
+  mascot: { position: 'absolute', width: 150, height: 150, right: -46, top: 22, transform: [{ rotate: '-12deg' }] },
   goldenReady: { position: 'absolute', top: -6, right: -38 },
-  ctaText: { gap: 4, alignItems: 'center' },
   eggs: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 16 },
   eggRow: { flexDirection: 'row', gap: 5 },
   egg: {
@@ -300,12 +342,23 @@ const styles = StyleSheet.create({
     borderColor: Palette.ink,
   },
   eggFull: { backgroundColor: Palette.ink },
-  link: {
-    fontFamily: Fonts.semibold,
-    fontSize: 15,
-    lineHeight: 20,
-    color: Palette.muted,
-    textDecorationLine: 'underline',
+  yourEggs: { gap: 10, paddingHorizontal: 20, paddingBottom: 18 },
+  yourEggsLabel: { paddingHorizontal: 4 },
+  eggTiles: { flexDirection: 'row', gap: 12 },
+  eggTile: { flex: 1, height: 112, borderRadius: 20, backgroundColor: Palette.stage, alignItems: 'center', justifyContent: 'center' },
+  tileSticker: { position: 'absolute', top: 10, left: 10 },
+  tilePhoto: { position: 'absolute', bottom: 10, right: 12 },
+  tilePolaroid: { backgroundColor: Palette.ground, borderWidth: 2, borderColor: Palette.ink, borderRadius: 6, padding: 3, paddingBottom: 6 },
+  tilePhotoImage: { width: 26, height: 26, borderRadius: 2 },
+  moreSlot: {
+    flex: 1,
+    height: 112,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: Palette.hairline,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   limit: { flexGrow: 1 },
   snapshotter: { position: 'absolute', width: 1, height: 1, opacity: 0 },

@@ -1,14 +1,15 @@
 import { useQuery } from 'convex/react';
 import type { FunctionReturnType } from 'convex/server';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import EggArt from '@/components/EggArt';
+import Egg from '@/components/Egg';
 import MonsterView from '@/components/MonsterView';
 import ShareButton from '@/components/ShareButton';
-import { Appear, InkSticker, OutlineButton, Polaroid, PrimaryButton, StageBlock } from '@/components/ui';
+import { Appear, HardShadow, InkSticker, PrimaryButton, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import { clock, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
@@ -72,53 +73,65 @@ export default function ArenaScreen() {
           onSkip={markWatched}
         />
       ) : (
-        <BeforeRoyale since={since} last={summary} mine={mine} />
+        <BeforeRoyale since={since} />
       )}
     </SafeAreaView>
   );
 }
 
-function BeforeRoyale({ since, last, mine }: { since: number; last: Summary | null; mine: Mine }) {
+function BeforeRoyale({ since }: { since: number }) {
   const deviceId = useDeviceId();
   const now = useNow();
   const left = royaleTimeToday() - now;
   const eggs = useQuery(api.monsters.listToday, { since });
   const myEntries = useQuery(api.monsters.listMine, { deviceId });
-  const myEgg = myEntries?.find((m) => m.status === 'egg' && m._creationTime >= since);
-  const lastLine = placeLine(mine);
+  const myIds = new Set(myEntries?.map((m) => m._id));
   const shown = eggs?.slice(0, GRID_MAX) ?? [];
 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.titleRow}>
-        <Text style={Type.display}>Royale</Text>
-        <Text style={[Type.label, styles.titleSide]}>Today 5:00 PM</Text>
+        <Text style={styles.title}>Royale</Text>
+        <InkSticker label="Today 5 PM sharp" rotate={4} />
       </View>
 
-      <View style={styles.countRow}>
-        <View style={styles.shrink}>
-          <Text style={[Type.label, styles.muted]}>{left > 0 ? 'Starts in' : 'Starting'}</Text>
-          <Text style={[styles.countdown, left <= 0 && styles.countdownSoon]} numberOfLines={1}>
-            {left > 0 ? clock(left) : 'Any minute'}
-          </Text>
-        </View>
-        <View style={styles.entered}>
-          <Text style={styles.enteredCount}>{eggs ? eggs.length.toLocaleString('en-US') : ' '}</Text>
-          <Text style={styles.enteredLabel}>{eggs?.length === 1 ? 'egg waiting' : 'eggs waiting'}</Text>
-        </View>
+      <View style={styles.countLane}>
+        <HardShadow offset={5} radius={Radii.card}>
+          <View style={styles.countBlock}>
+            <Text style={Type.label}>{left > 0 ? 'Hatching in' : 'Hatching'}</Text>
+            <Text style={[styles.countdown, left <= 0 && styles.countdownSoon]} numberOfLines={1}>
+              {left > 0 ? clock(left) : 'Any minute'}
+            </Text>
+          </View>
+        </HardShadow>
+      </View>
+
+      <View style={styles.waiting}>
+        <Text style={styles.waitingCount}>
+          {eggs ? `${eggs.length.toLocaleString('en-US')} ${eggs.length === 1 ? 'egg' : 'eggs'} waiting` : ' '}
+        </Text>
+        <Text style={styles.waitingSub}>nobody knows what's inside</Text>
       </View>
 
       <View style={styles.grid}>
-        {shown.map((e) => (
-          <StageBlock key={e._id} radius={Radii.tile} style={styles.eggTile}>
-            <EggArt width={46} golden={e.status === 'egg' && e.golden} />
-            {e.status === 'egg' && e.photoUrl ? (
-              <View style={styles.eggPhoto}>
-                <Polaroid uri={e.photoUrl} size={28} rotate={8} shadow={2} />
-              </View>
-            ) : null}
-          </StageBlock>
-        ))}
+        {shown.map((e) => {
+          const own = myIds.has(e._id);
+          return (
+            <Pressable
+              key={e._id}
+              disabled={!own}
+              onPress={() => router.push({ pathname: '/egg/[id]', params: { id: e._id } })}
+              style={[styles.eggTile, own && styles.ownTile]}>
+              <Egg seed={e._id} width={40} golden={e.golden} rotate={-4} />
+              {e.photoUrl ? (
+                <View style={[styles.eggPhoto, { transform: [{ rotate: '8deg' }] }]}>
+                  <Image source={{ uri: e.photoUrl }} style={styles.eggPhotoImage} contentFit="cover" />
+                </View>
+              ) : null}
+              {own ? <InkSticker label="You" fontSize={12} rotate={-6} style={styles.youTag} /> : null}
+            </Pressable>
+          );
+        })}
         {eggs && eggs.length > GRID_MAX ? (
           <View style={[styles.eggTile, styles.moreTile]}>
             <Text style={styles.moreText}>+{(eggs.length - GRID_MAX).toLocaleString('en-US')}</Text>
@@ -127,34 +140,7 @@ function BeforeRoyale({ since, last, mine }: { since: number; last: Summary | nu
       </View>
       {eggs?.length === 0 ? <Text style={[Type.muted, styles.empty]}>No eggs yet today. Be the first.</Text> : null}
 
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => (myEgg ? router.push({ pathname: '/egg/[id]', params: { id: myEgg._id } }) : router.navigate('/'))}
-        style={styles.mineRow}>
-        <StageBlock radius={18} style={styles.mineThumb}>
-          {myEgg ? <EggArt width={32} golden={myEgg.status === 'egg' && myEgg.golden} /> : null}
-        </StageBlock>
-        <View style={styles.mineText}>
-          <Text style={styles.mineName} numberOfLines={1}>
-            {myEgg ? 'Your egg' : 'No egg yet'}
-          </Text>
-          <Text style={styles.mineSub}>{myEgg ? 'hatches and fights at 5 PM' : 'Snap something to enter'}</Text>
-        </View>
-        {myEgg ? <InkSticker label="You" rotate={4} /> : null}
-      </Pressable>
-
-      {last ? (
-        <View style={styles.last}>
-          <View style={styles.hairline} />
-          <Text style={[Type.label, styles.muted, styles.lastLabel]}>Last royale · {clockTime(last.startsAt)}</Text>
-          <View style={styles.lastRow}>
-            <Text style={styles.lastText} numberOfLines={2}>
-              {lastLine ? lastLine.title : `${last.champion?.name ?? 'Nobody'} won`}
-            </Text>
-            <OutlineButton small label="Watch replay" onPress={() => router.push({ pathname: '/arena/replay', params: { round: replayRound(mine) } })} />
-          </View>
-        </View>
-      ) : null}
+      <Text style={styles.footer}>At 5:00 every egg hatches and they all fight. Last monster standing wins.</Text>
     </ScrollView>
   );
 }
@@ -173,13 +159,9 @@ function WatchLive({ summary, mine, onWatch, onSkip }: { summary: Summary; mine:
       </Appear>
       <Appear delay={100} style={styles.resultStageLane}>
         <View style={[styles.resultStage, styles.eggRow]}>
-          <View style={styles.eggTilt}>
-            <EggArt width={72} />
-          </View>
-          <EggArt width={96} />
-          <View style={styles.eggTiltRight}>
-            <EggArt width={72} />
-          </View>
+          <Egg seed="left" width={72} rotate={-10} crack="middle" />
+          <Egg seed="mid" width={96} rotate={0} crack="middle" />
+          <Egg seed="right" width={72} rotate={9} crack="middle" />
         </View>
       </Appear>
       <View style={styles.placeBlock}>
@@ -198,56 +180,73 @@ function WatchLive({ summary, mine, onWatch, onSkip }: { summary: Summary; mine:
 
 function RoyaleResult({ summary, mine }: { summary: Summary; mine: Mine }) {
   const champ = summary.champion;
-  const line = placeLine(mine);
+  const monster = useQuery(api.monsters.get, mine?.entered ? { id: mine.monsterId } : 'skip');
+  const place = !mine?.entered ? null : mine.inFinal ? `#${mine.finalPlace} of ${mine.finalSize}` : `#${mine.heatPlace} of ${mine.heatSize}`;
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.resultTop}>
-        <Text style={Type.label}>Royale · today {clockTime(summary.startsAt)}</Text>
-        <Text style={[Type.label, styles.muted]}>{summary.entrantCount} fought</Text>
+        <InkSticker label={mine?.entered ? 'Your egg hatched!' : 'The eggs hatched!'} fontSize={14} rotate={-3} />
+        <Text style={[Type.label, styles.muted]}>Royale · {clockTime(summary.startsAt)}</Text>
       </View>
-      <Appear style={styles.resultTitle}>
-        <Text style={styles.winner} numberOfLines={1} adjustsFontSizeToFit>
-          {champ?.name ?? 'Nobody'}
-        </Text>
-        <Text style={styles.winner}>wins.</Text>
-      </Appear>
-      {champ ? (
-        <Appear delay={100} style={styles.resultStageLane}>
-          <View style={styles.resultStage}>
-            <MonsterView genome={champ.genome as Record<string, unknown>} dom={{ scrollEnabled: false, style: { flex: 1 } }} />
-            <InkSticker label="Champion" fontSize={15} rotate={-7} style={styles.championTag} />
-            {champ.photoUrl ? (
-              <View style={styles.born}>
-                <Polaroid uri={champ.photoUrl} size={50} rotate={6} caption="Born" />
-              </View>
-            ) : null}
+      {mine?.entered ? (
+        <>
+          <Appear style={styles.resultStageLane}>
+            <View style={styles.resultStage}>
+              {monster?.genome ? (
+                <MonsterView genome={monster.genome as Record<string, unknown>} burst dom={{ scrollEnabled: false, style: { flex: 1 } }} />
+              ) : null}
+              {monster ? <InkSticker label={monster.element} light fontSize={12} rotate={4} style={styles.elementTag} /> : null}
+            </View>
+          </Appear>
+          <Appear delay={80} style={styles.resultTitle}>
+            <Text style={styles.winner} numberOfLines={1} adjustsFontSizeToFit>
+              {mine.monsterName}
+            </Text>
+          </Appear>
+          <View style={styles.placeBlock}>
+            <Text style={[Type.label, styles.muted]}>{mine.champion ? 'You won it all' : 'You finished'}</Text>
+            <Text style={styles.place}>{mine.champion ? '#1' : place}</Text>
           </View>
+        </>
+      ) : (
+        <Appear style={styles.placeBlock}>
+          <Text style={styles.place}>{"You weren't in this one"}</Text>
+          <Text style={Type.muted}>Snap something before 5 PM to enter the next royale.</Text>
         </Appear>
-      ) : null}
-      {champ?.ownerName ? (
-        <Text style={styles.trainer}>
-          trainer <Text style={styles.trainerName}>{champ.ownerName}</Text>
-        </Text>
-      ) : null}
-      <View style={styles.placeBlock}>
-        <View style={styles.hairline} />
-        <Text style={styles.place}>{line ? line.title : "You weren't in this one"}</Text>
-        <Text style={Type.muted}>{line ? line.quip : 'Hatch a monster before 5 PM to enter the next royale.'}</Text>
-      </View>
+      )}
       <View style={styles.resultActions}>
-        <PrimaryButton label="Watch the replay" onPress={() => router.push({ pathname: '/arena/replay', params: { round: '-1' } })} />
+        <PrimaryButton
+          label="Watch the replay"
+          onPress={() => router.push({ pathname: '/arena/replay', params: { round: replayRound(mine) } })}
+          style={styles.replayButton}
+        />
         {mine?.entered ? (
           <ShareButton
             id={mine.monsterId}
             name={mine.monsterName}
-            label="Share your monster"
+            label="Share"
             variant="outline"
             style={styles.shareButton}
             labelStyle={styles.shareLabel}
           />
         ) : null}
       </View>
-      <Text style={styles.next}>Next royale tomorrow, 5 PM</Text>
+      {champ ? (
+        <View style={styles.champLane}>
+          <View style={styles.hairline} />
+          <View style={styles.champRow}>
+            <View style={styles.champThumb}>
+              {champ.photoUrl ? <Image source={{ uri: champ.photoUrl }} style={styles.champImage} contentFit="cover" /> : null}
+            </View>
+            <View style={styles.shrink}>
+              <Text style={styles.champName} numberOfLines={1}>
+                Champion: {champ.name}
+              </Text>
+              {champ.ownerName ? <Text style={styles.champTrainer}>trainer {champ.ownerName}</Text> : null}
+            </View>
+          </View>
+        </View>
+      ) : null}
     </ScrollView>
   );
 }
@@ -257,50 +256,72 @@ const styles = StyleSheet.create({
   loading: { marginTop: 80 },
   container: { paddingBottom: 28, width: '100%', maxWidth: 560, alignSelf: 'center' },
   muted: { color: Palette.muted },
-  shrink: { flexShrink: 1 },
-  titleRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 4 },
-  titleSide: { paddingBottom: 7 },
-  countRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, paddingHorizontal: 24, paddingTop: 14 },
-  countdown: { fontFamily: Fonts.black, fontSize: 46, lineHeight: 48, letterSpacing: -1.4, color: Palette.ink, fontVariant: ['tabular-nums'] },
-  countdownSoon: { fontSize: 34 },
-  entered: { alignItems: 'flex-end', paddingBottom: 6 },
-  enteredCount: { fontFamily: Fonts.extrabold, fontSize: 22, lineHeight: 26, color: Palette.ink },
-  enteredLabel: { fontFamily: Fonts.medium, fontSize: 14, lineHeight: 18, color: Palette.muted },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingHorizontal: 20, paddingTop: 16 },
-  eggTile: { width: '30.9%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center' },
-  eggPhoto: { position: 'absolute', right: 8, bottom: 8 },
-  moreTile: { backgroundColor: Palette.ink, borderRadius: Radii.tile },
+  shrink: { flexShrink: 1, gap: 2 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 4 },
+  title: { fontFamily: Fonts.black, fontSize: 44, lineHeight: 46, letterSpacing: -1.76, color: Palette.ink },
+  countLane: { paddingHorizontal: 20, paddingTop: 16 },
+  countBlock: {
+    backgroundColor: Palette.primary,
+    borderWidth: 2,
+    borderColor: Palette.ink,
+    borderRadius: Radii.card,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+  },
+  countdown: { fontFamily: Fonts.black, fontSize: 68, lineHeight: 64, letterSpacing: -2.4, color: Palette.ink, fontVariant: ['tabular-nums'] },
+  countdownSoon: { fontSize: 46, lineHeight: 50 },
+  waiting: { gap: 2, paddingHorizontal: 24, paddingTop: 20 },
+  waitingCount: { fontFamily: Fonts.extrabold, fontSize: 20, lineHeight: 24, color: Palette.ink },
+  waitingSub: { fontFamily: Fonts.medium, fontSize: 15, lineHeight: 20, color: Palette.muted },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingHorizontal: 20, paddingTop: 14 },
+  eggTile: {
+    width: 80,
+    height: 88,
+    borderRadius: 16,
+    backgroundColor: Palette.stage,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ownTile: { borderWidth: 2, borderColor: Palette.ink },
+  eggPhoto: {
+    position: 'absolute',
+    right: 7,
+    bottom: 7,
+    backgroundColor: Palette.ground,
+    borderWidth: 2,
+    borderColor: Palette.ink,
+    borderRadius: 5,
+    padding: 2,
+    paddingBottom: 5,
+  },
+  eggPhotoImage: { width: 20, height: 20, borderRadius: 2 },
+  youTag: { position: 'absolute', top: 6, left: 6 },
+  moreTile: { backgroundColor: Palette.ink },
   moreText: { fontFamily: Fonts.extrabold, fontSize: 22, lineHeight: 26, color: Palette.ground },
   empty: { paddingHorizontal: 24, paddingTop: 8 },
+  footer: { fontFamily: Fonts.medium, fontSize: 16, lineHeight: 22, color: Palette.ink, paddingHorizontal: 24, paddingTop: 20 },
   eggRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 14, paddingBottom: 26 },
-  eggTilt: { transform: [{ rotate: '-10deg' }] },
-  eggTiltRight: { transform: [{ rotate: '9deg' }] },
   skip: { alignSelf: 'center', paddingTop: 2 },
   skipText: { fontFamily: Fonts.semibold, fontSize: 15, lineHeight: 20, color: Palette.muted, textDecorationLine: 'underline' },
   liveDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Palette.ink },
-  mineRow: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 24, paddingTop: 22 },
-  mineThumb: { width: 56, height: 56, alignItems: 'center', justifyContent: 'center' },
-  mineText: { flex: 1, gap: 1 },
-  mineName: { fontFamily: Fonts.extrabold, fontSize: 20, lineHeight: 24, letterSpacing: -0.2, color: Palette.ink },
-  mineSub: { fontFamily: Fonts.medium, fontSize: 15, lineHeight: 20, color: Palette.muted },
-  last: { gap: 10, paddingHorizontal: 24, paddingTop: 20 },
   hairline: { height: 2, backgroundColor: Palette.hairline },
-  lastLabel: { paddingTop: 6 },
-  lastRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  lastText: { flex: 1, fontFamily: Fonts.extrabold, fontSize: 18, lineHeight: 22, letterSpacing: -0.2, color: Palette.ink },
-  resultTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingHorizontal: 24, paddingTop: 4 },
-  resultTitle: { paddingHorizontal: 24, paddingTop: 10 },
-  winner: { fontFamily: Fonts.black, fontSize: 54, lineHeight: 52, letterSpacing: -2.1, color: Palette.ink },
-  resultStageLane: { paddingHorizontal: 20, paddingTop: 14 },
-  resultStage: { height: 186, borderRadius: Radii.stage, overflow: 'hidden', backgroundColor: Palette.stage },
-  championTag: { position: 'absolute', top: 16, left: 14 },
-  born: { position: 'absolute', right: 12, bottom: 12 },
-  trainer: { fontFamily: Fonts.medium, fontSize: 16, lineHeight: 22, color: Palette.muted, paddingHorizontal: 24, paddingTop: 12 },
-  trainerName: { fontFamily: Fonts.extrabold, color: Palette.ink },
-  placeBlock: { gap: 2, paddingHorizontal: 24, paddingTop: 18 },
-  place: { fontFamily: Fonts.black, fontSize: 28, lineHeight: 32, letterSpacing: -0.56, color: Palette.ink, paddingTop: 14 },
-  resultActions: { gap: 12, paddingHorizontal: 20, paddingTop: 18 },
-  shareButton: { height: 52 },
+  resultTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingHorizontal: 24, paddingTop: 8 },
+  resultTitle: { gap: 10, paddingHorizontal: 24, paddingTop: 14 },
+  winner: { fontFamily: Fonts.black, fontSize: 44, lineHeight: 44, letterSpacing: -1.76, color: Palette.ink },
+  attacks: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  resultStageLane: { paddingHorizontal: 20, paddingTop: 16 },
+  resultStage: { height: 204, borderRadius: Radii.stage, overflow: 'hidden', backgroundColor: Palette.stage },
+  elementTag: { position: 'absolute', top: 14, right: 14 },
+  placeBlock: { gap: 2, paddingHorizontal: 24, paddingTop: 16 },
+  place: { fontFamily: Fonts.black, fontSize: 56, lineHeight: 54, letterSpacing: -2.24, color: Palette.ink },
+  resultActions: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingTop: 20 },
+  replayButton: { flex: 1.9 },
+  shareButton: { flex: 1, height: 56 },
   shareLabel: { fontSize: 17, lineHeight: 20 },
-  next: { fontFamily: Fonts.medium, fontSize: 15, lineHeight: 20, color: Palette.muted, textAlign: 'center', paddingTop: 14 },
+  champLane: { gap: 16, paddingHorizontal: 24, paddingTop: 22 },
+  champRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  champThumb: { width: 48, height: 48, borderRadius: 16, overflow: 'hidden', backgroundColor: Palette.stage },
+  champImage: { width: 48, height: 48 },
+  champName: { fontFamily: Fonts.extrabold, fontSize: 17, lineHeight: 22, color: Palette.ink },
+  champTrainer: { fontFamily: Fonts.medium, fontSize: 15, lineHeight: 20, color: Palette.muted },
 });

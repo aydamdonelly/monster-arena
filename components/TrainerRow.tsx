@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { api } from '@/convex/_generated/api';
 import { useDeviceId } from '@/lib/device';
-import { Fonts, Palette } from '@/lib/theme';
+import { Fonts, Palette, Type } from '@/lib/theme';
 
 export default function TrainerRow() {
   const deviceId = useDeviceId();
@@ -33,7 +33,7 @@ export default function TrainerRow() {
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.line}>Name your trainer to enter the 5 PM royale</Text>
+      <Text style={Type.label}>Name your trainer</Text>
       <View style={styles.field}>
         <TextInput
           value={name}

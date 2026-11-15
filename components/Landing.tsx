@@ -12,9 +12,9 @@ import { Fonts, Palette } from '@/lib/theme';
 
 const PEEKERS = [
   { source: require('@/assets/images/renders/bananaconda.png'), size: 116, left: -30, top: 6, rotate: -16 },
-  { source: require('@/assets/images/renders/mugzilla.png'), size: 160, right: -54, top: 34, rotate: -12 },
-  { source: require('@/assets/images/renders/pizzilla.png'), size: 130, right: -38, bottom: 26, rotate: 9 },
-  { source: require('@/assets/images/renders/duckzilla.png'), size: 184, left: -74, bottom: 14, rotate: 14 },
+  { source: require('@/assets/images/renders/bp-scootgremlin.png'), size: 150, right: -50, top: 26, rotate: -10 },
+  { source: require('@/assets/images/renders/bp-parkgoyle.png'), size: 128, right: -34, bottom: 22, rotate: 8 },
+  { source: require('@/assets/images/renders/bp-capyboogey.png'), size: 176, left: -66, bottom: 10, rotate: 12 },
 ];
 
 const DESIGN_STAGE = 560;
@@ -36,7 +36,8 @@ export default function Landing({ onCatch }: { onCatch: () => void }) {
       </View>
       <Appear style={styles.pitch}>
         <Text style={styles.pitchLine}>Snap anything.</Text>
-        <Text style={styles.pitchLine}>Hatch a monster.</Text>
+        <Text style={styles.pitchLine}>Get an egg.</Text>
+        <Text style={styles.pitchLine}>It hatches at 5 PM.</Text>
       </Appear>
       <View style={styles.stage} onLayout={(e) => setStage(e.nativeEvent.layout.height)}>
         {PEEKERS.map(({ source, size, rotate, ...edge }, i) => (
@@ -61,7 +62,7 @@ export default function Landing({ onCatch }: { onCatch: () => void }) {
           <>
             <View style={styles.dot} />
             <Text style={styles.proofText}>
-              {today.length >= 10 ? `${today.length.toLocaleString('en-US')} eggs laid today` : 'Be one of the first eggs today'}
+              {today.length >= 10 ? `${today.length.toLocaleString('en-US')} eggs waiting for 5 PM` : 'Be one of the first eggs today'}
             </Text>
           </>
         ) : null}
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Palette.ground, overflow: 'hidden', width: '100%', maxWidth: 560, alignSelf: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24 },
   wordmark: { fontFamily: Fonts.black, fontSize: 28, lineHeight: 32, letterSpacing: -1.1, color: Palette.ink },
-  pitch: { paddingLeft: 24, paddingRight: 12, paddingTop: 34, zIndex: 1 },
+  pitch: { paddingLeft: 24, paddingRight: 12, paddingTop: 26, zIndex: 1 },
   pitchLine: { fontFamily: Fonts.black, fontSize: 41, lineHeight: 42, letterSpacing: -1.6, color: Palette.ink },
   stage: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   peeker: { position: 'absolute' },

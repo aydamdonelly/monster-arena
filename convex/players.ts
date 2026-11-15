@@ -37,7 +37,16 @@ export const setProfile = mutation({
     if (!player) return null;
     const patch: { name?: string; source?: string; isTest?: boolean } = {};
     if (args.name !== undefined) patch.name = args.name.trim().slice(0, 24);
-    if (/^qa\b/i.test(args.name ?? "")) patch.isTest = true; // Testläufe der Agenten heißen "QA …" und zählen nicht mit
+    if (/^qa\b/i.test(args.name ?? "") && !player.isTest) {
+      // Testläufe der Agenten heißen "QA …" und zählen nicht mit. Ihre schon gelegten Eier aus dem Zähler nehmen.
+      patch.isTest = true;
+      const theirs = await ctx.db
+        .query("monsters")
+        .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
+        .take(50);
+      const waiting = theirs.filter((m) => m.status === "egg").length;
+      if (waiting) await bumpCounter(ctx, "eggsWaiting", -waiting);
+    }
     if (args.source !== undefined) patch.source = args.source.slice(0, 80); // z. B. "Some guy approached me on the street about it"
     await ctx.db.patch("players", player._id, patch);
     return null;
@@ -55,7 +64,7 @@ export const setTest = internalMutation({
   },
 });
 
-import { DAILY_LIMIT, GOLDEN_LIMIT, royaleDayStart } from "./eggs";
+import { DAILY_LIMIT, GOLDEN_LIMIT, bumpCounter, royaleDayStart } from "./eggs";
 
 // Mein Stand für den Catch-Screen: Fänge heute, Tageslimit, Goldene Eier
 export const me = query({

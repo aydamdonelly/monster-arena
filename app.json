@@ -27,15 +27,15 @@
       "name": "Snappymon",
       "shortName": "Snappymon",
       "description": "Snap anything. Hatch a monster. Battle in the daily royale.",
-      "themeColor": "#e8f1ec",
-      "backgroundColor": "#e8f1ec"
+      "themeColor": "#ffffff",
+      "backgroundColor": "#ffffff"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#e8f1ec",
+          "backgroundColor": "#ffffff",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }

@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
-import { buildMonster, updateMonster } from '../monster-kit/monster.js';
+import { updateMonster } from '../monster-kit/monster.js';
+import { createMonsterScene } from '../lib/monster-scene';
 
 type Props = {
   genome: Record<string, unknown>;
@@ -32,36 +33,13 @@ export default function MonsterView({ genome }: Props) {
     renderer.domElement.style.display = 'block';
     host.appendChild(renderer.domElement);
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#e8f1ec');
-    const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
-    scene.add(new THREE.HemisphereLight('#ffffff', '#cfdcd4', 1.5));
-    const sun = new THREE.DirectionalLight('#ffffff', 2.0);
-    sun.position.set(-3, 5, 4);
-    scene.add(sun);
-    const fill = new THREE.DirectionalLight('#fff4ec', 0.9);
-    fill.position.set(1.5, 1.5, 6);
-    scene.add(fill);
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshBasicMaterial({ color: '#e8f1ec' }));
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -0.001;
-    scene.add(floor);
-
-    const monster = buildMonster(JSON.parse(genomeKey));
-    scene.add(monster);
-    const height: number = monster.userData.monster?.height ?? 2;
+    const { scene, camera, monster, frame, dispose } = createMonsterScene(JSON.parse(genomeKey));
 
     const resize = () => {
       const w = host.clientWidth || window.innerWidth || 1;
       const h = host.clientHeight || window.innerHeight || 1;
       renderer.setSize(w, h);
-      camera.aspect = w / h;
-      const tan = Math.tan((camera.fov * Math.PI) / 360);
-      const fitHeight = (height * 1.35) / (2 * tan);
-      const fitWidth = 3 / (2 * tan * camera.aspect);
-      camera.position.set(0, height * 0.75, Math.max(fitHeight, fitWidth));
-      camera.lookAt(0, height * 0.48, 0);
-      camera.updateProjectionMatrix();
+      frame(w / h);
     };
     const observer = new ResizeObserver(resize);
     observer.observe(host);
@@ -79,6 +57,7 @@ export default function MonsterView({ genome }: Props) {
       observer.disconnect();
       renderer.setAnimationLoop(null);
       renderer.dispose();
+      dispose();
       host.removeChild(renderer.domElement);
     };
   }

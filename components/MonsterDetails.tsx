@@ -1,19 +1,46 @@
-import { Image } from 'expo-image';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 
 import MonsterView from '@/components/MonsterView';
-import { AttackChip, ElementTag, StatBars } from '@/components/StatBar';
-import { Appear, Card, SectionLabel } from '@/components/ui';
+import { StatBars } from '@/components/StatBar';
+import { Appear, ElementChip, Polaroid, StageBlock, StickerTag } from '@/components/ui';
 import type { Doc } from '@/convex/_generated/dataModel';
-import { elementColor, Fonts, Palette } from '@/lib/theme';
+import { elementColor, Fonts, Palette, Type } from '@/lib/theme';
 
 type Move = { name: string; kind?: string; element: string };
 type Genome = { lore?: string; object?: string; moves?: Move[] };
 
-export type MonsterLike = Pick<Doc<'monsters'>, 'name' | 'element' | 'stats' | 'genome'> & {
+export type MonsterLike = Pick<Doc<'monsters'>, 'name' | 'element' | 'stats' | 'genome' | '_creationTime'> & {
   photoUrl?: string | null;
   ownerName?: string | null;
 };
+
+export function hatchedAt(time: number) {
+  const date = new Date(time);
+  const clock = date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  if (date.toDateString() === new Date().toDateString()) return `today ${clock}`;
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+export function MonsterTopBar({ label, onBack }: { label: string; onBack?: () => void }) {
+  return (
+    <View style={styles.bar}>
+      {onBack ? (
+        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={onBack} hitSlop={12}>
+          <Svg width={28} height={28} viewBox="0 0 28 28">
+            <Path d="M17 6l-8 8 8 8" fill="none" stroke={Palette.ink} strokeWidth={2.8} strokeLinecap="round" strokeLinejoin="round" />
+          </Svg>
+        </Pressable>
+      ) : (
+        <View style={styles.barSide} />
+      )}
+      <Text style={[Type.label, styles.barLabel]} numberOfLines={1}>
+        {label}
+      </Text>
+      <View style={styles.barSide} />
+    </View>
+  );
+}
 
 export default function MonsterDetails({ monster, photoUri }: { monster: MonsterLike; photoUri?: string | null }) {
   const genome = monster.genome as Genome;
@@ -23,53 +50,44 @@ export default function MonsterDetails({ monster, photoUri }: { monster: Monster
   return (
     <View style={styles.wrap}>
       <Appear>
-        <View style={styles.stage}>
+        <StageBlock style={styles.stage}>
           <MonsterView genome={monster.genome} dom={{ scrollEnabled: false, style: { flex: 1 } }} />
-        </View>
+          <ElementChip element={monster.element} rotate={-4} style={styles.stageChip} />
+        </StageBlock>
       </Appear>
 
       <Appear delay={120} style={styles.head}>
-        <Text style={styles.name} numberOfLines={2} adjustsFontSizeToFit>
+        <Text style={Type.display} numberOfLines={2} adjustsFontSizeToFit>
           {monster.name}
         </Text>
-        <View style={styles.headRow}>
-          <ElementTag element={monster.element} size="lg" />
-          {monster.ownerName ? <Text style={styles.owner}>caught by {monster.ownerName}</Text> : null}
-        </View>
-        {genome.lore ? <Text style={styles.lore}>{genome.lore}</Text> : null}
+        {genome.lore ? <Text style={Type.muted}>{genome.lore}</Text> : null}
       </Appear>
 
       {moves.length ? (
-        <Appear delay={220}>
-          <Card style={styles.section}>
-            <SectionLabel>Attacks</SectionLabel>
-            <View style={styles.attacks}>
-              {moves.map((m) => (
-                <AttackChip key={m.name} name={m.name} element={m.element} />
-              ))}
-            </View>
-          </Card>
+        <Appear delay={220} style={styles.section}>
+          <Text style={Type.label}>Attacks</Text>
+          <View style={styles.attacks}>
+            {moves.map((m, i) => (
+              <StickerTag key={m.name} name={m.name} kind={m.kind} element={m.element} special={i > 0} />
+            ))}
+          </View>
         </Appear>
       ) : null}
 
-      <Appear delay={300}>
-        <Card style={styles.section}>
-          <SectionLabel>Stats</SectionLabel>
-          <StatBars stats={monster.stats} color={elementColor(monster.element)} />
-        </Card>
+      <Appear delay={300} style={styles.lane}>
+        <StatBars stats={monster.stats} color={elementColor(monster.element)} />
       </Appear>
 
       {photo ? (
-        <Appear delay={380}>
-          <Card style={styles.born}>
-            <Image source={{ uri: photo }} style={styles.thumb} contentFit="cover" transition={200} />
-            <View style={styles.bornText}>
-              <SectionLabel>Born from</SectionLabel>
-              <Text style={styles.bornObject} numberOfLines={2}>
-                {genome.object || 'A real photo'}
-              </Text>
-            </View>
-          </Card>
+        <Appear delay={380} style={styles.born}>
+          <Polaroid uri={photo} />
+          <View style={styles.bornText}>
+            <Text style={Type.label}>Born from</Text>
+            <Text style={styles.bornObject} numberOfLines={2}>
+              {genome.object || 'a real photo'}
+            </Text>
+            <Text style={styles.bornTime}>{hatchedAt(monster._creationTime)}</Text>
+          </View>
         </Appear>
       ) : null}
     </View>
@@ -77,17 +95,29 @@ export default function MonsterDetails({ monster, photoUri }: { monster: Monster
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: 14 },
-  stage: { height: 300, borderRadius: 32, overflow: 'hidden', backgroundColor: Palette.faint },
-  head: { gap: 10, paddingHorizontal: 4 },
-  headRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
-  name: { fontFamily: Fonts.black, fontSize: 40, lineHeight: 44, color: Palette.ink, letterSpacing: -0.5 },
-  owner: { fontFamily: Fonts.bold, fontSize: 14, color: Palette.muted },
-  lore: { fontFamily: Fonts.regular, fontSize: 17, lineHeight: 24, color: Palette.ink },
-  section: { gap: 14 },
-  attacks: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  born: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 12 },
-  thumb: { width: 72, height: 72, borderRadius: 18, backgroundColor: Palette.bg },
-  bornText: { flex: 1, gap: 4 },
-  bornObject: { fontFamily: Fonts.bold, fontSize: 16, color: Palette.ink },
+  bar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 10,
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+  },
+  barSide: { width: 28, height: 28 },
+  barLabel: { flexShrink: 1, color: Palette.muted, textAlign: 'center' },
+  wrap: { gap: 16 },
+  stage: { aspectRatio: 350 / 226 },
+  stageChip: { position: 'absolute', top: 16, left: 16 },
+  head: { gap: 6, paddingHorizontal: 4 },
+  section: { gap: 12, paddingHorizontal: 4 },
+  attacks: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 14, rowGap: 10 },
+  lane: { paddingHorizontal: 4, paddingTop: 4 },
+  born: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 4 },
+  bornText: { flex: 1, gap: 2 },
+  bornObject: { fontFamily: Fonts.medium, fontSize: 16, lineHeight: 20, color: Palette.ink },
+  bornTime: { fontFamily: Fonts.medium, fontSize: 14, lineHeight: 18, color: Palette.muted },
 });

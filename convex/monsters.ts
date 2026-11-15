@@ -106,6 +106,7 @@ const monsterDoc = v.object({
   stats: v.object({ hp: v.number(), atk: v.number(), def: v.number(), spd: v.number() }),
   stage: v.number(),
   photoId: v.optional(v.id("_storage")),
+  thumbId: v.optional(v.id("_storage")),
   status: v.optional(v.string()),
   ready: v.optional(v.boolean()),
   golden: v.optional(v.boolean()),
@@ -151,6 +152,7 @@ const monsterView = v.object({
   stats: v.object({ hp: v.number(), atk: v.number(), def: v.number(), spd: v.number() }),
   stage: v.number(),
   photoId: v.optional(v.id("_storage")),
+  thumbId: v.optional(v.id("_storage")),
   photoUrl: v.union(v.string(), v.null()),
   ownerName: v.union(v.string(), v.null()),
   status: v.string(), // "egg" | "hatched" | "rejected"
@@ -162,10 +164,14 @@ const monsterView = v.object({
 });
 
 // Monster plus Foto-URL und Trainername (Testmonster tragen ihr Foto im Genom)
-async function view(ctx: QueryCtx, m: Doc<"monsters">, owner?: Doc<"players"> | null) {
+// Das Foto kommt als kleines Vorschaubild, wenn es eines gibt (spart Datenvolumen).
+// publicList: In Listen für alle ist das Foto eines Eis erst sichtbar, wenn die KI es geprüft hat (ready).
+async function view(ctx: QueryCtx, m: Doc<"monsters">, owner?: Doc<"players"> | null, publicList = false) {
   const player = owner === undefined ? await ctx.db.get("players", m.playerId) : owner;
-  const photoUrl = m.photoId ? await ctx.storage.getUrl(m.photoId) : ((m.genome?.photoUrl as string | undefined) ?? null);
   const status = m.status ?? "hatched";
+  const photoId = m.thumbId ?? m.photoId;
+  const hidden = publicList && status !== "hatched" && !m.ready;
+  const photoUrl = hidden ? null : photoId ? await ctx.storage.getUrl(photoId) : ((m.genome?.photoUrl as string | undefined) ?? null);
   const golden = m.golden ?? !!m.genome?.golden;
   // Ein Ei verrät nichts über sein Monster: kein Genom, kein Name, keine Werte
   if (status !== "hatched") {
@@ -200,13 +206,15 @@ export const listToday = query({
       .query("monsters")
       .withIndex("by_creation_time", (q) => q.gte("_creationTime", args.since))
       .order("desc")
-      .take(150);
+      .take(60);
+    // Nur die neuesten 30 als Kacheln. Die Gesamtzahl kommt aus eggs.waiting (Zähler), nicht aus dieser Liste.
     const out = [];
     for (const m of monsters) {
+      if (out.length >= 30) break;
       const owner = await ctx.db.get("players", m.playerId);
       if (owner?.isTest && !args.includeTest) continue;
       if (m.status === "rejected") continue;
-      out.push(await view(ctx, m, owner));
+      out.push(await view(ctx, m, owner, true));
     }
     return out;
   },

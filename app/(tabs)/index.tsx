@@ -17,10 +17,10 @@ import MonsterSnapshots from '@/components/MonsterSnapshots';
 import { Appear, HardShadow, InkSticker, OutlineButton, PrimaryButton, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
-import { clock, royaleTimeToday, useNow } from '@/lib/arena';
+import { clock, royaleHour, royaleTimeToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
 import { celebrate, tap } from '@/lib/haptics';
-import { pickPhoto, toUploadJpeg, uploadJpeg } from '@/lib/photo';
+import { pickPhoto, toThumbJpeg, toUploadJpeg, uploadJpeg } from '@/lib/photo';
 import { useSnapshots } from '@/lib/snapshots';
 import { Fonts, Palette, Radii, Type } from '@/lib/theme';
 
@@ -47,7 +47,7 @@ export default function CatchScreen() {
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
   const [sheet, setSheet] = useState(false);
   const firstVisit = phase.kind === 'idle' && mine?.length === 0;
-  const atLimit = !!me && me.hatchesLeft === 0 && me.goldenEggs === 0;
+  const atLimit = !!me && me.hatchesLeft === 0 && (me.goldenEggs === 0 || !me.canGolden);
   const fullScreen = firstVisit || phase.kind === 'egg';
 
   useEffect(() => {
@@ -61,8 +61,18 @@ export default function CatchScreen() {
     setPhase({ kind: 'egg', photoUri: photo.uri });
     try {
       const jpeg = await toUploadJpeg(photo);
-      const storageId = await uploadJpeg(await generateUploadUrl(), jpeg);
-      const { eggId } = await lay({ deviceId, storageId: storageId as Id<'_storage'> });
+      // Foto und Vorschaubild gleichzeitig hochladen. Scheitert das Vorschaubild, geht es ohne weiter.
+      const [storageId, thumbId] = await Promise.all([
+        generateUploadUrl().then((url) => uploadJpeg(url, jpeg)),
+        toThumbJpeg(photo)
+          .then(async (thumb) => uploadJpeg(await generateUploadUrl(), thumb))
+          .catch(() => undefined),
+      ]);
+      const { eggId } = await lay({
+        deviceId,
+        storageId: storageId as Id<'_storage'>,
+        ...(thumbId ? { thumbId: thumbId as Id<'_storage'> } : {}),
+      });
       celebrate();
       setPhase({ kind: 'egg', photoUri: photo.uri, eggId });
     } catch (e) {
@@ -101,7 +111,7 @@ export default function CatchScreen() {
           </View>
 
           {phase.kind === 'idle' && (!mine || !me) ? <ActivityIndicator color={Palette.ink} style={styles.loading} /> : null}
-          {phase.kind === 'idle' && mine && me && atLimit ? <Limit mine={mine} now={now} onGolden={() => setSheet(true)} /> : null}
+          {phase.kind === 'idle' && mine && me && atLimit ? <Limit mine={mine} now={now} canGolden={me.canGolden} onGolden={() => setSheet(true)} /> : null}
           {phase.kind === 'idle' && mine && me && !atLimit ? (
             <Idle
               onCatch={onCatch}
@@ -159,7 +169,7 @@ function Idle({
           <CameraButton size={size} onPress={() => onCatch('camera')} />
           {goldenEggs > 0 ? <InkSticker label="Golden egg ready" rotate={6} style={styles.goldenReady} /> : null}
         </View>
-        <HatchesLeft left={hatchesLeft} limit={dailyLimit} />
+        <Text style={Type.label}>{hatchesLeft === 0 && goldenEggs > 0 ? 'Your golden egg is ready. Snap it.' : 'One egg per royale. Make it count.'}</Text>
       </Appear>
       {eggs.length > 0 ? (
         <Appear delay={180} style={styles.yourEggs}>
@@ -168,11 +178,6 @@ function Idle({
             {eggs.slice(0, 3).map((e) => (
               <EggTile key={e._id} entry={e} />
             ))}
-            {eggs.length < 3 && hatchesLeft > 0 ? (
-              <Pressable accessibilityRole="button" onPress={() => onCatch('camera')} style={styles.moreSlot}>
-                <Text style={[Type.label, styles.mutedLabel]}>{Math.min(hatchesLeft, 3 - eggs.length)} more</Text>
-              </Pressable>
-            ) : null}
           </View>
         </Appear>
       ) : null}
@@ -198,23 +203,8 @@ function EggTile({ entry }: { entry: Entry }) {
   );
 }
 
-function HatchesLeft({ left, limit }: { left: number; limit: number }) {
-  return (
-    <View style={styles.eggs}>
-      <View style={styles.eggRow}>
-        {Array.from({ length: limit }, (_, i) => (
-          <View key={i} style={[styles.egg, i < left && styles.eggFull]} />
-        ))}
-      </View>
-      <Text style={Type.label}>
-        {left} of {limit} eggs left today
-      </Text>
-    </View>
-  );
-}
-
-function Limit({ mine, now, onGolden }: { mine: Entry[]; now: number; onGolden: () => void }) {
-  const today = mine.filter((m) => m._creationTime > now - DAY_MS && m.status !== 'rejected' && !('golden' in m && m.golden)).slice(0, 3);
+function Limit({ mine, now, canGolden, onGolden }: { mine: Entry[]; now: number; canGolden: boolean; onGolden: () => void }) {
+  const today = mine.filter((m) => m._creationTime > now - DAY_MS && m.status !== 'rejected').slice(0, 3);
   const { pending, onSnapshot, snapshot } = useSnapshots(today.flatMap((m) => (m.status === 'hatched' ? [m] : [])));
   return (
     <View style={styles.limit}>
@@ -227,7 +217,7 @@ function Limit({ mine, now, onGolden }: { mine: Entry[]; now: number; onGolden: 
               Anything
             </Text>
           </View>
-          <InkSticker label="3 of 3" rotate={3} />
+          <InkSticker label={today.length > 1 ? 'Both in' : "You're in"} rotate={3} />
         </View>
       </Appear>
       <Appear delay={80} style={styles.thumbs}>
@@ -248,15 +238,16 @@ function Limit({ mine, now, onGolden }: { mine: Entry[]; now: number; onGolden: 
           </StageBlock>
         ))}
       </Appear>
-      <Appear delay={140} style={styles.limitEggs}>
-        <HatchesLeft left={0} limit={3} />
-      </Appear>
       <Appear delay={200} style={styles.limitCopy}>
-        <Text style={styles.limitTitle}>{"That's three for today."}</Text>
-        <Text style={Type.muted}>Come back tomorrow, or crack a Golden Egg.</Text>
+        <Text style={styles.limitTitle}>{canGolden ? 'Your egg is in.' : 'Both eggs are in.'}</Text>
+        <Text style={Type.muted}>
+          {canGolden
+            ? `It hatches at ${royaleHour()}. One egg per royale. Want a second one in the fight?`
+            : `They hatch at ${royaleHour()}. See you in the arena.`}
+        </Text>
       </Appear>
       <Appear delay={260} style={styles.limitActions}>
-        <PrimaryButton
+        {canGolden ? <PrimaryButton
           label="Golden Egg · $0.99"
           icon={
             <Svg width={18} height={22} viewBox="0 0 18 22">
@@ -264,7 +255,7 @@ function Limit({ mine, now, onGolden }: { mine: Entry[]; now: number; onGolden: 
             </Svg>
           }
           onPress={onGolden}
-        />
+        /> : null}
         <OutlineButton label="Watch the arena" onPress={() => router.navigate('/arena')} style={styles.arenaButton} labelStyle={styles.arenaLabel} />
       </Appear>
     </View>
@@ -282,7 +273,7 @@ function DropCard() {
           <Text style={styles.timer}>{left > 0 ? `royale in ${clock(left)}` : 'royale live now'}</Text>
         </View>
         <Text style={styles.dropTitle}>Anything</Text>
-        <Text style={styles.dropLine}>Snap it. Get an egg. It hatches at 5 PM.</Text>
+        <Text style={styles.dropLine}>Snap it. Get an egg. It hatches at {royaleHour()}.</Text>
       </View>
     </HardShadow>
   );

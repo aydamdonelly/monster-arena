@@ -24,6 +24,20 @@ function openMeta(): Record<string, string> {
     if (s) meta.s = s.slice(0, 32);
     if (document.referrer) meta.ref = new URL(document.referrer).hostname.slice(0, 64);
     const ua = navigator.userAgent;
+    meta.dev = /iPhone/i.test(ua)
+      ? 'iphone'
+      : /iPad/i.test(ua)
+        ? 'ipad'
+        : /Android/i.test(ua)
+          ? 'android'
+          : /Macintosh/i.test(ua)
+            ? 'mac'
+            : /Windows/i.test(ua)
+              ? 'windows'
+              : 'other';
+    if (navigator.webdriver || /Headless|bot|crawler|spider/i.test(ua)) meta.wd = '1';
+    meta.lang = (navigator.language || '').slice(0, 12);
+    meta.tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
     meta.app = /TikTok|musical_ly|Bytedance/i.test(ua)
       ? 'tiktok'
       : /Instagram/i.test(ua)

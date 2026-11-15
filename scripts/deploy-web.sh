@@ -17,6 +17,8 @@ cat > dist/vercel.json <<'JSON'
 {
   "rewrites": [
     { "source": "/assets/node_modules/:path*", "destination": "/assets/nm/:path*" },
+    { "source": "/analytics", "destination": "/kit/analytics.html" },
+    { "source": "/admin", "destination": "/kit/admin.html" },
     { "source": "/((?!kit/|_expo/|assets/).*)", "destination": "/index.html" }
   ]
 }

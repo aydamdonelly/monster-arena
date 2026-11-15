@@ -18,6 +18,7 @@ import type * as hatch from "../hatch.js";
 import type * as monsters from "../monsters.js";
 import type * as players from "../players.js";
 import type * as royale from "../royale.js";
+import type * as stats from "../stats.js";
 
 import type {
   ApiFromModules,
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   monsters: typeof monsters;
   players: typeof players;
   royale: typeof royale;
+  stats: typeof stats;
 }>;
 
 /**

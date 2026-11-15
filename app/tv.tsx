@@ -44,6 +44,8 @@ function Lobby({ since, includeTest, adminKey }: { since: number; includeTest: b
   const u = useUnit();
   const now = useNow();
   const monsters = useQuery(api.monsters.listToday, { since, includeTest });
+  const waiting = useQuery(api.eggs.waiting, {});
+  const total = Math.max(includeTest ? 0 : (waiting ?? 0), monsters?.length ?? 0);
   const startsAt = royaleTimeToday();
   const left = startsAt - now;
 
@@ -56,7 +58,7 @@ function Lobby({ since, includeTest, adminKey }: { since: number; includeTest: b
             SNAPPYMON{'\n'}ROYALE
           </Text>
           <Text style={[styles.extrabold, { fontSize: 44 * u, lineHeight: 50 * u, letterSpacing: -0.88 * u, paddingTop: 6 * u }]}>
-            {monsters ? `${monsters.length.toLocaleString('en-US')} ${monsters.length === 1 ? 'egg' : 'eggs'} waiting` : ' '}
+            {monsters ? `${total.toLocaleString('en-US')} ${total === 1 ? 'egg' : 'eggs'} waiting` : ' '}
           </Text>
         </View>
         <HardShadow offset={10 * u} radius={36 * u} style={{ alignSelf: 'flex-start' }}>

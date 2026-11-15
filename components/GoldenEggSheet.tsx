@@ -8,7 +8,7 @@ import { useDeviceId } from '@/lib/device';
 import { buyGoldenEgg } from '@/lib/golden';
 import { Fonts, Palette } from '@/lib/theme';
 
-const PERKS = ['One more egg today', 'Hatches golden, crown included', 'Same stats. Just fancier.'];
+const PERKS = ["A second egg in today's royale", 'Hatches golden, crown included', 'Same stats. Just fancier.'];
 
 export default function GoldenEggSheet({ visible, onClose: close }: { visible: boolean; onClose: () => void }) {
   const deviceId = useDeviceId();

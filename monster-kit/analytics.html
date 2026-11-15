@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Snappymon · Numbers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root { --ink: #111; --muted: #6b6b6b; --line: #e6e6e6; --yellow: #ffd60a; --mint: #e8f1ec; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 500 15px/1.4 Rubik, -apple-system, system-ui, sans-serif; background: #fff; color: var(--ink); }
+    main { max-width: 760px; margin: 0 auto; padding: 18px 16px 60px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    h1 { margin: 0; font-weight: 900; font-size: 26px; letter-spacing: -1px; }
+    h2 { margin: 30px 0 10px; font-weight: 700; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; }
+    .muted { color: var(--muted); } .small { font-size: 12px; }
+    .bar-top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    button, select { font: 700 14px Rubik, system-ui, sans-serif; border: 2px solid var(--ink); background: #fff; color: var(--ink); border-radius: 12px; padding: 8px 12px; cursor: pointer; }
+    button:active { transform: translate(2px, 2px); }
+    .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+    @media (min-width: 620px) { .tiles { grid-template-columns: repeat(3, 1fr); } }
+    .tile { border: 2px solid var(--ink); border-radius: 18px; padding: 14px 14px 12px; box-shadow: 4px 4px 0 var(--ink); background: #fff; }
+    .tile.hero { background: var(--yellow); }
+    .tile b { display: block; font-weight: 900; font-size: 40px; line-height: 42px; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; }
+    .tile span { display: block; font-weight: 700; font-size: 12px; letter-spacing: .8px; text-transform: uppercase; margin-top: 4px; }
+    .tile i { display: block; font-style: normal; font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .tile.hero i { color: var(--ink); opacity: .7; }
+    .row { display: grid; grid-template-columns: minmax(110px, 38%) 1fr 78px; gap: 10px; align-items: center; padding: 5px 0; }
+    .row .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .track { height: 16px; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; background: #fff; }
+    .fill { height: 100%; background: var(--ink); }
+    .fill.y { background: var(--yellow); border-right: 2px solid var(--ink); }
+    .row .n { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .cols { display: grid; grid-template-columns: 1fr; gap: 0 28px; }
+    @media (min-width: 620px) { .cols { grid-template-columns: 1fr 1fr; } }
+    #timeline { display: flex; align-items: flex-end; gap: 3px; height: 130px; border-bottom: 2px solid var(--ink); background: var(--mint); border-radius: 14px 14px 0 0; padding: 10px 10px 0; overflow-x: auto; }
+    .tcol { flex: 1 0 9px; min-width: 9px; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; position: relative; }
+    .tcol .v { background: var(--ink); border-radius: 3px 3px 0 0; }
+    .tcol .s { background: var(--yellow); border: 1.5px solid var(--ink); border-bottom: 0; position: absolute; bottom: 0; left: 15%; right: 15%; border-radius: 3px 3px 0 0; }
+    .axis { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    td, th { text-align: left; padding: 6px 8px 6px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    th { font-size: 11px; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); }
+    .scroll { overflow-x: auto; }
+    .egg { display: inline-block; width: 10px; height: 13px; background: var(--yellow); border: 2px solid var(--ink); border-radius: 5px 5px 6px 6px; vertical-align: -2px; margin-right: 2px; }
+    #gate { max-width: 360px; margin: 18vh auto 0; padding: 0 20px; text-align: center; }
+    #gate input { width: 100%; font: 500 16px Rubik, system-ui, sans-serif; border: 2px solid var(--ink); border-radius: 14px; padding: 12px 14px; margin: 14px 0 10px; }
+    #gate button { width: 100%; background: var(--yellow); box-shadow: 4px 4px 0 var(--ink); padding: 12px; font-size: 16px; }
+    .legend { display: flex; gap: 14px; font-size: 12px; margin: 6px 0 0; }
+    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; border: 1.5px solid var(--ink); }
+    .warn { background: #fff3c4; border: 2px solid var(--ink); border-radius: 12px; padding: 8px 12px; margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <div id="gate" hidden>
+    <h1>snappymon numbers</h1>
+    <p class="muted">Enter the stats key once. It stays on this device.</p>
+    <input id="key" type="password" autocomplete="off" placeholder="Stats key" />
+    <button id="go">Open</button>
+    <p class="muted small" id="gateError"></p>
+  </div>
+  <main id="app" hidden>
+    <header>
+      <div><h1>snappymon numbers</h1><div class="muted small" id="updated">loading …</div></div>
+      <div class="bar-top">
+        <select id="range"><option value="launch">Since launch (1:31 PM)</option><option value="day">This royale day</option><option value="hour">Last 60 minutes</option></select>
+        <button id="reload">Refresh</button>
+      </div>
+    </header>
+    <div id="warn"></div>
+    <div class="tiles" id="tiles"></div>
+
+    <h2>How did you get here? <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:500">(their own answer, required after the photo)</span></h2>
+    <div id="sources"></div>
+    <div class="legend"><span><span class="dot" style="background:#111"></span>visitors</span><span><span class="dot" style="background:#ffd60a"></span>of those, snapped a photo</span></div>
+
+    <h2>Visitors over time <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:500">(15-minute steps)</span></h2>
+    <div id="timeline"></div>
+    <div class="axis"><span id="t0"></span><span id="t1"></span></div>
+    <div class="legend"><span><span class="dot" style="background:#111"></span>new visitors</span><span><span class="dot" style="background:#ffd60a"></span>first photo</span></div>
+
+    <div class="cols">
+      <div><h2>Opened in</h2><div id="apps"></div></div>
+      <div><h2>Device</h2><div id="devices"></div></div>
+      <div><h2>Time zone</h2><div id="zones"></div></div>
+      <div><h2>Language</h2><div id="langs"></div></div>
+    </div>
+
+    <h2>Latest visitors</h2>
+    <div class="scroll"><table id="latest"></table></div>
+    <p class="muted small" id="foot"></p>
+  </main>
+  <script>
+    // Zahlen nur von echten Nutzern (Backend: convex/stats.ts). Aufruf: /analytics#k=<STATS_KEY> oder Schlüssel eintippen.
+    const CONVEX = 'https://superb-buzzard-616.convex.cloud';
+    const LAUNCH = Date.UTC(2026, 10, 15, 21, 31, 0); // Sonntag 13:31 Uhr Pacific: Ei-Ablauf live, Videos gehen raus
+    const DAY = 24 * 3600 * 1000;
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const nf = (n) => Number(n || 0).toLocaleString('en-US');
+    const pct = (a, b) => (b ? Math.round((a / b) * 100) + '%' : '–');
+    const time = (t) => new Date(t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+    let KEY = '';
+    try { KEY = localStorage.getItem('snappymon-stats') || ''; } catch {}
+    const hash = new URLSearchParams(location.hash.slice(1)).get('k');
+    if (hash) { KEY = hash; try { localStorage.setItem('snappymon-stats', KEY); } catch {} history.replaceState(null, '', location.pathname); }
+
+    function royaleDayStart(now) { const d = new Date(now); d.setUTCHours(1, 0, 0, 0); return d.getTime() > now ? d.getTime() - DAY : d.getTime(); }
+    function since() { const r = $('range').value; const now = Date.now(); return r === 'hour' ? now - 3600 * 1000 : r === 'day' ? royaleDayStart(now) : Math.max(LAUNCH, now - 7 * DAY); }
+
+    async function call(path, args) {
+      const r = await fetch(`${CONVEX}/api/query`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path, args, format: 'json' }) });
+      const j = await r.json();
+      if (j.status !== 'success') throw new Error(j.errorData?.message || j.errorMessage || 'Error');
+      return j.value;
+    }
+
+    function bars(el, rows, total, withSnappers) {
+      const max = Math.max(1, ...rows.map((r) => r.n));
+      $(el).innerHTML = rows.length ? rows.map((r) => `<div class="row"><div class="label" title="${esc(r.label)}">${esc(r.label)}</div><div class="track" style="position:relative"><div class="fill" style="width:${(r.n / max) * 100}%"></div>${withSnappers && r.snappers ? `<div class="fill y" style="position:absolute;left:0;top:0;width:${(r.snappers / max) * 100}%"></div>` : ''}</div><div class="n">${nf(r.n)} <span class="muted small">${pct(r.n, total)}</span></div></div>`).join('') : '<div class="muted">Nothing yet.</div>';
+    }
+
+    async function load() {
+      $('updated').textContent = 'loading …';
+      let d;
+      try { d = await call('stats:overview', { key: KEY, since: since() }); }
+      catch (e) { if (/key/i.test(String(e.message))) { try { localStorage.removeItem('snappymon-stats'); } catch {} KEY = ''; show(); $('gateError').textContent = 'That key did not work.'; return; } $('updated').textContent = 'Could not load: ' + e.message; return; }
+      const waiting = d.eggs - d.rejected;
+      $('tiles').innerHTML = [
+        ['hero', nf(d.visitors), 'Visitors', 'real people who opened the site'],
+        ['', nf(d.snappers), 'Snapped a photo', pct(d.snappers, d.visitors) + ' of visitors'],
+        ['', nf(waiting), 'Eggs laid', d.rejected ? `${nf(d.rejected)} more rejected (people or private)` : (d.building ? `${nf(d.building)} still being built` : 'all built and ready')],
+        ['', nf(d.answered), 'Told us their source', pct(d.answered, d.snappers || d.visitors) + (d.snappers ? ' of snappers' : ' of visitors')],
+        ['', nf(d.named), 'Named a trainer', pct(d.named, d.snappers || d.visitors) + (d.snappers ? ' of snappers' : '')],
+        ['', nf(d.returning), 'Came back', 'again 30+ minutes after the first visit'],
+        ['', nf(d.purchases), 'Golden Eggs sold', d.purchases ? '$' + d.revenueUsd.toFixed(2) : 'at $0.99'],
+      ].map(([c, n, l, s]) => `<div class="tile ${c}"><b>${n}</b><span>${l}</span><i>${s}</i></div>`).join('');
+      bars('sources', d.sources, d.visitors, true);
+      bars('apps', d.apps, d.visitors); bars('devices', d.devices, d.visitors); bars('zones', d.zones, d.visitors); bars('langs', d.langs, d.visitors);
+
+      // Zeitverlauf: lückenlose 15-Minuten-Schritte vom ersten Eintrag bis jetzt
+      const step = 15 * 60 * 1000; const now = Date.now();
+      const first = d.timeline.length ? d.timeline[0].t : Math.floor(now / step) * step;
+      const start = Math.max(first, Math.floor((now - 12 * 3600 * 1000) / step) * step);
+      const byT = new Map(d.timeline.map((b) => [b.t, b]));
+      const cols = []; for (let t = start; t <= now; t += step) cols.push(byT.get(t) || { t, visitors: 0, snappers: 0 });
+      const max = Math.max(1, ...cols.map((c) => c.visitors), ...cols.map((c) => c.snappers));
+      $('timeline').innerHTML = cols.map((c) => `<div class="tcol" title="${time(c.t)}: ${c.visitors} visitors, ${c.snappers} first photos"><div class="v" style="height:${(c.visitors / max) * 100}%"></div>${c.snappers ? `<div class="s" style="height:${(c.snappers / max) * 100}%"></div>` : ''}</div>`).join('');
+      $('t0').textContent = time(start); $('t1').textContent = 'now · peak ' + max + ' per 15 min';
+
+      $('latest').innerHTML = '<tr><th>Time</th><th>Source</th><th>Opened in</th><th>Device</th><th>Eggs</th><th>Trainer</th><th>Visits</th><th>Time zone</th></tr>' + d.latest.map((p) => `<tr><td>${time(p.at)}</td><td>${esc(p.source || '–')}</td><td>${esc(p.app || '–')}</td><td>${esc(p.dev || '–')}</td><td>${p.eggs ? '<span class="egg"></span>'.repeat(Math.min(p.eggs, 3)) : '–'}</td><td>${esc(p.name || '–')}</td><td>${p.opens || 1}</td><td>${esc(p.tz || '–')}</td></tr>`).join('');
+      $('foot').textContent = `Not counted: ${nf(d.testVisitors)} test visitors (our own devices, agent test runs) and the wild house monsters.`;
+      $('warn').innerHTML = d.truncated ? '<div class="warn">Showing the newest 8,000 visitors of this range.</div>' : '';
+      $('updated').textContent = 'updated ' + new Date().toLocaleTimeString('en-US') + ' · refreshes every minute';
+    }
+
+    function show() { $('gate').hidden = !!KEY; $('app').hidden = !KEY; if (KEY) load(); }
+    $('go').onclick = () => { KEY = $('key').value.trim(); if (!KEY) return; try { localStorage.setItem('snappymon-stats', KEY); } catch {} show(); };
+    $('key').onkeydown = (e) => { if (e.key === 'Enter') $('go').click(); };
+    $('reload').onclick = load; $('range').onchange = load;
+    setInterval(() => { if (KEY && !document.hidden) load(); }, 60000);
+    show();
+  </script>
+</body>
+</html>

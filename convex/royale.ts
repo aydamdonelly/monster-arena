@@ -157,6 +157,24 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
   const royaleId = await ctx.db.insert("royales", { startsAt: now, status: "done", rounds: data, championId });
   // Jetzt schlüpfen alle: Erst ab hier zeigen die Abfragen Namen und Aussehen der Monster
   for (const m of hatching) await ctx.db.patch("monsters", m._id, { status: "hatched", hatchedAt: now });
+  if (a.mode === "live") {
+    // Zähler "Eier warten" neu setzen: Übrig sind nur Eier echter Spieler, deren Monster noch nicht fertig war
+    const left = await ctx.db
+      .query("monsters")
+      .withIndex("by_status_and_ready", (q) => q.eq("status", "egg").eq("ready", false))
+      .take(600);
+    let waiting = 0;
+    for (const m of left) {
+      if (!owners.has(m.playerId)) owners.set(m.playerId, await ctx.db.get("players", m.playerId));
+      if (owners.get(m.playerId)?.isTest === false) waiting++;
+    }
+    const row = await ctx.db
+      .query("counters")
+      .withIndex("by_name", (q) => q.eq("name", "eggsWaiting"))
+      .unique();
+    if (row) await ctx.db.patch("counters", row._id, { n: waiting });
+    else await ctx.db.insert("counters", { name: "eggsWaiting", n: waiting });
+  }
   return {
     skipped: null,
     royaleId,
@@ -228,7 +246,11 @@ async function publicEntrant(ctx: QueryCtx, m: Doc<"monsters">, owners: Map<Id<"
     ...fighterOf(m),
     genome: m.genome,
     ownerName: wild ? "Wild" : (owner?.name ?? null),
-    photoUrl: m.photoId ? await ctx.storage.getUrl(m.photoId) : wild ? null : ((m.genome?.photoUrl as string | undefined) ?? null),
+    photoUrl: (m.thumbId ?? m.photoId)
+      ? await ctx.storage.getUrl((m.thumbId ?? m.photoId)!)
+      : wild
+        ? null
+        : ((m.genome?.photoUrl as string | undefined) ?? null),
     wild,
   };
 }

@@ -2,23 +2,71 @@
 // Dadurch darf die KI sich Zeit lassen (großes Modell, 20 bis 30 s) und baut das Monster frei aus Bauteilen (Blueprint).
 import { v, ConvexError } from "convex/values";
 import { internalAction, internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import type { MutationCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import { GENOME_SCHEMA, genomeInstructions, genomeFromAI } from "../monster-kit/genome-spec.js";
 import { statsFromTraits, hashString } from "../monster-kit/battle.js";
 
 const MODELS = ["gpt-6.1-sol", "gpt-6-luna"]; // erst das große Modell, bei Fehlern das schnelle
-const DAILY_LIMIT = 3;
+export const DAILY_LIMIT = 1; // ein Ei pro Royale; ein zweites gibt es nur als Goldenes Ei (gekauft)
+export const GOLDEN_LIMIT = 1;
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Beginn des laufenden Royale-Tages: die letzte volle 01:00 UTC (= 17:00 Uhr Pacific im Winter).
+// Eier, die danach gelegt werden, warten auf die nächste Royale.
+export function royaleDayStart(now: number) {
+  const d = new Date(now);
+  d.setUTCHours(1, 0, 0, 0);
+  return d.getTime() > now ? d.getTime() - DAY_MS : d.getTime();
+}
 const MAX_ATTEMPTS = 8;
 // Wartezeit vor dem nächsten Versuch in Sekunden (bei Andrang antwortet die KI mit "zu viele Anfragen")
 const RETRY_AFTER_S = [5, 15, 30, 60, 120, 240, 300, 300];
 const STALE_MS = 7 * 60 * 1000; // so lange ohne Lebenszeichen = hängen geblieben, der Aufräum-Cron stößt neu an
 
+// Zähler für Seiten, die nur eine Zahl brauchen (Startseite, Arena, Beamer)
+export async function bumpCounter(ctx: MutationCtx, name: string, by: number) {
+  const row = await ctx.db
+    .query("counters")
+    .withIndex("by_name", (q) => q.eq("name", name))
+    .unique();
+  if (row) await ctx.db.patch("counters", row._id, { n: Math.max(0, row.n + by) });
+  else await ctx.db.insert("counters", { name, n: Math.max(0, by) });
+}
+
+// Ei ablehnen: Foto löschen, Goldenes Ei zurückgeben, Zähler nachziehen
+async function rejectEgg(ctx: MutationCtx, egg: Doc<"monsters">) {
+  if (egg.status !== "egg") return;
+  if (egg.photoId) await ctx.storage.delete(egg.photoId);
+  if (egg.thumbId) await ctx.storage.delete(egg.thumbId);
+  await ctx.db.patch("monsters", egg._id, { status: "rejected", photoId: undefined, thumbId: undefined });
+  const player = await ctx.db.get("players", egg.playerId);
+  if (!player) return;
+  await ctx.db.patch("players", player._id, {
+    rejects: (player.rejects ?? 0) + 1,
+    ...(egg.golden ? { goldenEggs: (player.goldenEggs ?? 0) + 1 } : {}),
+  });
+  if (!player.isTest) await bumpCounter(ctx, "eggsWaiting", -1);
+}
+
+// Wie viele Eier warten auf die nächste Royale? (ohne Testspieler)
+export const waiting = query({
+  args: {},
+  returns: v.number(),
+  handler: async (ctx) => {
+    const row = await ctx.db
+      .query("counters")
+      .withIndex("by_name", (q) => q.eq("name", "eggsWaiting"))
+      .unique();
+    return row?.n ?? 0;
+  },
+});
+
 export const lay = mutation({
-  args: { deviceId: v.string(), storageId: v.id("_storage") },
+  args: { deviceId: v.string(), storageId: v.id("_storage"), thumbId: v.optional(v.id("_storage")) },
   returns: v.object({ eggId: v.id("monsters"), golden: v.boolean() }),
-  handler: async (ctx, { deviceId, storageId }) => {
+  handler: async (ctx, { deviceId, storageId, thumbId }) => {
     const player = await ctx.db
       .query("players")
       .withIndex("by_deviceId", (q) => q.eq("deviceId", deviceId))
@@ -30,13 +78,26 @@ export const lay = mutation({
       .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
       .order("desc")
       .take(40);
-    const today = mine.filter((m) => m._creationTime > now - DAY_MS && m.status !== "rejected" && !(m.golden ?? m.genome?.golden)).length;
-    // Ein Goldenes Ei wird beim nächsten Foto benutzt und zählt nicht zum Tageslimit
-    const golden = (player.goldenEggs ?? 0) > 0;
-    if (!golden && !player.isTest && today >= DAILY_LIMIT) {
-      throw new ConvexError({ code: "limit", message: `That's ${DAILY_LIMIT} eggs for today. Come back tomorrow, or crack a Golden Egg for one more.` });
+    const dayStart = royaleDayStart(now);
+    const mineToday = mine.filter((m) => m._creationTime >= dayStart && m.status !== "rejected");
+    const freeToday = mineToday.filter((m) => !(m.golden ?? m.genome?.golden)).length;
+    const goldenToday = mineToday.length - freeToday;
+    // Das erste Ei ist frei. Danach wird ein gekauftes Goldenes Ei benutzt (höchstens eines pro Royale).
+    const golden = freeToday >= DAILY_LIMIT && (player.goldenEggs ?? 0) > 0;
+    if (!player.isTest) {
+      if (golden && goldenToday >= GOLDEN_LIMIT) {
+        throw new ConvexError({ code: "limit", message: "Both your eggs are in. See you in the arena." });
+      }
+      if (!golden && freeToday >= DAILY_LIMIT) {
+        throw new ConvexError({ code: "limit", message: "One egg per royale. Crack a Golden Egg for a second one." });
+      }
     }
-    if (golden) await ctx.db.patch("players", player._id, { goldenEggs: (player.goldenEggs ?? 1) - 1 });
+    await ctx.db.patch("players", player._id, {
+      eggs: (player.eggs ?? 0) + 1,
+      firstEggAt: player.firstEggAt ?? now,
+      ...(golden ? { goldenEggs: (player.goldenEggs ?? 1) - 1 } : {}),
+    });
+    if (!player.isTest) await bumpCounter(ctx, "eggsWaiting", 1);
     const eggId = await ctx.db.insert("monsters", {
       playerId: player._id,
       genome: null,
@@ -45,6 +106,7 @@ export const lay = mutation({
       stats: { hp: 0, atk: 0, def: 0, spd: 0 },
       stage: 0,
       photoId: storageId,
+      thumbId,
       status: "egg",
       ready: false,
       golden,
@@ -174,14 +236,14 @@ export const sweep = internalMutation({
   returns: v.number(),
   handler: async (ctx) => {
     const now = Date.now();
+    // Über den Index kommen nur unfertige Eier (kleine Einträge ohne Monster)
     const recent = await ctx.db
       .query("monsters")
-      .withIndex("by_creation_time", (q) => q.gte("_creationTime", now - 3 * DAY_MS))
-      .order("desc")
-      .take(1500);
+      .withIndex("by_status_and_ready", (q) => q.eq("status", "egg").eq("ready", false))
+      .take(600);
     let n = 0;
     for (const m of recent) {
-      if (m.status !== "egg" || m.ready || !m.photoId) continue;
+      if (!m.photoId || m._creationTime < now - 3 * DAY_MS) continue;
       if ((m.genAt ?? m._creationTime) > now - STALE_MS) continue;
       // Ab Versuch 2 baut das schnelle Modell
       await ctx.db.patch("monsters", m._id, { attempts: 2, genAt: now });
@@ -199,13 +261,7 @@ export const reject = internalMutation({
   handler: async (ctx, { eggId }) => {
     const egg = await ctx.db.get("monsters", eggId);
     if (!egg) return null;
-    if (egg.photoId) await ctx.storage.delete(egg.photoId);
-    await ctx.db.patch("monsters", eggId, { status: "rejected", photoId: undefined });
-    // Ein verbrauchtes Goldenes Ei zurückgeben
-    if (egg.golden) {
-      const player = await ctx.db.get("players", egg.playerId);
-      if (player) await ctx.db.patch("players", player._id, { goldenEggs: (player.goldenEggs ?? 0) + 1 });
-    }
+    await rejectEgg(ctx, egg);
     return null;
   },
 });
@@ -309,8 +365,7 @@ export const adminAction = mutation({
       await ctx.db.patch("monsters", eggId, { ready: false, attempts: 0, genAt: Date.now() });
       await ctx.scheduler.runAfter(0, internal.eggs.generate, { eggId });
     } else {
-      if (egg.photoId) await ctx.storage.delete(egg.photoId);
-      await ctx.db.patch("monsters", eggId, { status: "rejected", photoId: undefined });
+      await rejectEgg(ctx, egg);
     }
     return null;
   },

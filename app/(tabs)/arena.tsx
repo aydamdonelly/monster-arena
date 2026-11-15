@@ -11,7 +11,7 @@ import MonsterView from '@/components/MonsterView';
 import ShareButton from '@/components/ShareButton';
 import { Appear, HardShadow, InkSticker, PrimaryButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
-import { clock, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
+import { clock, royaleHour, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
 import { getItem, setItem } from '@/lib/kv';
 import { Fonts, Palette, Radii, Type } from '@/lib/theme';
@@ -77,6 +77,8 @@ function BeforeRoyale({ since }: { since: number }) {
   const now = useNow();
   const left = royaleTimeToday() - now;
   const eggs = useQuery(api.monsters.listToday, { since });
+  const waiting = useQuery(api.eggs.waiting, {});
+  const total = Math.max(waiting ?? 0, eggs?.length ?? 0);
   const myEntries = useQuery(api.monsters.listMine, { deviceId });
   const myIds = new Set(myEntries?.map((m) => m._id));
   const shown = eggs?.slice(0, GRID_MAX) ?? [];
@@ -85,7 +87,7 @@ function BeforeRoyale({ since }: { since: number }) {
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.titleRow}>
         <Text style={styles.title}>Royale</Text>
-        <InkSticker label="Today 5 PM sharp" rotate={4} />
+        <InkSticker label={`Today ${royaleHour()} sharp`} rotate={4} />
       </View>
 
       <View style={styles.countLane}>
@@ -101,7 +103,7 @@ function BeforeRoyale({ since }: { since: number }) {
 
       <View style={styles.waiting}>
         <Text style={styles.waitingCount}>
-          {eggs ? `${eggs.length.toLocaleString('en-US')} ${eggs.length === 1 ? 'egg' : 'eggs'} waiting` : ' '}
+          {eggs && waiting !== undefined ? `${total.toLocaleString('en-US')} ${total === 1 ? 'egg' : 'eggs'} waiting` : ' '}
         </Text>
         <Text style={styles.waitingSub}>{"nobody knows what's inside"}</Text>
       </View>
@@ -125,15 +127,15 @@ function BeforeRoyale({ since }: { since: number }) {
             </Pressable>
           );
         })}
-        {eggs && eggs.length > GRID_MAX ? (
+        {eggs && total > shown.length ? (
           <View style={[styles.eggTile, styles.moreTile]}>
-            <Text style={styles.moreText}>+{(eggs.length - GRID_MAX).toLocaleString('en-US')}</Text>
+            <Text style={styles.moreText}>+{(total - shown.length).toLocaleString('en-US')}</Text>
           </View>
         ) : null}
       </View>
-      {eggs?.length === 0 ? <Text style={[Type.muted, styles.empty]}>No eggs yet today. Be the first.</Text> : null}
+      {eggs && waiting !== undefined && total === 0 ? <Text style={[Type.muted, styles.empty]}>No eggs yet today. Be the first.</Text> : null}
 
-      <Text style={styles.footer}>At 5:00 every egg hatches and they all fight. Last monster standing wins.</Text>
+      <Text style={styles.footer}>At {royaleHour()} every egg hatches and they all fight. Last monster standing wins.</Text>
     </ScrollView>
   );
 }

@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CameraButton from '@/components/CameraButton';
 import { Appear, InkSticker } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
-import { startOfToday } from '@/lib/arena';
+import { royaleHour } from '@/lib/arena';
 import { Fonts, Palette } from '@/lib/theme';
 
 const PEEKERS = [
@@ -22,8 +22,7 @@ const DESIGN_STAGE = 560;
 export default function Landing({ onCatch }: { onCatch: () => void }) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
-  const [since] = useState(startOfToday);
-  const today = useQuery(api.monsters.listToday, { since });
+  const waiting = useQuery(api.eggs.waiting, {});
   const [stage, setStage] = useState(DESIGN_STAGE);
   const k = Math.max(0.6, Math.min(1, stage / DESIGN_STAGE));
   const button = Math.round(Math.min(182, Math.max(140, height * 0.216)));
@@ -32,12 +31,12 @@ export default function Landing({ onCatch }: { onCatch: () => void }) {
     <View style={[styles.root, { paddingTop: insets.top + 6, paddingBottom: insets.bottom + 18 }]}>
       <View style={styles.header}>
         <Text style={styles.wordmark}>snappymon</Text>
-        <InkSticker label="Royale today 5 PM" rotate={4} />
+        <InkSticker label={`Royale today ${royaleHour()}`} rotate={4} />
       </View>
       <Appear style={styles.pitch}>
         <Text style={styles.pitchLine}>Snap anything.</Text>
         <Text style={styles.pitchLine}>Get an egg.</Text>
-        <Text style={styles.pitchLine}>It hatches at 5 PM.</Text>
+        <Text style={styles.pitchLine}>It hatches at {royaleHour()}.</Text>
       </Appear>
       <View style={styles.stage} onLayout={(e) => setStage(e.nativeEvent.layout.height)}>
         {PEEKERS.map(({ source, size, rotate, ...edge }, i) => (
@@ -58,11 +57,11 @@ export default function Landing({ onCatch }: { onCatch: () => void }) {
         </Appear>
       </View>
       <View style={styles.proof}>
-        {today ? (
+        {waiting !== undefined ? (
           <>
             <View style={styles.dot} />
             <Text style={styles.proofText}>
-              {today.length >= 10 ? `${today.length.toLocaleString('en-US')} eggs waiting for 5 PM` : 'Be one of the first eggs today'}
+              {waiting >= 10 ? `${waiting.toLocaleString('en-US')} eggs waiting for 5 PM` : 'Be one of the first eggs today'}
             </Text>
           </>
         ) : null}

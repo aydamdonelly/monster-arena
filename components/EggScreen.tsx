@@ -14,7 +14,7 @@ import TrainerRow from '@/components/TrainerRow';
 import { Appear, InkSticker, OutlineButton, PrimaryButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
-import { clock, royaleTimeToday, useNow } from '@/lib/arena';
+import { clock, royaleHour, royaleLocalNote, royaleTimeToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
 import { Fonts, Palette, Radii, Type } from '@/lib/theme';
 
@@ -103,9 +103,11 @@ export default function EggScreen({
     <Shell onClose={onClose} sticker={golden ? 'Your golden egg is in' : 'Your egg is in'}>
       <EggStage seed={eggId || 'new'} photo={photo} golden={golden} layIn={layIn && !answered} />
       <Appear delay={layIn ? 900 : 0} style={styles.copy}>
-        <Text style={styles.headline}>It hatches at 5 PM sharp.</Text>
+        <Text style={styles.headline}>It hatches at {royaleHour()} sharp.</Text>
         <Countdown />
-        <Text style={Type.muted}>Live in the royale. Come back to watch it hatch and fight.</Text>
+        <Text style={Type.muted}>
+          {royaleLocalNote() ? `That is ${royaleLocalNote()}. ` : ''}Live in the royale. Come back to watch it hatch and fight.
+        </Text>
       </Appear>
       <Appear delay={layIn ? 1000 : 80} style={styles.trainer}>
         <TrainerRow />

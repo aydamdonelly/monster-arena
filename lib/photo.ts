@@ -35,6 +35,16 @@ export async function toUploadJpeg(photo: Photo): Promise<string> {
   return saved.uri;
 }
 
+// Kleines Vorschaubild für Listen und die Arena (rund 10 KB statt 150 KB pro Anzeige)
+export async function toThumbJpeg(photo: Photo): Promise<string> {
+  const context = ImageManipulator.manipulate(photo.uri);
+  const landscape = !photo.width || !photo.height || photo.width >= photo.height;
+  context.resize(landscape ? { width: 256 } : { height: 256 });
+  const image = await context.renderAsync();
+  const saved = await image.saveAsync({ format: SaveFormat.JPEG, compress: 0.6 });
+  return saved.uri;
+}
+
 export async function uploadJpeg(uploadUrl: string, uri: string): Promise<string> {
   const blob = await (await fetch(uri)).blob();
   const response = await fetch(uploadUrl, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob });

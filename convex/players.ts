@@ -55,8 +55,7 @@ export const setTest = internalMutation({
   },
 });
 
-const DAILY_LIMIT = 3;
-const DAY_MS = 24 * 60 * 60 * 1000;
+import { DAILY_LIMIT, GOLDEN_LIMIT, royaleDayStart } from "./eggs";
 
 // Mein Stand für den Catch-Screen: Fänge heute, Tageslimit, Goldene Eier
 export const me = query({
@@ -69,6 +68,8 @@ export const me = query({
       dailyLimit: v.number(),
       hatchesLeft: v.number(),
       goldenEggs: v.number(),
+      goldenToday: v.number(),
+      canGolden: v.boolean(),
       unlimited: v.boolean(),
     }),
   ),
@@ -83,13 +84,18 @@ export const me = query({
       .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
       .order("desc")
       .take(30);
-    const hatchedToday = mine.filter((m) => m._creationTime > now - DAY_MS && !m.genome?.golden).length;
+    const dayStart = royaleDayStart(now);
+    const today = mine.filter((m) => m._creationTime >= dayStart && m.status !== "rejected");
+    const hatchedToday = today.filter((m) => !(m.golden ?? m.genome?.golden)).length;
+    const goldenToday = today.length - hatchedToday;
     return {
       name: player.name ?? null,
       hatchedToday,
       dailyLimit: DAILY_LIMIT,
       hatchesLeft: Math.max(0, DAILY_LIMIT - hatchedToday),
       goldenEggs: player.goldenEggs ?? 0,
+      goldenToday,
+      canGolden: goldenToday < GOLDEN_LIMIT, // darf heute noch ein Goldenes Ei legen bzw. kaufen
       unlimited: player.isTest,
     };
   },

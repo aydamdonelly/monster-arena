@@ -8,7 +8,7 @@ import { GENOME_SCHEMA, genomeInstructions, genomeFromAI } from "../monster-kit/
 import { statsFromTraits, hashString } from "../monster-kit/battle.js";
 
 const MODEL = "gpt-6-luna";
-const DAILY_LIMIT = 3;
+const DAILY_LIMIT = 1;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const generateUploadUrl = mutation({

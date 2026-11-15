@@ -90,6 +90,39 @@ export const markAllTest = internalMutation({
   },
 });
 
+// Einmalig nach dem Einführen der Zähler: Ei-Zahl je Spieler und den Zähler "Eier warten" aus dem Bestand nachtragen.
+// npx convex run dev:backfillStats '{"since": <Zeitstempel in ms>}'
+export const backfillStats = internalMutation({
+  args: { since: v.number() },
+  handler: async (ctx, { since }) => {
+    const players = await ctx.db
+      .query("players")
+      .withIndex("by_creation_time", (q) => q.gte("_creationTime", since))
+      .take(2000);
+    let waiting = 0, touched = 0;
+    for (const p of players) {
+      const mine = await ctx.db
+        .query("monsters")
+        .withIndex("by_playerId", (q) => q.eq("playerId", p._id))
+        .take(50);
+      if (!mine.length) continue;
+      const eggs = mine.length;
+      const rejects = mine.filter((m) => m.status === "rejected").length;
+      const firstEggAt = Math.min(...mine.map((m) => m._creationTime));
+      await ctx.db.patch("players", p._id, { eggs, rejects, firstEggAt });
+      touched++;
+      if (!p.isTest) waiting += mine.filter((m) => m.status === "egg").length;
+    }
+    const row = await ctx.db
+      .query("counters")
+      .withIndex("by_name", (q) => q.eq("name", "eggsWaiting"))
+      .unique();
+    if (row) await ctx.db.patch("counters", row._id, { n: waiting });
+    else await ctx.db.insert("counters", { name: "eggsWaiting", n: waiting });
+    return { players: players.length, touched, waiting };
+  },
+});
+
 // Übersicht für uns: Spieler (ohne Test) nach Quelle, Schlüpfe, Wiederkehrer
 export const overview = internalMutation({
   args: {},

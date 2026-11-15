@@ -35,7 +35,8 @@ pr_review:
             those players are marked as test players automatically. Never use a name without the QA prefix.
             How the app works: the first screen shows a yellow camera button ("Take a photo").
             On the cloud iPhone, which is a simulator, that button opens the photo library instead of the camera;
-            pick any sample photo of an object. Then tap one of the source chips, enter a trainer name starting with QA
-            in the "Your name" field, and continue ("Let's go"). The egg is laid and the app confirms "Your egg is in".
-            Home then shows your egg with a countdown and a Golden Egg button; never buy a Golden Egg.
+            pick any sample photo. The app lays the egg and shows "Your egg is in" with the question "how did you get here?";
+            tap any source chip (for example "Other"). The egg screen then shows a countdown to 5 PM and a "What's your name?"
+            field: type a trainer name starting with QA and tap Save, then close the screen with the X at the top right.
+            Home then shows "Your egg is in." with the egg, a countdown and a Golden Egg button; never buy a Golden Egg.
             The Arena tab shows waiting eggs, and the Collection tab shows your egg.

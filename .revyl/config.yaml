@@ -27,7 +27,15 @@ pr_review:
             kind: revyl
         always_verify:
             - The app launches to its first screen.
+            - A first-time player can pick a photo and reaches "Your egg is in".
+            - After laying the egg, the home screen shows the egg with its countdown.
         system_prompt: >-
             This app talks to a shared Convex dev deployment, so every proof creates real players.
             Whenever onboarding asks for a trainer name, enter a name that starts with "QA" (for example "QA Revyl");
             those players are marked as test players automatically. Never use a name without the QA prefix.
+            How the app works: the first screen shows a yellow camera button ("Take a photo").
+            On the cloud iPhone, which is a simulator, that button opens the photo library instead of the camera;
+            pick any sample photo of an object. Then tap one of the source chips, enter a trainer name starting with QA
+            in the "Your name" field, and continue ("Let's go"). The egg is laid and the app confirms "Your egg is in".
+            Home then shows your egg with a countdown and a Golden Egg button; never buy a Golden Egg.
+            The Arena tab shows waiting eggs, and the Collection tab shows your egg.

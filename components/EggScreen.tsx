@@ -8,6 +8,7 @@ import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, Vi
 import Svg, { Path } from 'react-native-svg';
 
 import Egg from '@/components/Egg';
+import SourceChips, { useSource } from '@/components/SourceChips';
 import ShareButton from '@/components/ShareButton';
 import TrainerRow from '@/components/TrainerRow';
 import { Appear, InkSticker, OutlineButton, PrimaryButton } from '@/components/ui';
@@ -85,6 +86,7 @@ export default function EggScreen({
       </Appear>
       <Appear delay={layIn ? 1000 : 80} style={styles.trainer}>
         <TrainerRow />
+        <Source />
       </Appear>
       <Appear delay={layIn ? 1100 : 160} style={styles.actions}>
         {SMS_NUMBER ? <TextMe deviceId={deviceId} /> : null}
@@ -92,6 +94,11 @@ export default function EggScreen({
       </Appear>
     </Shell>
   );
+}
+
+function Source() {
+  const { source, pick } = useSource();
+  return <SourceChips value={source} onPick={pick} />;
 }
 
 function TextMe({ deviceId }: { deviceId: string }) {
@@ -240,7 +247,7 @@ const styles = StyleSheet.create({
   muted: { color: Palette.muted },
   toGo: { paddingBottom: 9 },
   clock: { fontFamily: Fonts.black, fontSize: 56, lineHeight: 54, letterSpacing: -1.7, color: Palette.ink, fontVariant: ['tabular-nums'] },
-  trainer: { paddingHorizontal: 24, paddingTop: 16 },
+  trainer: { gap: 18, paddingHorizontal: 24, paddingTop: 16 },
   actions: { gap: 12, paddingHorizontal: 20, paddingTop: 18 },
   share: { height: 52 },
   shareLabel: { fontSize: 17, lineHeight: 20 },

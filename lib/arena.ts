@@ -23,6 +23,7 @@ export function startOfToday() {
 export function royaleTimeToday() {
   const d = new Date();
   d.setHours(17, 0, 0, 0);
+  if (Date.now() > d.getTime() + 30 * 60 * 1000) d.setDate(d.getDate() + 1);
   return d.getTime();
 }
 

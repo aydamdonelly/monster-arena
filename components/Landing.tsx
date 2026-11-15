@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24 },
   wordmark: { fontFamily: Fonts.black, fontSize: 28, lineHeight: 32, letterSpacing: -1.1, color: Palette.ink },
   pitch: { paddingLeft: 24, paddingRight: 12, paddingTop: 26, zIndex: 1 },
-  pitchLine: { fontFamily: Fonts.black, fontSize: 41, lineHeight: 42, letterSpacing: -1.6, color: Palette.ink },
+  pitchLine: { fontFamily: Fonts.black, fontSize: 35, lineHeight: 37, letterSpacing: -1.4, color: Palette.ink },
   stage: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   peeker: { position: 'absolute' },
   cta: { alignItems: 'center', gap: 20 },

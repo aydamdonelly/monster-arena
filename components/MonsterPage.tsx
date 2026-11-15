@@ -4,6 +4,7 @@ import Head from 'expo-router/head';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import Egg from '@/components/Egg';
 import MonsterDetails, { hatchedAt, MonsterTopBar } from '@/components/MonsterDetails';
 import ShareButton from '@/components/ShareButton';
 import { Appear, OutlineButton, PrimaryButton } from '@/components/ui';
@@ -30,12 +31,13 @@ export default function MonsterPage({ id, mode }: { id: string; mode: 'owner' | 
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         {monster === undefined ? <ActivityIndicator color={Palette.ink} style={styles.loading} /> : null}
         {monster === null ? <MonsterMissing /> : null}
-        {monster ? (
+        {monster && (monster.status !== 'hatched' || !monster.genome) ? <EggTeaser id={monster._id} photoUrl={monster.photoUrl} /> : null}
+        {monster && monster.status === 'hatched' && monster.genome ? (
           <>
             <MonsterDetails monster={monster} />
             {mode === 'public' ? (
               <Appear delay={460} style={styles.cta}>
-                <Text style={styles.tagline}>Snap anything. Hatch a monster. Battle in the daily royale.</Text>
+                <Text style={styles.tagline}>Snap anything. Get an egg. It hatches at 5 PM and fights in the royale.</Text>
                 <PrimaryButton label="Catch your own" onPress={catchOwn} />
                 <ShareButton id={monster._id} name={monster.name} variant="outline" />
               </Appear>
@@ -49,6 +51,17 @@ export default function MonsterPage({ id, mode }: { id: string; mode: 'owner' | 
         ) : null}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function EggTeaser({ id, photoUrl }: { id: string; photoUrl: string | null }) {
+  return (
+    <View style={styles.missing}>
+      <Egg seed={id} width={150} photoUrl={photoUrl} />
+      <Text style={[Type.heading, styles.center]}>This egg hatches at 5 PM.</Text>
+      <Text style={[Type.muted, styles.center]}>Snap anything to get your own.</Text>
+      <PrimaryButton label="Snap your own" onPress={() => router.replace('/')} style={styles.full} />
+    </View>
   );
 }
 

@@ -29,7 +29,7 @@ export default function TrainerRow() {
   };
 
   if (me === undefined) return null;
-  if (entered || me?.name) return <Text style={styles.line}>{"You're in. Royale at 5 PM."}</Text>;
+  if (entered || me?.name) return <Text style={styles.line}>{`You're in as ${me?.name ?? name.trim()}.`}</Text>;
 
   return (
     <View style={styles.wrap}>

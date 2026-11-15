@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Egg from '@/components/Egg';
 import MonsterView from '@/components/MonsterView';
 import ShareButton from '@/components/ShareButton';
-import { Appear, HardShadow, InkSticker, PrimaryButton, StageBlock } from '@/components/ui';
+import { Appear, HardShadow, InkSticker, PrimaryButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import { clock, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
@@ -23,13 +23,6 @@ const GRID_MAX = 24;
 
 function clockTime(time: number) {
   return new Date(time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-}
-
-function placeLine(mine: Mine) {
-  if (!mine?.entered) return null;
-  if (mine.champion) return { title: 'Your monster won it all', quip: `${mine.monsterName} is today's champion.` };
-  if (mine.inFinal) return { title: `You finished #${mine.finalPlace} of ${mine.finalSize}`, quip: `${mine.monsterName} went down swinging in the final.` };
-  return { title: `You finished #${mine.heatPlace} of ${mine.heatSize}`, quip: `${mine.monsterName} went down swinging in heat ${(mine.heatIndex ?? 0) + 1}.` };
 }
 
 function replayRound(mine: Mine) {
@@ -68,7 +61,7 @@ export default function ArenaScreen() {
           mine={mine}
           onWatch={() => {
             markWatched();
-            router.push({ pathname: '/arena/replay', params: { round: replayRound(mine) } });
+            router.push({ pathname: '/arena/replay', params: { round: replayRound(mine), live: '1' } });
           }}
           onSkip={markWatched}
         />
@@ -110,7 +103,7 @@ function BeforeRoyale({ since }: { since: number }) {
         <Text style={styles.waitingCount}>
           {eggs ? `${eggs.length.toLocaleString('en-US')} ${eggs.length === 1 ? 'egg' : 'eggs'} waiting` : ' '}
         </Text>
-        <Text style={styles.waitingSub}>nobody knows what's inside</Text>
+        <Text style={styles.waitingSub}>{"nobody knows what's inside"}</Text>
       </View>
 
       <View style={styles.grid}>
@@ -165,10 +158,10 @@ function WatchLive({ summary, mine, onWatch, onSkip }: { summary: Summary; mine:
         </View>
       </Appear>
       <View style={styles.placeBlock}>
-        <Text style={styles.place}>{where ? `Your egg hatched in ${where}` : 'Watch them hatch and fight'}</Text>
+        <Text style={styles.watchLine}>{where ? `Your egg hatched in ${where}` : 'Watch them hatch and fight'}</Text>
         <Text style={Type.muted}>{where ? 'See what came out, and how far it got.' : 'Every egg from today, one arena.'}</Text>
       </View>
-      <View style={styles.resultActions}>
+      <View style={styles.watchActions}>
         <PrimaryButton label="Watch live" icon={<View style={styles.liveDot} />} onPress={onWatch} />
         <Pressable accessibilityRole="button" onPress={onSkip} hitSlop={12} style={styles.skip}>
           <Text style={styles.skipText}>Skip to the result</Text>
@@ -210,7 +203,7 @@ function RoyaleResult({ summary, mine }: { summary: Summary; mine: Mine }) {
         </>
       ) : (
         <Appear style={styles.placeBlock}>
-          <Text style={styles.place}>{"You weren't in this one"}</Text>
+          <Text style={styles.watchLine}>{"You weren't in this one"}</Text>
           <Text style={Type.muted}>Snap something before 5 PM to enter the next royale.</Text>
         </Appear>
       )}
@@ -314,6 +307,8 @@ const styles = StyleSheet.create({
   elementTag: { position: 'absolute', top: 14, right: 14 },
   placeBlock: { gap: 2, paddingHorizontal: 24, paddingTop: 16 },
   place: { fontFamily: Fonts.black, fontSize: 56, lineHeight: 54, letterSpacing: -2.24, color: Palette.ink },
+  watchLine: { fontFamily: Fonts.black, fontSize: 28, lineHeight: 32, letterSpacing: -0.56, color: Palette.ink, paddingTop: 4 },
+  watchActions: { gap: 14, paddingHorizontal: 20, paddingTop: 20 },
   resultActions: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingTop: 20 },
   replayButton: { flex: 1.9 },
   shareButton: { flex: 1, height: 56 },

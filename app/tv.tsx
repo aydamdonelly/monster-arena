@@ -7,8 +7,8 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import ArenaView from '@/components/ArenaView';
-import EggArt from '@/components/EggArt';
-import { HardShadow } from '@/components/ui';
+import Egg from '@/components/Egg';
+import { HardShadow, InkSticker } from '@/components/ui';
 import MonsterView from '@/components/MonsterView';
 import QrCode from '@/components/QrCode';
 import { api } from '@/convex/_generated/api';
@@ -56,7 +56,7 @@ function Lobby({ since, includeTest, adminKey }: { since: number; includeTest: b
             SNAPPYMON{'\n'}ROYALE
           </Text>
           <Text style={[styles.extrabold, { fontSize: 44 * u, lineHeight: 50 * u, letterSpacing: -0.88 * u, paddingTop: 6 * u }]}>
-            {monsters ? `${monsters.length.toLocaleString('en-US')} ${monsters.length === 1 ? 'egg' : 'eggs'} entered` : ' '}
+            {monsters ? `${monsters.length.toLocaleString('en-US')} ${monsters.length === 1 ? 'egg' : 'eggs'} waiting` : ' '}
           </Text>
         </View>
         <HardShadow offset={10 * u} radius={36 * u} style={{ alignSelf: 'flex-start' }}>
@@ -87,28 +87,47 @@ function Lobby({ since, includeTest, adminKey }: { since: number; includeTest: b
       </View>
       <View style={{ flex: 1, paddingVertical: 72 * u, paddingLeft: 24 * u, paddingRight: 96 * u }}>
         <View style={[styles.arena, { borderWidth: 4 * u, borderRadius: 48 * u }]}>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20 * u, padding: 28 * u }}>
-            {(monsters ?? []).slice(0, TV_EGGS).map((m) => (
-              <View key={m._id} style={{ width: 140 * u, height: 150 * u, alignItems: 'center', justifyContent: 'flex-end' }}>
-                <EggArt width={100 * u} golden={m.status === 'egg' && m.golden} />
-                {m.status === 'egg' && m.photoUrl ? (
-                  <View style={{ position: 'absolute', right: 0, bottom: 0 }}>
-                    <HardShadow offset={4 * u} radius={6 * u} rotate={8}>
-                      <View style={[styles.qr, { borderWidth: 3 * u, borderRadius: 6 * u, padding: 4 * u }]}>
-                        <Image source={{ uri: m.photoUrl }} style={{ width: 56 * u, height: 56 * u, borderRadius: 2 * u }} contentFit="cover" />
-                      </View>
-                    </HardShadow>
-                  </View>
-                ) : null}
-              </View>
-            ))}
-            {monsters && monsters.length > TV_EGGS ? (
-              <View style={[styles.more, { width: 140 * u, height: 150 * u, borderRadius: 28 * u }]}>
-                <Text style={[styles.black, { color: Palette.ground, fontSize: 44 * u }]}>+{(monsters.length - TV_EGGS).toLocaleString('en-US')}</Text>
-              </View>
-            ) : null}
-          </View>
+          <InkSticker label="Hatching at 5 PM sharp" fontSize={26 * u} rotate={-3} style={{ position: 'absolute', top: 36 * u, left: 36 * u, zIndex: 1 }} />
+          <EggRing eggs={monsters ?? []} u={u} />
+          <Text style={[styles.extrabold, styles.ringCaption, { fontSize: 30 * u, lineHeight: 36 * u, bottom: 36 * u, left: 36 * u, right: 36 * u }]}>
+            Every egg hatches at once. Last monster standing wins.
+          </Text>
         </View>
+      </View>
+    </View>
+  );
+}
+
+function EggRing({ eggs, u }: { eggs: FunctionReturnType<typeof api.monsters.listToday>; u: number }) {
+  const shown = eggs.slice(0, TV_EGGS);
+  const radius = 300 * u;
+  const tile = 128 * u;
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width: radius * 2 + tile, height: radius * 2 + tile }}>
+        {shown.map((m, i) => {
+          const angle = (i / Math.max(shown.length, 1)) * Math.PI * 2 - Math.PI / 2;
+          return (
+            <View
+              key={m._id}
+              style={{
+                position: 'absolute',
+                left: radius + Math.cos(angle) * radius,
+                top: radius + Math.sin(angle) * radius,
+                width: tile,
+                height: tile,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Egg seed={m._id} width={78 * u} golden={m.golden} photoUrl={m.photoUrl} rotate={(i % 3) * 4 - 4} />
+            </View>
+          );
+        })}
+        {eggs.length > TV_EGGS ? (
+          <View style={[styles.more, { position: 'absolute', left: radius, top: radius, width: tile, height: tile, borderRadius: tile / 2 }]}>
+            <Text style={[styles.black, { color: Palette.ground, fontSize: 40 * u }]}>+{(eggs.length - TV_EGGS).toLocaleString('en-US')}</Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -239,6 +258,7 @@ const styles = StyleSheet.create({
   qr: { backgroundColor: Palette.ground, borderColor: Palette.ink },
   arena: { flex: 1, borderColor: Palette.ink, overflow: 'hidden', backgroundColor: Palette.stage },
   more: { backgroundColor: Palette.ink, alignItems: 'center', justifyContent: 'center' },
+  ringCaption: { position: 'absolute', textAlign: 'center' },
   replay: { backgroundColor: Palette.primary, borderColor: Palette.ink },
   admin: { backgroundColor: Palette.ink, borderRadius: 999 },
   adminText: { color: Palette.ground, fontFamily: Fonts.bold },

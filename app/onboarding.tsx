@@ -5,20 +5,18 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import SourceChips, { useSource } from '@/components/SourceChips';
 import { Appear, HardShadow, PrimaryButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import { useDeviceId, useOnboarding } from '@/lib/device';
-import { tap } from '@/lib/haptics';
 import { Fonts, Palette, Radii, Type } from '@/lib/theme';
-
-const SOURCES = ['TikTok', 'Instagram', 'YouTube', 'Friend', 'Hackathon', 'Other'];
 
 export default function OnboardingScreen() {
   const deviceId = useDeviceId();
   const { finishOnboarding } = useOnboarding();
   const setProfile = useMutation(api.players.setProfile);
   const [name, setName] = useState('');
-  const [source, setSource] = useState<string | null>(null);
+  const { source, pick } = useSource();
   const [busy, setBusy] = useState(false);
 
   const done = () => {
@@ -32,7 +30,6 @@ export default function OnboardingScreen() {
       await setProfile({
         deviceId,
         name: name.trim() || undefined,
-        source: source?.toLowerCase(),
       });
     } catch (e) {
       console.warn('setProfile failed', e);
@@ -70,25 +67,7 @@ export default function OnboardingScreen() {
           </Appear>
 
           <Appear delay={220} style={styles.block}>
-            <Text style={Type.label}>Where did you find us?</Text>
-            <View style={styles.chips}>
-              {SOURCES.map((s) => {
-                const active = s === source;
-                return (
-                  <Pressable
-                    key={s}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    onPress={() => {
-                      tap();
-                      setSource(active ? null : s);
-                    }}
-                    style={({ pressed }) => [styles.chip, active && styles.chipActive, pressed && { transform: [{ scale: 0.95 }] }]}>
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{s}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            <SourceChips value={source} onPick={pick} />
           </Appear>
 
           <Appear delay={320} style={styles.footer}>
@@ -126,19 +105,6 @@ const styles = StyleSheet.create({
     color: Palette.ink,
   },
   block: { gap: 12, paddingHorizontal: 24, paddingTop: 30 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 8, rowGap: 10 },
-  chip: {
-    height: 42,
-    justifyContent: 'center',
-    borderRadius: Radii.pill,
-    paddingHorizontal: 16,
-    backgroundColor: Palette.ground,
-    borderWidth: 2,
-    borderColor: Palette.ink,
-  },
-  chipActive: { backgroundColor: Palette.ink },
-  chipText: { fontFamily: Fonts.semibold, fontSize: 16, lineHeight: 20, color: Palette.ink },
-  chipTextActive: { color: Palette.ground },
   footer: { marginTop: 'auto', paddingTop: 32, paddingHorizontal: 20, gap: 16, alignItems: 'center' },
   go: { alignSelf: 'stretch' },
   skip: { fontFamily: Fonts.semibold, fontSize: 15, lineHeight: 20, color: Palette.muted, textDecorationLine: 'underline' },

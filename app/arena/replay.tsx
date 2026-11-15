@@ -11,7 +11,7 @@ import { Palette, Type } from '@/lib/theme';
 
 export default function ReplayScreen() {
   const deviceId = useDeviceId();
-  const params = useLocalSearchParams<{ round?: string }>();
+  const params = useLocalSearchParams<{ round?: string; live?: string }>();
   const index = Number(params.round ?? -1);
   const round = useQuery(api.royale.round, { index });
   const mine = useQuery(api.royale.mine, { deviceId });
@@ -40,7 +40,9 @@ export default function ReplayScreen() {
       dayElement={round.dayElement}
       followId={followId}
       title={title}
-      label={round.isFinal ? 'Final' : `Heat ${round.index + 1}`}
+      label={`5:00 PM · ${round.isFinal ? 'Final' : `Heat ${round.index + 1}`} · ${round.entrants.length} eggs`}
+      live={params.live === '1'}
+      caption={followId ? mine?.entered ? mine.monsterName : null : null}
       onEnd={setResult}>
       {result ? (
         <ResultPanel

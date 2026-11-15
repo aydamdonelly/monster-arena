@@ -100,6 +100,26 @@ export const nerfWild = internalMutation({
   },
 });
 
+// Cloud-Rechner der Agenten nachträglich als Test markieren (Linux-Browser mit Zeitzone UTC). npx convex run dev:flagCloud '{"since":…}'
+export const flagCloud = internalMutation({
+  args: { since: v.number() },
+  returns: v.number(),
+  handler: async (ctx, { since }) => {
+    const rows = await ctx.db
+      .query("players")
+      .withIndex("by_creation_time", (q) => q.gte("_creationTime", since))
+      .take(4000);
+    let n = 0;
+    for (const p of rows) {
+      if (!p.isTest && p.tz === "UTC" && p.dev === "other" && !(p.eggs ?? 0)) {
+        await ctx.db.patch("players", p._id, { isTest: true });
+        n++;
+      }
+    }
+    return n;
+  },
+});
+
 // Vor dem Start: alle bisherigen Spieler als Test markieren (zählen nicht in Zahlen und Royale).
 // npx convex run dev:markAllTest '{"before": <Zeitstempel in ms>}'
 export const markAllTest = internalMutation({

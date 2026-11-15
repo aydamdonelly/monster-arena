@@ -23,7 +23,9 @@ export const log = mutation({
       if (!player.tz && short(m.tz, 40)) patch.tz = short(m.tz, 40);
       if (!player.lang && short(m.lang, 12)) patch.lang = short(m.lang, 12);
       // Automatisierte Browser (Probeläufe der Agenten) und ?s=qa zählen nicht als echte Nutzer
-      if (!player.isTest && (m.wd === "1" || m.s === "qa")) patch.isTest = true;
+      // Dazu Cloud-Rechner der Agenten: Linux-Browser mit Zeitzone UTC (so laufen die Testumgebungen von Capy und Revyl).
+      const cloud = m.tz === "UTC" && m.dev === "other";
+      if (!player.isTest && (m.wd === "1" || m.s === "qa" || cloud)) patch.isTest = true;
       await ctx.db.patch("players", player._id, patch);
     }
     return null;

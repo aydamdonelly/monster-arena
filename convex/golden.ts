@@ -1,9 +1,9 @@
-// Goldenes Ei (0,99 $): ein Extra-Fang über das Tageslimit hinaus, das Monster schlüpft golden (siehe hatch.ts).
+// Goldenes Ei (1 $, Whop verlangt mindestens 1,00 $ pro Kauf): ein Extra-Fang über das Tageslimit hinaus, das Monster schlüpft golden (siehe hatch.ts).
 // Hier liegt nur die Gutschrift. Bezahlung (Whop-Checkout und Webhook) ruft golden.credit auf.
 import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
 
-export const PRICE_USD = 0.99;
+export const PRICE_USD = 1;
 
 // Vom Zahlungs-Webhook aufzurufen: schreibt ein Goldenes Ei gut. Jede Zahlung zählt genau einmal (paymentId).
 // playerId kommt als String aus den Zahlungs-Metadaten.

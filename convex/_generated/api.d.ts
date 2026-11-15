@@ -15,10 +15,12 @@ import type * as eggs from "../eggs.js";
 import type * as events from "../events.js";
 import type * as golden from "../golden.js";
 import type * as hatch from "../hatch.js";
+import type * as http from "../http.js";
 import type * as monsters from "../monsters.js";
 import type * as players from "../players.js";
 import type * as royale from "../royale.js";
 import type * as stats from "../stats.js";
+import type * as whop from "../whop.js";
 
 import type {
   ApiFromModules,
@@ -34,10 +36,12 @@ declare const fullApi: ApiFromModules<{
   events: typeof events;
   golden: typeof golden;
   hatch: typeof hatch;
+  http: typeof http;
   monsters: typeof monsters;
   players: typeof players;
   royale: typeof royale;
   stats: typeof stats;
+  whop: typeof whop;
 }>;
 
 /**

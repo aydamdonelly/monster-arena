@@ -169,7 +169,7 @@ function Countdown() {
   const left = royaleTimeToday() - now;
   return (
     <View style={styles.countdown}>
-      <Text style={styles.clock}>{left > 0 ? clock(left) : 'LIVE'}</Text>
+      <Text style={styles.clock} numberOfLines={1} adjustsFontSizeToFit>{left > 0 ? clock(left) : 'HATCHING…'}</Text>
       <Text style={[Type.label, styles.muted, styles.toGo]}>{left > 0 ? 'to go' : 'in the arena'}</Text>
     </View>
   );

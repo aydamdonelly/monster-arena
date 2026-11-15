@@ -11,7 +11,7 @@ import MonsterView from '@/components/MonsterView';
 import ShareButton from '@/components/ShareButton';
 import { Appear, HardShadow, InkSticker, PrimaryButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
-import { clock, royaleHour, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
+import { clock, replayRound, royaleHour, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
 import { getItem, setItem } from '@/lib/kv';
 import { testArgs, useTestMode } from '@/lib/test-mode';
@@ -24,10 +24,6 @@ const GRID_MAX = 24;
 
 function clockTime(time: number) {
   return new Date(time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-}
-
-function replayRound(mine: Mine) {
-  return mine?.entered && !mine.inFinal && mine.heatIndex !== null ? String(mine.heatIndex) : '-1';
 }
 
 export default function ArenaScreen() {
@@ -98,7 +94,7 @@ function BeforeRoyale({ since }: { since: number }) {
           <View style={styles.countBlock}>
             <Text style={Type.label}>{left > 0 ? 'Hatching in' : 'Hatching'}</Text>
             <Text style={[styles.countdown, left <= 0 && styles.countdownSoon]} numberOfLines={1} adjustsFontSizeToFit>
-              {left > 0 ? clock(left) : 'Any minute'}
+              {left > 0 ? clock(left) : 'HATCHING…'}
             </Text>
           </View>
         </HardShadow>

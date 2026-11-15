@@ -289,7 +289,17 @@ export function createArena(container, opts = {}) {
         }
       } else { pitch = 0.8; dist = fitDist(R, pitch); }
     }
-    if (!started) { pitch = 0.62; dist = fitDist(R + 0.5, pitch); cx = 0; cz = 0; yaw = rig.userYaw + now * 0.00025; }
+    if (!started) {
+      pitch = 0.62; dist = fitDist(R + 0.5, pitch); cx = 0; cz = 0; yaw = rig.userYaw + now * 0.00025;
+      const me = o.hatchCam && followId ? sim.state.monsters.find((m) => m.id === followId) : null;
+      if (me) { cx = me.x; cz = me.y; pitch = 0.36; dist = 6.2; yaw = rig.userYaw + Math.atan2(-me.x, -me.y) + Math.sin(now * 0.0009) * 0.25; } // Nahaufnahme auf das eigene Ei
+      else if (o.hatch && directing) { // Hochformat: die Kamera wandert am Ring entlang zu dem Ei, das als Nächstes platzt
+        let next = null; for (const a2 of actors.values()) if (!a2.hatched && (!next || a2.hatchAt < next.hatchAt)) next = a2;
+        const m2 = next ? sim.state.monsters.find((m) => m.id === next.e.id) : null;
+        if (m2 && introT > 0.9) { cx = m2.x * 0.72; cz = m2.y * 0.72; pitch = 0.5; dist = fitDist(4.3, pitch); yaw = rig.userYaw + Math.atan2(m2.x, m2.y) + 0.5; }
+        else if (!next) { pitch = 0.62; dist = fitDist(R * 0.8, pitch); }
+      }
+    }
     const k = rig.cut ? 1 : 1 - Math.pow(0.0015, dt); rig.cut = false; // weiche Nachführung, bei einem Schnitt sofort
     rig.cx = lerp(rig.cx, cx, k); rig.cz = lerp(rig.cz, cz, k); rig.dist = lerp(rig.dist, dist * rig.zoom, k); rig.pitch = lerp(rig.pitch, pitch, k); rig.yaw = mode === 'follow' && started ? lerpAngle(rig.yaw, yaw, k * 0.6) : lerpAngle(rig.yaw, yaw, k);
     rig.kick = Math.max(0, rig.kick - dt * 3);

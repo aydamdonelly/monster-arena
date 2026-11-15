@@ -9,9 +9,11 @@ export const Palette = {
   stage: '#E8F1EC',
   bg: '#FFFFFF',
   card: '#FFFFFF',
+  accent: '#FFD60A', // Alias für ältere Screens (Arena, /tv), gleich primary
 } as const;
 
 export const Fonts = {
+  regular: 'Rubik_500Medium', // Alias für ältere Screens
   medium: 'Rubik_500Medium',
   semibold: 'Rubik_600SemiBold',
   bold: 'Rubik_700Bold',

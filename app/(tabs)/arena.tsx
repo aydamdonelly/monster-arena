@@ -33,7 +33,7 @@ export default function ArenaScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.next}>
-        <Text style={styles.kicker}>NEXT ROYALE · 4:00 PM</Text>
+        <Text style={styles.kicker}>NEXT ROYALE · 5:00 PM</Text>
         <Text style={[styles.countdown, startsAt <= now && { fontSize: 30 }]}>{formatCountdown(startsAt - now)}</Text>
         <Text style={styles.entered}>{monsters ? `${monsters.length} ${monsters.length === 1 ? 'monster' : 'monsters'} entered` : '…'}</Text>
       </View>

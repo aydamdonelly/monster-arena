@@ -51,7 +51,7 @@ function Lobby({ since, includeTest, adminKey }: { since: number; includeTest: b
           <Text style={[styles.title, { fontSize: 92 * u, lineHeight: 96 * u }]} numberOfLines={2}>
             SNAPPYMON{'\n'}ROYALE
           </Text>
-          <Text style={[styles.kicker, { fontSize: 26 * u, marginTop: 12 * u }]}>TODAY · 4:00 PM</Text>
+          <Text style={[styles.kicker, { fontSize: 26 * u, marginTop: 12 * u }]}>TODAY · 5:00 PM</Text>
           <Text style={[styles.countdown, { fontSize: (startsAt > now ? 112 : 64) * u }]} numberOfLines={1}>
             {formatCountdown(startsAt - now)}
           </Text>

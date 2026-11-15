@@ -63,7 +63,11 @@
 //   - Bewegung: Monster umkreisen ihr Ziel im Wunschabstand ihres nächsten Angriffs (Fernkämpfer weiter außen), stehen nie still.
 //   - Zwei Angriffe: [0] Basis, [1] Spezial. Spezial geht vor, sobald es bereit und in Reichweite ist.
 //   - Werte: hp -> maxHp, atk -> Schaden, def -> weniger Schaden, spd -> Lauftempo, Ausweichen und etwas kürzere Abklingzeiten.
-//   - Ein KO heilt den Angreifer. Element-Vorteil zählt abgeschwächt. Nach dem Zonen-Minimum steigt aller Schaden langsam an (Finale wird kurz).
+//   - Ein KO heilt den Angreifer um 40 % seiner maxHp. Element-Vorteil zählt abgeschwächt (x1,2 / x0,87).
+//   - Arena-Radius = arenaBase + arenaPerSqrtN * sqrt(n). Zone: ab 8 s, am Minimum (Radius 2,5) nach 14 + 5,25 * sqrt(n) Sekunden
+//     (2 Monster: 21 s, 8: 29 s, 16: 35 s). Danach steigt aller Schaden um 5 % pro Sekunde, das hält das Finale kurz.
+//   - Typische Dauer (Median, KI-Angriffe): 2 Monster ~15 s, 8 ~32 s, 12 ~38 s, 16 ~41 s, 40 ~53 s. Mit 8 Lebenden starten zusammen ~2,6 Angriffe pro Sekunde,
+//     ein Treffer nimmt im Schnitt ~20 % der HP. Alle Arten haben dieselbe Abklingzeit, damit das Tempo nicht von der Mischung abhängt.
 // ---------------------------------------------------------------------------------------------------------------
 import { BEATS, effectiveness } from './battle.js';
 
@@ -76,29 +80,29 @@ export const MOVE_KINDS = ['melee', 'shot', 'beam', 'burst', 'dash'];
 
 // range/windup/cooldown in Einheiten bzw. Sekunden. power = Schadensfaktor. pref = Wunschabstand zum Ziel.
 export const MOVE_SPECS = {
-  melee: { range: 2.0, windup: 0.35, cooldown: 1.8, power: 0.7, pref: 1.75, single: true, reach: 0.9, recoil: 0.45 },
-  shot: { range: 6.5, windup: 0.4, cooldown: 2.7, power: 0.75, pref: 4.3, single: true, speed: 10, hitRadius: 0.3 },
-  beam: { range: 5.5, windup: 0.6, cooldown: 3.6, power: 0.9, pref: 3.7, single: false, width: 0.8 },
-  burst: { range: 2.6, windup: 0.5, cooldown: 3.4, power: 0.8, pref: 1.85, single: false },
-  dash: { range: 5.0, minRange: 2.5, windup: 0.4, cooldown: 3.8, power: 1.2, pref: 3.6, single: false, leap: 0.25, radius: 2.3, stop: 1.5 },
+  melee: { range: 2.0, windup: 0.35, cooldown: 4.4, power: 1.25, pref: 1.75, single: true, reach: 0.9, recoil: 0.45 },
+  shot: { range: 6.5, windup: 0.4, cooldown: 4.4, power: 0.6, pref: 4.3, single: true, speed: 10, hitRadius: 0.3 },
+  beam: { range: 5.5, windup: 0.6, cooldown: 4.4, power: 0.7, pref: 3.7, single: false, width: 0.8 },
+  burst: { range: 2.6, windup: 0.5, cooldown: 4.4, power: 1.05, pref: 1.85, single: false },
+  dash: { range: 5.0, minRange: 2.5, windup: 0.4, cooldown: 4.4, power: 0.75, pref: 3.6, single: false, leap: 0.25, radius: 2.3, stop: 1.5 },
 };
 export const SPECIAL = { power: 1.5, cooldown: 1.9 };
 
 export const TUNING = {
-  K: 0.6, // globaler Schadensfaktor
+  K: 0.97, // globaler Schadensfaktor
   hpMult: 2.2, // maxHp = round(hpEff * hpMult)
   // Gewichte der vier Werte um den Mittelwert 75: eff = 75 + (wert - 75) * w. So ist jeder Punkt des 300er-Budgets etwa gleich viel wert.
-  wHp: 0.8, wAtk: 0.75, wDef: 1.3,
-  wSpd: 0.8, // Tempo verkürzt die Abklingzeiten: Faktor = 1 - wSpd * (spd - 75) / 75 (begrenzt auf hasteMin..hasteMax)
+  wHp: 0.8, wAtk: 0.9, wDef: 1.3,
+  wSpd: 0.55, // Tempo verkürzt die Abklingzeiten: Faktor = 1 - wSpd * (spd - 75) / 75 (begrenzt auf hasteMin..hasteMax)
   hasteMin: 0.75, hasteMax: 1.3,
   cdScale: 1, // alle Abklingzeiten mal diesem Faktor
   speedBase: 1.6, speedPerSpd: 1 / 60, // Einheiten/s = speedBase + spd * speedPerSpd
   arenaBase: 4.6, arenaPerSqrtN: 0.95, // Arenaradius = arenaBase + arenaPerSqrtN * sqrt(n)
   spawnRing: 0.8,
-  firstBasic: [1, 4], firstSpecial: [3.5, 7.5], // erste Angriffe (Sekunden, per Seed gestreut), damit der Start lesbar bleibt
-  zoneStart: 8, zoneEnd: 35, zoneMin: 2.5, // Sekunden / Radius
+  firstBasic: [0.8, 2.6], firstSpecial: [3.1, 6.6], // erste Angriffe (Sekunden, per Seed gestreut), damit der Start lesbar bleibt
+  zoneStart: 8, zoneEndBase: 14, zoneEndPerSqrtN: 5.25, zoneMin: 2.5, // Zone schrumpft von zoneStart bis zoneEndBase + zoneEndPerSqrtN * sqrt(n) Sekunden (16 Monster: 35 s) auf Radius zoneMin
   zoneDps: 6, zoneDpsPct: 0.03, // Schaden pro Sekunde außerhalb: zoneDps + zoneDpsPct * maxHp
-  rageStart: 35, ragePerSec: 0, // ab rageStart steigt aller Schaden um ragePerSec pro Sekunde (hält das Finale kurz)
+  ragePerSec: 0.05, // sobald die Zone am Minimum ist, steigt aller Schaden pro Sekunde um diesen Anteil (hält das Finale kurz)
   // Zielwahl: kleinster Wert gewinnt. Wert = Distanz * Element-Faktor * (0,7 + 0,3 * HP-Anteil) * targetPile^(andere Jäger)
   retargetTicks: 12, retargetGain: 0.8, // alle 0,6 s prüfen; Wechsel nur, wenn das neue Ziel <= 80 % des Werts hat
   targetEffGood: 0.65, targetEffBad: 1.3, targetHpBase: 0.7, targetPile: 1.15,
@@ -107,7 +111,7 @@ export const TUNING = {
   // Abstand halten und Rückstoß
   separation: 1.5, sepStiff: 0.6, sepMaxStep: 0.22,
   knockBasic: 0.7, knockSpecial: 1.2, knockTicks: 5,
-  healOnKill: 0.25, // Anteil der maxHp, den ein Monster für einen KO zurückbekommt
+  healOnKill: 0.4, // Anteil der maxHp, den ein Monster für einen KO zurückbekommt
   critBase: 0.08, critPerSharp: 0.12, critMult: 1.6,
   dodgeBase: 0.04, dodgePerSpd: 1 / 300, dodgeMin: 0.02, dodgeMax: 0.2,
   dayBonus: 1.1,
@@ -202,8 +206,9 @@ export function createSim({ entrants, seed, dayElement = null, maxSeconds = TUNI
   const n = entrants.length;
   const R = T.arenaBase + T.arenaPerSqrtN * Math.sqrt(n);
   const WALL = R - 0.4;
-  const ZS = Math.round(T.zoneStart * TPS); const ZE = Math.round(T.zoneEnd * TPS);
-  const RAGE = Math.round(T.rageStart * TPS);
+  const ZS = Math.round(T.zoneStart * TPS);
+  const ZE = Math.max(ZS + 1, Math.round((T.zoneEndBase + T.zoneEndPerSqrtN * Math.sqrt(n)) * TPS));
+  const RAGE = ZE;
   const maxTicks = Math.max(1, Math.round(maxSeconds * TPS));
   const WIND = {};
   for (const k of MOVE_KINDS) WIND[k] = ticks(S[k].windup);

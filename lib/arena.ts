@@ -30,7 +30,7 @@ export function startOfToday() {
 
 export function royaleTimeToday() {
   const d = new Date();
-  d.setHours(16, 0, 0, 0);
+  d.setHours(17, 0, 0, 0);
   return d.getTime();
 }
 

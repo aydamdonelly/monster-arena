@@ -59,7 +59,7 @@ export default function GoldenEggSheet({ visible, onClose: close }: { visible: b
         </View>
         <View style={styles.title}>
           <Text style={styles.titleText}>Golden Egg</Text>
-          <Text style={styles.titleText}>$0.99</Text>
+          <Text style={styles.titleText}>$1</Text>
         </View>
         <View style={styles.perks}>
           {PERKS.map((p) => (
@@ -70,7 +70,7 @@ export default function GoldenEggSheet({ visible, onClose: close }: { visible: b
           ))}
         </View>
         <View style={styles.actions}>
-          <PrimaryButton label="Crack one open · $0.99" onPress={buy} busy={busy} style={styles.buy} buttonStyle={styles.buyButton} />
+          <PrimaryButton label="Crack one open · $1" onPress={buy} busy={busy} style={styles.buy} buttonStyle={styles.buyButton} />
           {failed ? <Text style={styles.failed}>The egg shop opens in a few minutes.</Text> : null}
           <Pressable accessibilityRole="button" onPress={onClose} hitSlop={12}>
             <Text style={styles.later}>Maybe tomorrow</Text>

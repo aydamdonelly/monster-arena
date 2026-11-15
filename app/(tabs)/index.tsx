@@ -247,7 +247,7 @@ function Limit({ mine, now, canGolden, onGolden }: { mine: Entry[]; now: number;
       </Appear>
       <Appear delay={260} style={styles.limitActions}>
         {canGolden ? <PrimaryButton
-          label="Golden Egg · $0.99"
+          label="Golden Egg · $1"
           icon={
             <Svg width={18} height={22} viewBox="0 0 18 22">
               <Path d="M9 1.5C5 1.5 1.5 8.5 1.5 13.2c0 4.3 3.3 7.3 7.5 7.3s7.5-3 7.5-7.3C16.5 8.5 13 1.5 9 1.5z" fill={Palette.ground} stroke={Palette.ink} strokeWidth={2.2} />

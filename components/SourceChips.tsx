@@ -12,6 +12,8 @@ export const SOURCES = [
   'TikTok',
   'Instagram',
   'YouTube',
+  'Reddit',
+  'X',
   'A friend',
   "I'm attending the hackathon",
   'Some guy approached me on the street about it',

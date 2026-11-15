@@ -26,7 +26,9 @@ export const log = mutation({
       // Dazu Cloud-Rechner der Agenten: Linux-Browser mit Zeitzone UTC (so laufen die Testumgebungen von Capy und Revyl).
       const cloud = m.tz === "UTC" && m.dev === "other";
       // Wer schon ein Ei gelegt hat, bleibt echt: Ein versehentlich geöffneter Test-Link darf kein echtes Ei aus der Royale nehmen.
-      if (!player.isTest && !(player.eggs ?? 0) && (m.wd === "1" || m.s === "qa" || cloud)) patch.isTest = true;
+      // Simulatoren und Emulatoren sind nie echte Nutzer (Cloud-iPhones von Revyl, unsere eigenen Testläufe)
+      const sim = m.sim === "1";
+      if (!player.isTest && !(player.eggs ?? 0) && (m.wd === "1" || m.s === "qa" || cloud || sim)) patch.isTest = true;
       await ctx.db.patch("players", player._id, patch);
     }
     return null;

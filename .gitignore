@@ -47,3 +47,6 @@ example
 
 # Convex
 .convex/
+
+# lokale Testdaten (nicht ins Repo)
+monster-kit/_*

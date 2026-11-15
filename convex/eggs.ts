@@ -1,7 +1,7 @@
 // Ei-Ablauf: Foto -> Ei (sofort). Das Monster entsteht verdeckt im Hintergrund und schlüpft erst in der Royale um 17 Uhr.
 // Dadurch darf die KI sich Zeit lassen (großes Modell, 20 bis 30 s) und baut das Monster frei aus Bauteilen (Blueprint).
 import { v, ConvexError } from "convex/values";
-import { internalAction, internalMutation, internalQuery, mutation } from "./_generated/server";
+import { internalAction, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { GENOME_SCHEMA, genomeInstructions, genomeFromAI } from "../monster-kit/genome-spec.js";
@@ -214,6 +214,62 @@ export const regenerate = internalMutation({
     if (!egg || egg.status !== "egg") return null;
     await ctx.db.patch("monsters", eggId, { ready: false, attempts: 0 });
     await ctx.scheduler.runAfter(0, internal.eggs.generate, { eggId });
+    return null;
+  },
+});
+
+// ---------- Kontrolle vor dem Schlüpfen (Seite monster-kit/admin.html, Schlüssel = ADMIN_KEY) ----------
+function checkKey(key: string) {
+  if (!process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) throw new ConvexError({ code: "forbidden", message: "Wrong admin key." });
+}
+
+// Alle Einträge der letzten 24 Stunden mit Foto und dem versteckten Monster
+export const adminGallery = query({
+  args: { key: v.string(), since: v.number() },
+  handler: async (ctx, { key, since }) => {
+    checkKey(key);
+    const rows = await ctx.db
+      .query("monsters")
+      .withIndex("by_creation_time", (q) => q.gte("_creationTime", since))
+      .order("desc")
+      .take(300);
+    const out = [];
+    for (const m of rows) {
+      const owner = await ctx.db.get("players", m.playerId);
+      out.push({
+        id: m._id,
+        createdAt: m._creationTime,
+        status: m.status ?? "hatched",
+        ready: m.ready ?? true,
+        attempts: m.attempts ?? 0,
+        golden: m.golden ?? false,
+        name: m.name,
+        genome: m.genome,
+        photoUrl: m.photoId ? await ctx.storage.getUrl(m.photoId) : ((m.genome?.photoUrl as string | undefined) ?? null),
+        owner: owner?.name ?? null,
+        source: owner?.source ?? null,
+        isTest: owner?.isTest ?? false,
+      });
+    }
+    return out;
+  },
+});
+
+// Monster neu bauen lassen oder ein Ei von Hand ablehnen
+export const adminAction = mutation({
+  args: { key: v.string(), eggId: v.id("monsters"), action: v.union(v.literal("regenerate"), v.literal("reject")) },
+  returns: v.null(),
+  handler: async (ctx, { key, eggId, action }) => {
+    checkKey(key);
+    const egg = await ctx.db.get("monsters", eggId);
+    if (!egg || egg.status !== "egg") return null;
+    if (action === "regenerate") {
+      await ctx.db.patch("monsters", eggId, { ready: false, attempts: 0 });
+      await ctx.scheduler.runAfter(0, internal.eggs.generate, { eggId });
+    } else {
+      if (egg.photoId) await ctx.storage.delete(egg.photoId);
+      await ctx.db.patch("monsters", eggId, { status: "rejected", photoId: undefined });
+    }
     return null;
   },
 });

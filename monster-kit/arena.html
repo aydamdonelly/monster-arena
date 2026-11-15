@@ -53,7 +53,7 @@
         const owner = P.get('owner');
         return (j.value || []).filter((m) => !owner || (m.ownerName || '').toLowerCase() === owner.toLowerCase()).slice(0, N).reverse().map((m) => ({ id: m._id, name: m.name, element: m.element, stats: m.stats, traits: m.genome?.traits, moves: m.genome?.moves, genome: m.genome, photoUrl: m.photoUrl, ownerName: m.ownerName }));
       }
-      const rows = await (await fetch('./test-genomes.json')).json();
+      const rows = await (await fetch('./' + (P.get('file') || 'test-genomes.json'))).json();
       const out = [];
       for (let i = 0; i < N; i++) { const r = rows[i % rows.length]; const g = genomeFromAI(r.genome, 3000 + i); const twin = i >= rows.length; out.push({ id: 't' + i, name: twin ? g.name + ' II' : g.name, element: g.element, stats: statsFromTraits(g.traits), traits: g.traits, moves: g.moves, genome: g, photoUrl: r.image }); }
       return out;
@@ -63,7 +63,7 @@
     if (P.get('photos') === '0') for (const e of entrants) e.photoUrl = null; // z. B. für Testmonster mit fremden Fotos
     const arena = createArena(stage, {
       entrants, seed: SEED, dayElement: DAY, camera: P.get('cam') || 'auto', followId: P.get('follow') || null,
-      speed: Number(P.get('speed') || 1), intro: Number(P.get('intro') ?? 3), title: TITLE, controls: P.get('controls') !== '0', manual: P.get('manual') === '1', director: P.has('director') ? P.get('director') === '1' : undefined, uiScale: Number(P.get('ui') || 1),
+      speed: Number(P.get('speed') || 1), intro: Number(P.get('intro') ?? 3), title: TITLE, controls: P.get('controls') !== '0', manual: P.get('manual') === '1', director: P.has('director') ? P.get('director') === '1' : undefined, hatchCam: P.get('hatchcam') === '1', uiScale: Number(P.get('ui') || 1),
       onEnd: (r) => { console.log('[arena] end', JSON.stringify(r)); window.__arenaDone = true; if (P.get('cta')) arena.later(() => { const c = document.getElementById('cta'); c.innerHTML = `snap anything. hatch a monster.<br><b>${P.get('cta')}</b>`; c.classList.add('on'); }, 1800); },
       onEvent: (e) => { if (e.type === 'cast') document.getElementById('hook').classList.remove('on'); },
     });

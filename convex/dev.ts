@@ -33,3 +33,45 @@ export const seedTest = internalMutation({
     return n;
   },
 });
+
+// Vor dem Start: alle bisherigen Spieler als Test markieren (zählen nicht in Zahlen und Royale).
+// npx convex run dev:markAllTest '{"before": <Zeitstempel in ms>}'
+export const markAllTest = internalMutation({
+  args: { before: v.number() },
+  returns: v.number(),
+  handler: async (ctx, { before }) => {
+    let n = 0;
+    for await (const p of ctx.db.query("players")) {
+      if (p._creationTime < before && !p.isTest) {
+        await ctx.db.patch("players", p._id, { isTest: true });
+        n++;
+      }
+    }
+    return n;
+  },
+});
+
+// Übersicht für uns: Spieler (ohne Test) nach Quelle, Schlüpfe, Wiederkehrer
+export const overview = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const players = await ctx.db.query("players").take(2000);
+    const real = players.filter((p) => !p.isTest);
+    const bySource: Record<string, number> = {};
+    for (const p of real) bySource[p.source ?? "unknown"] = (bySource[p.source ?? "unknown"] ?? 0) + 1;
+    const realIds = new Set(real.map((p) => p._id as string));
+    const monsters = await ctx.db.query("monsters").order("desc").take(4000);
+    const perPlayer: Record<string, number> = {};
+    for (const m of monsters) if (realIds.has(m.playerId)) perPlayer[m.playerId] = (perPlayer[m.playerId] ?? 0) + 1;
+    const hatchers = Object.keys(perPlayer).length;
+    return {
+      players: real.length,
+      testPlayers: players.length - real.length,
+      bySource,
+      playersWithMonster: hatchers,
+      monsters: Object.values(perPlayer).reduce((a, b) => a + b, 0),
+      playersWith2Plus: Object.values(perPlayer).filter((n) => n >= 2).length,
+      latest: real.slice(-8).map((p) => ({ name: p.name ?? null, source: p.source ?? null, at: new Date(p._creationTime).toISOString().slice(11, 19) })),
+    };
+  },
+});

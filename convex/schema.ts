@@ -14,7 +14,18 @@ export default defineSchema({
     name: v.optional(v.string()),
     source: v.optional(v.string()),
     isTest: v.boolean(),
+    goldenEggs: v.optional(v.number()), // gekaufte, noch nicht benutzte Goldene Eier
   }).index("by_deviceId", ["deviceId"]),
+
+  // Käufe über Whop (ein Eintrag pro Zahlung, damit ein doppelt zugestellter Webhook nichts doppelt gutschreibt)
+  purchases: defineTable({
+    playerId: v.id("players"),
+    provider: v.string(),
+    paymentId: v.string(),
+    kind: v.string(),
+    amountUsd: v.number(),
+    environment: v.string(),
+  }).index("by_paymentId", ["paymentId"]),
 
   monsters: defineTable({
     playerId: v.id("players"),

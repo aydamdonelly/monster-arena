@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, mutation, MutationCtx } from "./_generated/server";
+import { internalMutation, mutation, MutationCtx, query } from "./_generated/server";
 
 export async function playerByDevice(ctx: MutationCtx, deviceId: string) {
   return await ctx.db
@@ -35,8 +35,9 @@ export const setProfile = mutation({
   handler: async (ctx, args) => {
     const player = await playerByDevice(ctx, args.deviceId);
     if (!player) return null;
-    const patch: { name?: string; source?: string } = {};
+    const patch: { name?: string; source?: string; isTest?: boolean } = {};
     if (args.name !== undefined) patch.name = args.name.trim().slice(0, 24);
+    if (/^qa\b/i.test(args.name ?? "")) patch.isTest = true; // Testläufe der Agenten heißen "QA …" und zählen nicht mit
     if (args.source !== undefined) patch.source = args.source.slice(0, 24);
     await ctx.db.patch("players", player._id, patch);
     return null;
@@ -51,5 +52,45 @@ export const setTest = internalMutation({
     const player = await playerByDevice(ctx, args.deviceId);
     if (player) await ctx.db.patch("players", player._id, { isTest: args.isTest });
     return null;
+  },
+});
+
+const DAILY_LIMIT = 3;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Mein Stand für den Catch-Screen: Fänge heute, Tageslimit, Goldene Eier
+export const me = query({
+  args: { deviceId: v.string(), now: v.number() },
+  returns: v.union(
+    v.null(),
+    v.object({
+      name: v.union(v.string(), v.null()),
+      hatchedToday: v.number(),
+      dailyLimit: v.number(),
+      hatchesLeft: v.number(),
+      goldenEggs: v.number(),
+      unlimited: v.boolean(),
+    }),
+  ),
+  handler: async (ctx, { deviceId, now }) => {
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_deviceId", (q) => q.eq("deviceId", deviceId))
+      .unique();
+    if (!player) return null;
+    const mine = await ctx.db
+      .query("monsters")
+      .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
+      .order("desc")
+      .take(30);
+    const hatchedToday = mine.filter((m) => m._creationTime > now - DAY_MS && !m.genome?.golden).length;
+    return {
+      name: player.name ?? null,
+      hatchedToday,
+      dailyLimit: DAILY_LIMIT,
+      hatchesLeft: Math.max(0, DAILY_LIMIT - hatchedToday),
+      goldenEggs: player.goldenEggs ?? 0,
+      unlimited: player.isTest,
+    };
   },
 });

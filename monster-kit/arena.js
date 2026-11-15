@@ -64,6 +64,11 @@ export function createArena(container, opts = {}) {
   if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
   container.style.overflow = 'hidden';
   const style = el('style', null, container); style.textContent = CSS;
+  // Zeitquelle: normal die echte Uhr. Mit opts.manual läuft nichts von selbst; arena.step(ms) schaltet genau ein Bild weiter
+  // (Simulation, Effekte, Timer und CSS-Animationen), damit sich Videos bildgenau rendern lassen.
+  let vnow = 0; const timers = []; const stepped = new WeakSet();
+  const later = (fn, ms) => { if (!o.manual) return setTimeout(fn, ms); const t = { at: vnow + ms, fn }; timers.push(t); return t; };
+  const cancel = (t) => { if (!o.manual) return clearTimeout(t); const i = timers.indexOf(t); if (i >= 0) timers.splice(i, 1); };
 
   // ---------- three.js ----------
   const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -165,13 +170,13 @@ export function createArena(container, opts = {}) {
     addFx((dt) => { t += dt; mat.opacity = 0.75 * Math.max(0, 1 - t / 0.14); if (t >= 0.14) { actor.holder.remove(m); mat.dispose(); return false; } return true; });
   }
   function toScreen(x, y, z) { tmp.set(x, y, z).project(camera); return { x: (tmp.x * 0.5 + 0.5) * container.clientWidth, y: (-tmp.y * 0.5 + 0.5) * container.clientHeight, ok: tmp.z < 1 }; }
-  function floatText(text, x, y, z, cls) { const p = toScreen(x, y, z); if (!p.ok) return; const d = el('div', 'sa-dmg' + (cls ? ' ' + cls : ''), floatEl, text); d.style.left = p.x + 'px'; d.style.top = p.y + 'px'; setTimeout(() => d.remove(), 820); }
+  function floatText(text, x, y, z, cls) { const p = toScreen(x, y, z); if (!p.ok) return; const d = el('div', 'sa-dmg' + (cls ? ' ' + cls : ''), floatEl, text); d.style.left = p.x + 'px'; d.style.top = p.y + 'px'; later(() => d.remove(), 820); }
   function moveLabel(actor, name, element, special) {
     if (actor.label) actor.label.remove();
     const d = el('div', 'sa-move' + (special ? ' special' : ''), floatEl, name); d.style.background = colorOf(element); actor.label = d; actor.labelLife = special ? 1.3 : 0.95;
   }
-  function banner(html, seconds = 1.8) { bannerEl.innerHTML = html; bannerEl.classList.remove('win'); bannerEl.classList.add('on'); clearTimeout(bannerTimer); if (seconds) bannerTimer = setTimeout(() => bannerEl.classList.remove('on'), seconds * 1000); }
-  function feed(html) { const d = el('div', null, feedEl); d.innerHTML = html; while (feedEl.children.length > 5) feedEl.firstChild.remove(); setTimeout(() => d.remove(), 9000); }
+  function banner(html, seconds = 1.8) { bannerEl.innerHTML = html; bannerEl.classList.remove('win'); bannerEl.classList.add('on'); cancel(bannerTimer); if (seconds) bannerTimer = later(() => bannerEl.classList.remove('on'), seconds * 1000); }
+  function feed(html) { const d = el('div', null, feedEl); d.innerHTML = html; while (feedEl.children.length > 5) feedEl.firstChild.remove(); later(() => d.remove(), 9000); }
   const nameHtml = (id) => { const a = actors.get(id); return a ? `<b style="color:${colorOf(a.e.element)}">${escapeHtml(a.e.name)}</b>` : 'the zone'; };
   function escapeHtml(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
@@ -212,7 +217,7 @@ export function createArena(container, opts = {}) {
       winnerId = e.id; const a = actors.get(e.id);
       const born = a?.e.genome?.object ? `born from ${escapeHtml(String(a.e.genome.object).toLowerCase().replace(/^an? /, 'a ')).slice(0, 60)}` : '';
       banner(`${a ? escapeHtml(a.e.name) : 'Nobody'} WINS!${a?.e.photoUrl ? `<img src="${a.e.photoUrl}" alt="">` : ''}<small>${[a?.e.ownerName ? `trainer ${escapeHtml(a.e.ownerName)}` : '', born].filter(Boolean).join(' · ')}</small>`, 0); bannerEl.classList.add('win');
-      const m = st(e.id); if (m) for (let i = 0; i < 5; i++) setTimeout(() => !disposed && burst(m.x + (Math.random() - 0.5) * 2, 2.2, m.y + (Math.random() - 0.5) * 2, ['#ffd23f', '#ff6b4a', '#3d9df3', '#4cb867', '#e98bc4'][i], 16, 5), i * 260);
+      const m = st(e.id); if (m) for (let i = 0; i < 5; i++) later(() => !disposed && burst(m.x + (Math.random() - 0.5) * 2, 2.2, m.y + (Math.random() - 0.5) * 2, ['#ffd23f', '#ff6b4a', '#3d9df3', '#4cb867', '#e98bc4'][i], 16, 5), i * 260);
     }
     o.onEvent?.(e);
   }
@@ -237,7 +242,7 @@ export function createArena(container, opts = {}) {
       if (target) { cx = target.x; cz = target.y; yaw += Math.atan2(-target.fx, -target.fy); }
       pitch = 0.5; dist = 7.5;
     } else { // auto: alle Lebenden im Bild, zieht sich mit der Zone zusammen
-      if (winnerId) { const w = sim.state.monsters.find((m) => m.id === winnerId); if (w) { cx = w.x; cz = w.y; } pitch = 0.3; dist = 8.5; yaw += now * 0.0005; }
+      if (winnerId) { const w = sim.state.monsters.find((m) => m.id === winnerId); if (w) { cx = w.x; cz = w.y; yaw = rig.userYaw + Math.atan2(w.fx, w.fy) + Math.sin(now * 0.0011) * 0.5; } pitch = 0.3; dist = 8.5; }
       else if (alive.length) {
         for (const m of alive) { cx += m.x; cz += m.y; } cx /= alive.length; cz /= alive.length;
         let far = 0; for (const m of alive) far = Math.max(far, Math.sqrt((m.x - cx) * (m.x - cx) + (m.y - cz) * (m.y - cz)));
@@ -280,13 +285,13 @@ export function createArena(container, opts = {}) {
   }
   function start() { if (started) return; started = true; introLeft = 0; banner('FIGHT!', 0.9); }
 
-  let last = performance.now(); let disposed = false; let simTime = 0;
+  let last = o.manual ? 0 : performance.now(); let disposed = false; let simTime = 0;
   function frame(now) {
     if (disposed) return;
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     const w = container.clientWidth || 1, h = container.clientHeight || 1;
     if (renderer.domElement.width !== Math.floor(w * renderer.getPixelRatio()) || renderer.domElement.height !== Math.floor(h * renderer.getPixelRatio())) { renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
-    const base = Math.max(10, Math.min(20, Math.min(w, h * 1.2) / 52)); if (ui.dataset.base !== String(base)) { ui.dataset.base = String(base); ui.style.fontSize = base + 'px'; }
+    const base = Math.max(10, Math.min(20, Math.min(w, h * 1.2) / 52)) * (o.uiScale || 1); if (ui.dataset.base !== String(base)) { ui.dataset.base = String(base); ui.style.fontSize = base + 'px'; }
     if (!started && o.intro > 0 && o.autoStart !== false) { introLeft -= dt; if (introLeft <= 0) start(); }
     if (started && !sim.state.done) {
       acc += dt * speed; let guard = 0;
@@ -316,7 +321,7 @@ export function createArena(container, opts = {}) {
       updateMonster(a.root, simTime * (m.alive ? 1.6 : 0));
       // HP-Balken, Namen, Angriffs-Label
       const p = toScreen(a.holder.position.x, a.height + 0.28 + a.holder.position.y, a.holder.position.z);
-      const showHp = m.alive && p.ok && started;
+      const showHp = m.alive && p.ok && started && !winnerId;
       a.hp.style.display = showHp ? 'block' : 'none';
       if (showHp) { a.hp.style.left = p.x + 'px'; a.hp.style.top = p.y + 'px'; }
       if (a.shownHp !== m.hp) { a.shownHp = m.hp; const f = Math.max(0, m.hp / m.maxHp); const col = f < 0.3 ? '#ff5a4a' : f < 0.6 ? '#f5c542' : '#4cc38a'; a.hpFill.style.width = a.fillEl.style.width = `${f * 100}%`; a.hpFill.style.background = a.fillEl.style.background = col; }
@@ -341,10 +346,10 @@ export function createArena(container, opts = {}) {
     leftEl.style.display = started && !winnerId && aliveCount > 2 ? 'block' : 'none';
     updateCamera(dt, now);
     renderer.render(scene, camera);
-    raf = requestAnimationFrame(frame);
+    if (!o.manual) raf = requestAnimationFrame(frame);
   }
   reset();
-  let raf = requestAnimationFrame(frame);
+  let raf = o.manual ? 0 : requestAnimationFrame(frame);
 
   return {
     get sim() { return sim; },
@@ -353,8 +358,17 @@ export function createArena(container, opts = {}) {
     setFollow(id) { followId = id; },
     setSpeed(x) { speed = x; },
     restart() { reset(); },
+    later,
+    // Nur mit opts.manual: ein Bild weiter (ms = Bilddauer). Reihenfolge: laufende CSS-Animationen vorziehen, Timer, Bild, neue Animationen anhalten.
+    step(ms = 1000 / 30) {
+      for (const a of document.getAnimations()) if (stepped.has(a)) a.currentTime = (Number(a.currentTime) || 0) + ms;
+      vnow += ms;
+      for (let i = timers.length - 1; i >= 0; i--) if (timers[i].at <= vnow) timers.splice(i, 1)[0].fn();
+      frame(vnow);
+      for (const a of document.getAnimations()) if (!stepped.has(a)) { stepped.add(a); a.pause(); a.currentTime = 0; }
+    },
     dispose() {
-      disposed = true; cancelAnimationFrame(raf); clearTimeout(bannerTimer);
+      disposed = true; cancelAnimationFrame(raf); cancel(bannerTimer);
       dom.removeEventListener('pointerdown', onDown); dom.removeEventListener('pointermove', onMove); dom.removeEventListener('pointerup', onUp); dom.removeEventListener('pointercancel', onUp); dom.removeEventListener('wheel', onWheel);
       renderer.dispose(); dom.remove(); ui.remove(); style.remove();
     },

@@ -39,7 +39,7 @@ export const GENOME_SCHEMA = {
 };
 
 /** @param {string} [dropPrompt] */
-export function genomeInstructions(dropPrompt = 'anything') {
+export function genomeInstructions(dropPrompt = 'anything', nameWord = '') {
   return `You turn a real-world photo into a cute low-poly kawaii monster for a daily photo game.
 Look at the MAIN object in the photo. The monster must be instantly recognizable as that object.
 - object: short description of the main object.
@@ -63,7 +63,7 @@ Look at the MAIN object in the photo. The monster must be instantly recognizable
   Give each part a hex color taken from the photo.
 - eyes: dot (calm, cute), happy (cheerful), wink (cheeky), big (curious, tiny things). mouth: smile, open (excited), fang (tough, spicy, sharp), o (surprised). Match the object's personality and vary them.
 - limbStyle: stick for slim, light, fast or electronic objects; stub for round, heavy or soft objects. pose: cheer (energetic), wave (friendly), rest (lazy or heavy).
-- name: a punny 1-2 word monster name mixing the object and a monster word (e.g. "Mugzilla", "Bananaconda"). Vary the monster word. lore: one short funny sentence about its origin.
+- name: a punny 1-2 word monster name mixing the object and a monster word (e.g. "Mugzilla", "Bananaconda"). Vary the monster word.${nameWord ? ` For this monster build the name around "${nameWord}" (or a close variation that sounds good with the object), so that monsters in one arena do not all share the same ending.` : ''} lore: one short funny sentence about its origin.
   If the object is merchandise of a known character or brand (a Pokemon, a Disney or Sanrio character, a mascot, a logo), name the monster after what the THING is (a plush, a figurine, a backpack, its animal or shape, its color), never after the character or brand: no character names, no brand names and no puns on them in name, lore, object or attack names.
 - element: fire (red, hot, spicy), water (blue, liquid, glass, drinks), plant (green, natural, fruit, veggies), metal (electronics, metal, hard tools), fluff (soft, fabric, plush), spirit (old, strange, sentimental).
 - traits: numbers from 0 to 1 for hard, sharp, fast, big, soft, judged from the real object.

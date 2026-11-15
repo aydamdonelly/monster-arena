@@ -163,7 +163,10 @@ export const info = internalQuery({
   },
 });
 
-async function askModel(model: string, imageUrl: string): Promise<any> {
+// Monster-Wörter für die Namen: Jedes Ei bekommt eines vorgeschlagen, damit nicht die halbe Arena auf "gremlin" endet
+const NAME_WORDS = ["zilla", "saurus", "goblin", "imp", "ogre", "troll", "geist", "fang", "beast", "wyrm", "moth", "pup", "bot", "rex", "tron", "ling", "fiend", "yeti", "hydra", "sprite", "golem", "drake", "kraken", "shade", "bug", "conda", "dactyl", "mander", "nado", "claw", "puff", "snout"];
+
+async function askModel(model: string, imageUrl: string, nameWord: string): Promise<any> {
   const res = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
@@ -173,7 +176,7 @@ async function askModel(model: string, imageUrl: string): Promise<any> {
         {
           role: "user",
           content: [
-            { type: "input_text", text: genomeInstructions("anything") },
+            { type: "input_text", text: genomeInstructions("anything", nameWord) },
             { type: "input_image", image_url: imageUrl },
           ],
         },
@@ -202,7 +205,8 @@ export const generate = internalAction({
       // In den letzten Minuten vor der Royale baut das schnelle Modell (wenige Sekunden statt rund 30),
       // damit auch ein spät gelegtes Ei noch mitkämpft. Sonst erst das große Modell, nach zwei Fehlschlägen das schnelle.
       const rush = nextRoyale(t0) - t0 < RUSH_MS;
-      const ai = await askModel(MODELS[rush || egg.attempts >= 2 ? 1 : 0], imageUrl);
+      const nameWord = NAME_WORDS[(hashString(eggId) + egg.attempts) % NAME_WORDS.length];
+      const ai = await askModel(MODELS[rush || egg.attempts >= 2 ? 1 : 0], imageUrl, nameWord);
       if (!ai.safe) {
         await ctx.runMutation(internal.eggs.reject, { eggId });
         return null;

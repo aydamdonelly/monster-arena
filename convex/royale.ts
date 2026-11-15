@@ -117,6 +117,18 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
 
   const seed = hashString(`${a.title}:${now}`);
   const rand = mulberry(seed);
+  // Gleiche Namen (die KI benennt jedes Ei für sich) beim Schlüpfen unterscheidbar machen: das zweite heißt "… II"
+  const taken = new Map<string, number>();
+  const ROMAN = ["", " II", " III", " IV", " V", " VI"];
+  for (const m of [...hatching].sort((x, y) => x._creationTime - y._creationTime)) {
+    const key = m.name.toLowerCase();
+    const n = taken.get(key) ?? 0;
+    taken.set(key, n + 1);
+    if (n > 0) {
+      m.name = `${m.name}${ROMAN[Math.min(n, ROMAN.length - 1)]}`;
+      await ctx.db.patch("monsters", m._id, { name: m.name, genome: { ...m.genome, name: m.name } });
+    }
+  }
   const fighters: Fighter[] = hatching.map(fighterOf);
   let wildCount = 0;
   if (fighters.length < a.minEntrants) {

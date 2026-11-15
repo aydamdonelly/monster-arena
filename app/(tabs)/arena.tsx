@@ -14,6 +14,7 @@ import { api } from '@/convex/_generated/api';
 import { clock, royaleHour, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
 import { getItem, setItem } from '@/lib/kv';
+import { testArgs, useTestMode } from '@/lib/test-mode';
 import { Fonts, Palette, Radii, Type } from '@/lib/theme';
 
 type Summary = NonNullable<FunctionReturnType<typeof api.royale.summary>>;
@@ -32,8 +33,9 @@ function replayRound(mine: Mine) {
 export default function ArenaScreen() {
   const deviceId = useDeviceId();
   const [since] = useState(startOfToday);
-  const summary = useQuery(api.royale.summary, {});
-  const mine = useQuery(api.royale.mine, { deviceId });
+  const testMode = useTestMode();
+  const summary = useQuery(api.royale.summary, testArgs(testMode));
+  const mine = useQuery(api.royale.mine, { deviceId, ...testArgs(testMode) });
   const today = summary && summary.startsAt >= since ? summary : null;
   const watchedKey = today ? `snappymon.watched.${today._id}` : null;
   const [watched, setWatched] = useState<string | null>(null);
@@ -51,6 +53,7 @@ export default function ArenaScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      {testMode ? <InkSticker label="Test" light fontSize={12} rotate={-3} style={styles.testTag} /> : null}
       {summary === undefined ? (
         <ActivityIndicator color={Palette.ink} style={styles.loading} />
       ) : today && watched === watchedKey ? (
@@ -87,14 +90,14 @@ function BeforeRoyale({ since }: { since: number }) {
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.titleRow}>
         <Text style={styles.title}>Royale</Text>
-        <InkSticker label={`Today ${royaleHour()} sharp`} rotate={4} />
+        <InkSticker label={`${royaleHour()} sharp`} rotate={4} />
       </View>
 
       <View style={styles.countLane}>
         <HardShadow offset={5} radius={Radii.card}>
           <View style={styles.countBlock}>
             <Text style={Type.label}>{left > 0 ? 'Hatching in' : 'Hatching'}</Text>
-            <Text style={[styles.countdown, left <= 0 && styles.countdownSoon]} numberOfLines={1}>
+            <Text style={[styles.countdown, left <= 0 && styles.countdownSoon]} numberOfLines={1} adjustsFontSizeToFit>
               {left > 0 ? clock(left) : 'Any minute'}
             </Text>
           </View>
@@ -159,10 +162,11 @@ function WatchLive({ summary, mine, onWatch, onSkip }: { summary: Summary; mine:
           <Egg seed="right" width={72} rotate={9} crack="middle" />
         </View>
       </Appear>
-      <View style={styles.placeBlock}>
-        <Text style={styles.watchLine}>{where ? `Your egg hatched in ${where}` : 'Watch them hatch and fight'}</Text>
-        <Text style={Type.muted}>{where ? 'See what came out, and how far it got.' : 'Every egg from today, one arena.'}</Text>
-      </View>
+      {where ? (
+        <View style={styles.placeBlock}>
+          <Text style={styles.watchLine}>Your egg hatched in {where}</Text>
+        </View>
+      ) : null}
       <View style={styles.watchActions}>
         <PrimaryButton label="Watch live" icon={<View style={styles.liveDot} />} onPress={onWatch} />
         <Pressable accessibilityRole="button" onPress={onSkip} hitSlop={12} style={styles.skip}>
@@ -206,7 +210,7 @@ function RoyaleResult({ summary, mine }: { summary: Summary; mine: Mine }) {
       ) : (
         <Appear style={styles.placeBlock}>
           <Text style={styles.watchLine}>{"You weren't in this one"}</Text>
-          <Text style={Type.muted}>Snap something before 5 PM to enter the next royale.</Text>
+          <Text style={Type.muted}>{`Snap something before ${royaleHour()} to enter the next royale.`}</Text>
         </Appear>
       )}
       <View style={styles.resultActions}>
@@ -242,8 +246,14 @@ function RoyaleResult({ summary, mine }: { summary: Summary; mine: Mine }) {
           </View>
         </View>
       ) : null}
+      <NextRoyale />
     </ScrollView>
   );
+}
+
+function NextRoyale() {
+  const left = royaleTimeToday() - useNow();
+  return <Text style={styles.next}>{left > 0 ? `Next royale in ${clock(left)}` : 'Next royale starting'}</Text>;
 }
 
 const styles = StyleSheet.create({
@@ -263,7 +273,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 20,
   },
-  countdown: { fontFamily: Fonts.black, fontSize: 68, lineHeight: 64, letterSpacing: -2.4, color: Palette.ink, fontVariant: ['tabular-nums'] },
+  countdown: { fontFamily: Fonts.black, fontSize: 60, lineHeight: 60, letterSpacing: -2, color: Palette.ink, fontVariant: ['tabular-nums'] },
   countdownSoon: { fontSize: 46, lineHeight: 50 },
   waiting: { gap: 2, paddingHorizontal: 24, paddingTop: 20 },
   waitingCount: { fontFamily: Fonts.extrabold, fontSize: 20, lineHeight: 24, color: Palette.ink },
@@ -300,6 +310,8 @@ const styles = StyleSheet.create({
   skipText: { fontFamily: Fonts.semibold, fontSize: 15, lineHeight: 20, color: Palette.muted, textDecorationLine: 'underline' },
   liveDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Palette.ink },
   hairline: { height: 2, backgroundColor: Palette.hairline },
+  testTag: { alignSelf: 'flex-start', marginLeft: 24, marginTop: 6 },
+  next: { fontFamily: Fonts.medium, fontSize: 15, lineHeight: 20, color: Palette.muted, fontVariant: ['tabular-nums'], paddingHorizontal: 24, paddingTop: 22 },
   resultTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingHorizontal: 24, paddingTop: 8 },
   resultTitle: { gap: 10, paddingHorizontal: 24, paddingTop: 14 },
   winner: { fontFamily: Fonts.black, fontSize: 44, lineHeight: 44, letterSpacing: -1.76, color: Palette.ink },

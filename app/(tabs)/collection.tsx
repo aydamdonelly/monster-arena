@@ -9,7 +9,7 @@ import MonsterSnapshots from '@/components/MonsterSnapshots';
 import Egg from '@/components/Egg';
 import { Appear, HardShadow, InkSticker, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
-import { clock, royaleTimeToday, useNow } from '@/lib/arena';
+import { clock, royaleHour, royaleTimeToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
 import { useSnapshots } from '@/lib/snapshots';
 import { elementColor, Fonts, Palette, Radii, Type } from '@/lib/theme';
@@ -41,7 +41,7 @@ export default function CollectionScreen() {
                 </Text>
               ) : null}
             </View>
-            {monsters?.length === 0 ? <Text style={Type.muted}>Nothing here yet. Your first snap lays an egg that hatches at 5 PM.</Text> : null}
+            {monsters?.length === 0 ? <Text style={Type.muted}>{`Nothing here yet. Your first snap lays an egg that hatches at ${royaleHour()}.`}</Text> : null}
           </View>
         }
         ListEmptyComponent={<ActivityIndicator color={Palette.ink} style={styles.loading} />}
@@ -107,7 +107,7 @@ export default function CollectionScreen() {
                     </View>
                   ) : null}
                   <InkSticker
-                    label={item.status === 'rejected' ? "Can't hatch" : 'Hatches 5 PM'}
+                    label={item.status === 'rejected' ? "Can't hatch" : royaleHour()}
                     light={item.status === 'rejected'}
                     fontSize={12}
                     rotate={-5}

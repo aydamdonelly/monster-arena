@@ -31,7 +31,7 @@ export default function Landing({ onCatch }: { onCatch: () => void }) {
     <View style={[styles.root, { paddingTop: insets.top + 6, paddingBottom: insets.bottom + 18 }]}>
       <View style={styles.header}>
         <Text style={styles.wordmark}>snappymon</Text>
-        <InkSticker label={`Royale today ${royaleHour()}`} rotate={4} />
+        <InkSticker label={`Royale ${royaleHour()}`} rotate={4} />
       </View>
       <Appear style={styles.pitch}>
         <Text style={styles.pitchLine}>Snap anything.</Text>
@@ -61,7 +61,7 @@ export default function Landing({ onCatch }: { onCatch: () => void }) {
           <>
             <View style={styles.dot} />
             <Text style={styles.proofText}>
-              {waiting >= 10 ? `${waiting.toLocaleString('en-US')} eggs waiting for 5 PM` : 'Be one of the first eggs today'}
+              {waiting >= 10 ? `${waiting.toLocaleString('en-US')} eggs waiting for ${royaleHour()}` : 'Be one of the first eggs today'}
             </Text>
           </>
         ) : null}
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24 },
   wordmark: { fontFamily: Fonts.black, fontSize: 28, lineHeight: 32, letterSpacing: -1.1, color: Palette.ink },
   pitch: { paddingLeft: 24, paddingRight: 12, paddingTop: 26, zIndex: 1 },
-  pitchLine: { fontFamily: Fonts.black, fontSize: 35, lineHeight: 37, letterSpacing: -1.4, color: Palette.ink },
+  pitchLine: { fontFamily: Fonts.black, fontSize: 32, lineHeight: 34, letterSpacing: -1.3, color: Palette.ink },
   stage: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   peeker: { position: 'absolute' },
   cta: { alignItems: 'center', gap: 20 },

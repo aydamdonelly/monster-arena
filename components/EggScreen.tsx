@@ -106,7 +106,7 @@ export default function EggScreen({
         <Text style={styles.headline}>It hatches at {royaleHour()} sharp.</Text>
         <Countdown />
         <Text style={Type.muted}>
-          {royaleLocalNote() ? `That is ${royaleLocalNote()}. ` : ''}Live in the royale. Come back to watch it hatch and fight.
+          {royaleLocalNote() ? `That is ${royaleLocalNote()}. ` : ''}Come back to watch it fight.
         </Text>
       </Appear>
       <Appear delay={layIn ? 1000 : 80} style={styles.trainer}>
@@ -133,7 +133,7 @@ function TextMe({ deviceId }: { deviceId: string }) {
       />
     </Svg>
   );
-  if (asked) return <OutlineButton label="We'll text you at 5 PM" icon={icon} onPress={() => {}} disabled />;
+  if (asked) return <OutlineButton label={`We'll text you at ${royaleHour()}`} icon={icon} onPress={() => {}} disabled />;
   return (
     <PrimaryButton
       label="Text me when it hatches"

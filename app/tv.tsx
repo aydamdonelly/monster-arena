@@ -11,6 +11,7 @@ import Egg from '@/components/Egg';
 import { HardShadow, InkSticker } from '@/components/ui';
 import MonsterView from '@/components/MonsterView';
 import QrCode from '@/components/QrCode';
+import { testArgs, useTestMode } from '@/lib/test-mode';
 import { api } from '@/convex/_generated/api';
 import { bornFrom, formatCountdown, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
 import { Fonts, Palette, webUrl } from '@/lib/theme';
@@ -24,10 +25,10 @@ function useUnit() {
 }
 
 export default function TvScreen() {
-  const params = useLocalSearchParams<{ key?: string; test?: string }>();
-  const includeTest = params.test === '1';
+  const params = useLocalSearchParams<{ key?: string }>();
+  const includeTest = useTestMode();
   const [since] = useState(startOfToday);
-  const summary = useQuery(api.royale.summary, {});
+  const summary = useQuery(api.royale.summary, testArgs(includeTest));
 
   if (summary === undefined) {
     return (
@@ -167,7 +168,7 @@ function Show({ summary, adminKey, includeTest }: { summary: Summary; adminKey?:
   const [ended, setEnded] = useState(false);
   const heats = summary.heatCount;
   const isFinal = step === heats;
-  const round = useQuery(api.royale.round, step > heats ? 'skip' : { index: isFinal ? -1 : step });
+  const round = useQuery(api.royale.round, step > heats ? 'skip' : { index: isFinal ? -1 : step, ...testArgs(includeTest) });
 
   useEffect(() => {
     if (!ended) return;

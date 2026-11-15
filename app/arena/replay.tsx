@@ -12,11 +12,12 @@ import { Palette, Type } from '@/lib/theme';
 
 export default function ReplayScreen() {
   const deviceId = useDeviceId();
-  const params = useLocalSearchParams<{ round?: string; live?: string }>();
+  const params = useLocalSearchParams<{ round?: string; live?: string; royale?: string }>();
+  const royale = params.royale ? { royaleId: params.royale } : {};
   const index = Number(params.round ?? -1);
   const testMode = useTestMode();
-  const round = useQuery(api.royale.round, { index, ...testArgs(testMode) });
-  const mine = useQuery(api.royale.mine, { deviceId, ...testArgs(testMode) });
+  const round = useQuery(api.royale.round, { index, ...royale, ...testArgs(testMode) });
+  const mine = useQuery(api.royale.mine, { deviceId, ...royale, ...testArgs(testMode) });
   const [result, setResult] = useState<ArenaResult | null>(null);
   const [take, setTake] = useState(0);
 
@@ -62,7 +63,7 @@ export default function ReplayScreen() {
                     setTake((t) => t + 1);
                   },
                 }
-              : { label: 'The final', primary: true, onPress: () => router.replace({ pathname: '/arena/replay', params: { round: '-1' } }) },
+              : { label: 'The final', primary: true, onPress: () => router.replace({ pathname: '/arena/replay', params: { round: '-1', ...(params.royale ? { royale: params.royale } : {}) } }) },
           ]}
         />
       ) : null}

@@ -33,14 +33,14 @@ export default function TrainerRow() {
 
   return (
     <View style={styles.wrap}>
-      <Text style={Type.label}>Name your trainer</Text>
+      <Text style={Type.label}>{"What's your name?"}</Text>
       <View style={styles.field}>
         <TextInput
           value={name}
           onChangeText={setName}
-          placeholder="Trainer name"
+          placeholder="Your name"
           placeholderTextColor={Palette.muted}
-          accessibilityLabel="Trainer name"
+          accessibilityLabel="Your name"
           maxLength={20}
           autoCapitalize="words"
           autoCorrect={false}
@@ -53,7 +53,7 @@ export default function TrainerRow() {
           onPress={enter}
           disabled={busy || !name.trim()}
           style={({ pressed }) => [styles.enter, pressed && styles.enterPressed]}>
-          <Text style={styles.enterLabel}>Enter</Text>
+          <Text style={styles.enterLabel}>Save</Text>
         </Pressable>
       </View>
     </View>

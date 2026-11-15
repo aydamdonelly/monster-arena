@@ -46,9 +46,9 @@ export const checkout = action({
     if (b.credits > 0) throw new ConvexError({ code: "has_egg", message: "You already have a Golden Egg. Snap it!" });
     if (b.goldenToday >= GOLDEN_LIMIT) throw new ConvexError({ code: "limit", message: "Both your eggs are in. See you in the arena." });
 
+    // Whop nimmt nur https-Adressen. Alles andere (Deep Link der App, localhost) landet auf der Website mit ?golden=1.
     const web = process.env.WEB_URL ?? "https://snappymon.com";
-    const okReturn = returnUrl && (returnUrl.startsWith(web) || returnUrl.startsWith("snappymon://") || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(returnUrl));
-    const redirect = okReturn ? returnUrl! : `${web}/`;
+    const redirect = returnUrl?.startsWith(`${web}/`) ? returnUrl : `${web}/?golden=1`;
     const res = await fetch(`${whopBase()}/checkout_configurations`, {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "Api-Version-Date": API_VERSION_DATE },

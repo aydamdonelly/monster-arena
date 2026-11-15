@@ -217,7 +217,7 @@ function Champion({ summary, adminKey, includeTest, onReplay }: { summary: Summa
         </Text>
         {champ?.ownerName ? (
           <Text style={[styles.medium, { fontSize: 52 * u, lineHeight: 60 * u, color: Palette.muted }]}>
-            trainer <Text style={styles.extrabold}>{champ.ownerName}</Text>
+            by <Text style={styles.extrabold}>{champ.ownerName}</Text>
           </Text>
         ) : null}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 32 * u, paddingTop: 8 * u }}>

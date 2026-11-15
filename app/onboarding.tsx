@@ -44,7 +44,7 @@ export default function OnboardingScreen() {
           <View style={styles.hero}>
             <Image source={require('@/assets/images/renders/bananaconda.png')} style={styles.mascot} contentFit="contain" />
             <Appear style={styles.heroText}>
-              <Text style={styles.title}>Pick a trainer name</Text>
+              <Text style={styles.title}>{"What's your name?"}</Text>
               <Text style={styles.subtitle}>Your monsters need someone to blame.</Text>
             </Appear>
           </View>
@@ -56,7 +56,7 @@ export default function OnboardingScreen() {
                 onChangeText={setName}
                 placeholder="e.g. Captain Toast"
                 placeholderTextColor={Palette.muted}
-                accessibilityLabel="Trainer name"
+                accessibilityLabel="Your name"
                 maxLength={20}
                 autoCapitalize="words"
                 autoCorrect={false}

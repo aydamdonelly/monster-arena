@@ -236,7 +236,7 @@ export function createArena(container, opts = {}) {
     else if (e.type === 'win') {
       winnerId = e.id; const a = actors.get(e.id); calloutEl.classList.remove('on');
       const born = a?.e.genome?.object ? `born from ${escapeHtml(String(a.e.genome.object).toLowerCase().replace(/^an? /, 'a ')).slice(0, 60)}` : '';
-      banner(`${a ? escapeHtml(a.e.name) : 'Nobody'} WINS!${a?.e.photoUrl ? `<img src="${a.e.photoUrl}" alt="">` : ''}<small>${[a?.e.ownerName ? `trainer ${escapeHtml(a.e.ownerName)}` : '', born].filter(Boolean).join(' · ')}</small>`, 0); bannerEl.classList.add('win');
+      banner(`${a ? escapeHtml(a.e.name) : 'Nobody'} WINS!${a?.e.photoUrl ? `<img src="${a.e.photoUrl}" alt="">` : ''}<small>${[a?.e.ownerName ? `by ${escapeHtml(a.e.ownerName)}` : '', born].filter(Boolean).join(' · ')}</small>`, 0); bannerEl.classList.add('win');
       const m = st(e.id); if (m) for (let i = 0; i < 5; i++) later(() => !disposed && FX.confetti(m.x, m.y), i * 300);
     }
     if (e.type === 'cast') { heat(e.x, e.y, e.special ? 3 : 1); if (e.special) focus.hold = Math.min(focus.hold, 0.15); }

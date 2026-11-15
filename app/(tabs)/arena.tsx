@@ -241,7 +241,7 @@ function RoyaleResult({ summary, mine }: { summary: Summary; mine: Mine }) {
               <Text style={styles.champName} numberOfLines={1}>
                 Champion: {champ.name}
               </Text>
-              {champ.ownerName ? <Text style={styles.champTrainer}>trainer {champ.ownerName}</Text> : null}
+              {champ.ownerName ? <Text style={styles.champTrainer}>by {champ.ownerName}</Text> : null}
             </View>
           </View>
         </View>

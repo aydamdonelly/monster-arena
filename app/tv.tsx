@@ -13,7 +13,7 @@ import MonsterView from '@/components/MonsterView';
 import QrCode from '@/components/QrCode';
 import { testArgs, useTestMode } from '@/lib/test-mode';
 import { api } from '@/convex/_generated/api';
-import { bornFrom, formatCountdown, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
+import { bornFrom, formatCountdown, royaleHour, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
 import { Fonts, Palette, webUrl } from '@/lib/theme';
 
 const HOLD_AFTER_ROUND_MS = 6000;
@@ -90,7 +90,7 @@ function Lobby({ since, includeTest, adminKey }: { since: number; includeTest: b
       </View>
       <View style={{ flex: 1, paddingVertical: 72 * u, paddingLeft: 24 * u, paddingRight: 96 * u }}>
         <View style={[styles.arena, { borderWidth: 4 * u, borderRadius: 48 * u }]}>
-          <InkSticker label="Hatching at 5 PM sharp" fontSize={26 * u} rotate={-3} style={{ position: 'absolute', top: 36 * u, left: 36 * u, zIndex: 1 }} />
+          <InkSticker label={`Hatching at ${royaleHour()} sharp`} fontSize={26 * u} rotate={-3} style={{ position: 'absolute', top: 36 * u, left: 36 * u, zIndex: 1 }} />
           <EggRing eggs={monsters ?? []} u={u} />
           <Text style={[styles.extrabold, styles.ringCaption, { fontSize: 30 * u, lineHeight: 36 * u, bottom: 36 * u, left: 36 * u, right: 36 * u }]}>
             Every egg hatches at once. Last monster standing wins.
@@ -194,7 +194,7 @@ function Show({ summary, adminKey, includeTest }: { summary: Summary; adminKey?:
         entrants={round.entrants}
         seed={round.seed}
         dayElement={round.dayElement}
-        speed={isFinal ? 1 : 2}
+        speed={round.speed ?? 2}
         title={isFinal ? 'FINAL' : `HEAT ${step + 1}/${heats}`}
         controls={false}
         onEnd={async () => setEnded(true)}

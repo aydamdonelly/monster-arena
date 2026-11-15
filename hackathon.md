@@ -2,7 +2,7 @@
 
 - **Project:** Snappymon
 - **Event:** YC Consumer Mobile Hackathon
-- **What it does:** Snap a photo of anything to get an egg; at 5 PM Pacific every egg hatches live in a 3D arena and the monsters fight a free-for-all royale, then live in your collection with a replay of the fight.
+- **What it does:** Snap a photo of anything to get an egg; at 6 PM Pacific every egg hatches live in a 3D arena and the monsters fight a free-for-all royale, then live in your collection with a replay of the fight.
 - **Live app:** https://snappymon.com
 - **Repo:** https://github.com/aydamdonelly/monster-arena
 - **Frontend:** Vercel
@@ -113,8 +113,17 @@ better build.
   live demos.
 - **14:59** PR #15 opened (Capy, MONS-5): Revyl proofs can lay an egg on the
   cloud iPhone. Open.
+- **15:22** `ec81d3e` The royale start waits up to 45 seconds for eggs laid in
+  the last minutes; one shared arena up to 24 monsters, heats above that;
+  monster names get more variety.
+- **15:32** PR #17 merged (Capy, MONS-7): result buttons fit, demo copy,
+  simulator flag, today and tomorrow wording.
+- **15:36** Royale moved from 5 PM to 6 PM Pacific to collect more eggs. The
+  time and the fight speed now come from the server (`convex/schedule.ts`,
+  `royale.clock`), so web and app follow a change without a new build. Fights
+  play at double speed: 20 to 30 seconds instead of a minute, same result.
 - **Still open:** PR #6, Keiki iMessage back channel.
 
 ## Launch day
 
-**Numbers from launch day: to be filled in after the 5 PM royale.**
+**Numbers from launch day: to be filled in after the 6 PM royale.**

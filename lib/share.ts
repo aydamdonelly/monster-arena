@@ -1,5 +1,6 @@
 import { Platform, Share } from 'react-native';
 
+import { royaleHourPT } from '@/lib/arena';
 import { webUrl } from '@/lib/theme';
 
 export function monsterUrl(id: string) {
@@ -11,7 +12,7 @@ export function shareMonster(id: string, name: string) {
 }
 
 export function shareEgg() {
-  return share(webUrl, 'Snappymon', 'My egg hatches at 5 PM PT, live in the Snappymon royale. Snap anything and lay yours.');
+  return share(webUrl, 'Snappymon', `My egg hatches at ${royaleHourPT()}, live in the Snappymon royale. Snap anything and lay yours.`);
 }
 
 async function share(url: string, title: string, text: string): Promise<'shared' | 'copied' | 'failed'> {

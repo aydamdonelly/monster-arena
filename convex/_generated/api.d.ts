@@ -19,6 +19,7 @@ import type * as http from "../http.js";
 import type * as monsters from "../monsters.js";
 import type * as players from "../players.js";
 import type * as royale from "../royale.js";
+import type * as schedule from "../schedule.js";
 import type * as stats from "../stats.js";
 import type * as whop from "../whop.js";
 
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   monsters: typeof monsters;
   players: typeof players;
   royale: typeof royale;
+  schedule: typeof schedule;
   stats: typeof stats;
   whop: typeof whop;
 }>;

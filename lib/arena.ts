@@ -15,15 +15,48 @@ export type Entrant = {
 export type ArenaResult = { winnerId: string | null; placements: string[] };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const ROYALE_UTC_HOUR = 1; // 17:00 Uhr Pacific (Winterzeit) = 01:00 UTC, wie der Cron im Backend
 const GRACE_MS = 30 * 60 * 1000;
+const PACIFIC_OFFSET_MIN = -8 * 60; // Winterzeit, wie der Cron im Backend
+
+// Startzeit der täglichen Royale in Minuten nach Mitternacht UTC und Abspieltempo der Kämpfe.
+// Beides kommt live vom Server (royale.clock, siehe components/RoyaleClock.tsx); bis die Antwort da ist, gelten diese Werte.
+// 120 = 02:00 UTC = 18:00 Uhr Pacific.
+let royaleUtcMin = 120;
+let fightSpeed = 2;
+
+export function setRoyaleClock(c: { utcMin: number; speed: number }) {
+  if (Number.isFinite(c.utcMin) && c.utcMin >= 0 && c.utcMin < 24 * 60) royaleUtcMin = c.utcMin;
+  if (Number.isFinite(c.speed) && c.speed >= 0.5 && c.speed <= 4) fightSpeed = c.speed;
+}
+
+export function getFightSpeed() {
+  return fightSpeed;
+}
+
+function pacificMinutes() {
+  return (((royaleUtcMin + PACIFIC_OFFSET_MIN) % 1440) + 1440) % 1440;
+}
+
+// Hat das Gerät zur Royale-Zeit dieselbe Uhrzeit wie die Pazifikküste?
+function deviceIsPacific(local: Date) {
+  return local.getHours() * 60 + local.getMinutes() === pacificMinutes();
+}
+
+// "6 PM" oder "6:30 PM" in Pacific-Zeit
+function pacificLabel() {
+  const m = pacificMinutes();
+  const h = Math.floor(m / 60);
+  const h12 = ((h + 11) % 12) + 1;
+  const mm = m % 60;
+  return `${h12}${mm ? `:${String(mm).padStart(2, '0')}` : ''} ${h < 12 ? 'AM' : 'PM'}`;
+}
 
 // Zeitpunkt der Royale als absoluter Moment, egal in welcher Zeitzone das Gerät steht.
 // Bis 30 Minuten danach bleibt es die heutige, dann zählt der Countdown zur nächsten.
 export function royaleTimeToday() {
   const now = Date.now();
   const d = new Date(now);
-  d.setUTCHours(ROYALE_UTC_HOUR, 0, 0, 0);
+  d.setUTCHours(0, royaleUtcMin, 0, 0);
   let t = d.getTime();
   if (now > t + GRACE_MS) t += DAY_MS;
   return t;
@@ -37,14 +70,18 @@ export function startOfToday() {
 // Für Besucher außerhalb der Pacific-Zeit: die Royale in ihrer Ortszeit, z. B. "8:00 PM your time"
 export function royaleLocalNote() {
   const local = new Date(royaleTimeToday());
-  if (local.getHours() === 17 && local.getMinutes() === 0) return null;
+  if (deviceIsPacific(local)) return null;
   return `${local.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} your time`;
 }
 
-// "5 PM" für Geräte in Pacific-Zeit, sonst "5 PM PT", damit niemand seine eigene Ortszeit annimmt
+// "6 PM" für Geräte in Pacific-Zeit, sonst "6 PM PT", damit niemand seine eigene Ortszeit annimmt
 export function royaleHour() {
-  const local = new Date(royaleTimeToday());
-  return local.getHours() === 17 && local.getMinutes() === 0 ? '5 PM' : '5 PM PT';
+  return deviceIsPacific(new Date(royaleTimeToday())) ? pacificLabel() : `${pacificLabel()} PT`;
+}
+
+// Immer mit Zeitzone, für Texte, die das Gerät verlassen (Teilen)
+export function royaleHourPT() {
+  return `${pacificLabel()} PT`;
 }
 
 export function replayRound(mine: { entered: boolean; inFinal?: boolean; heatIndex?: number | null } | null | undefined) {

@@ -3,7 +3,7 @@
 // Bei mehr als 24 Monstern gibt es Vorrunden (Heats) und ein Finale.
 //
 // Zwei Arten:
-// - "live": die echte Royale (Cron um 17:00 Uhr Pacific). Nur Eier echter Spieler. Sind es weniger als minEntrants,
+// - "live": die echte Royale (Cron, Uhrzeit aus schedule.ts). Nur Eier echter Spieler. Sind es weniger als minEntrants,
 //   füllen wilde Monster (Hausspieler WILD_DEVICE) die Arena auf. Läuft höchstens einmal in 20 Stunden.
 // - "test": Probe. Nur Eier von Testspielern plus wilde Monster. Rührt kein echtes Ei an, öffentliche Abfragen zeigen sie nicht.
 import { v, ConvexError } from "convex/values";
@@ -13,9 +13,10 @@ import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { runSim } from "../monster-kit/royale-sim.js";
 import { hashString } from "../monster-kit/battle.js";
+import { FIGHT_SPEED, ROYALE_UTC_MIN } from "./schedule";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const EGG_WINDOW_MS = 3 * DAY_MS; // ein Ei, das um 17 Uhr noch nicht fertig war, schlüpft in der nächsten Royale
+const EGG_WINDOW_MS = 3 * DAY_MS; // ein Ei, das zur Royale noch nicht fertig war, schlüpft in der nächsten
 const LIVE_GAP_MS = 20 * 60 * 60 * 1000;
 const SINGLE_MAX = 24; // bis hierhin eine einzige Arena (mit 24 im Hochformat geprüft: lesbar, knapp eine Minute Kampf)
 const HEAT_SIZE = 16;
@@ -202,7 +203,7 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
   };
 }
 
-// Start durch den Cron (17:00 Uhr Pacific). Wartet bis zu 45 Sekunden auf Eier echter Spieler, die in den letzten
+// Start durch den Cron (Uhrzeit aus schedule.ts). Wartet bis zu 45 Sekunden auf Eier echter Spieler, die in den letzten
 // Minuten gelegt wurden und deren Monster noch gebaut wird, damit niemand knapp vor 17 Uhr leer ausgeht.
 // Die Clients zeigen so lange "HATCHING…". dryRun sagt nur, was passieren würde (für Prüfungen vor dem Start).
 export const kickoff = internalMutation({
@@ -424,22 +425,81 @@ export const summary = query({
 });
 
 // Eine Runde zum Abspielen: index -1 = Finale, sonst die Vorrunde mit diesem Index
+// Ohne royaleId die letzte Royale, mit royaleId eine frühere (Verlauf im Profil).
 export const round = query({
-  args: { index: v.number(), test: v.optional(v.boolean()) },
-  handler: async (ctx, { index, test }) => {
-    const r = await latestRoyale(ctx, test ?? false);
+  args: { index: v.number(), test: v.optional(v.boolean()), royaleId: v.optional(v.string()) },
+  handler: async (ctx, { index, test, royaleId }) => {
+    const r = await pickRoyale(ctx, royaleId, test ?? false);
     if (!r) return null;
     const rd = index < 0 ? r.data.final : r.data.heats[index];
     if (!rd) return null;
-    return { royaleId: r.doc._id, startsAt: r.doc.startsAt, title: r.data.title, dayElement: r.data.dayElement, isFinal: index < 0, ...(await publicRound(ctx, rd, index)) };
+    return {
+      royaleId: r.doc._id, startsAt: r.doc.startsAt, title: r.data.title, dayElement: r.data.dayElement, isFinal: index < 0,
+      speed: FIGHT_SPEED, // Abspieltempo für die Apps
+      ...(await publicRound(ctx, rd, index)),
+    };
   },
 });
 
-// Wie lief es für meine Monster in der letzten Royale? Oben steht das beste Ergebnis, entries listet alle eigenen Monster.
+// Zeitplan für die Apps: Startzeit der täglichen Royale (Minuten nach Mitternacht UTC) und Abspieltempo der Kämpfe.
+// Die Apps rechnen daraus Countdown und Uhrzeit-Anzeige; eine Änderung in schedule.ts kommt so ohne neues App-Build an.
+export const clock = query({
+  args: {},
+  returns: v.object({ utcMin: v.number(), speed: v.number() }),
+  handler: async () => ({ utcMin: ROYALE_UTC_MIN, speed: FIGHT_SPEED }),
+});
+
+type Entry = {
+  monsterId: Id<"monsters">; monsterName: string; heatIndex: number | null; heatPlace: number | null; heatSize: number | null;
+  inFinal: boolean; finalPlace: number | null; finalSize: number; champion: boolean; score: number;
+};
+
+// Ergebnisse der eigenen Monster (names: id -> Name) in einer Royale, das beste zuerst
+function entriesOf(data: RoyaleData, names: Map<string, string>): Entry[] {
+  const finalIds = roundIds(data.final);
+  const entries: Entry[] = [];
+  const seen = new Set<string>();
+  const add = (id: string) => {
+    if (seen.has(id) || !names.has(id)) return;
+    seen.add(id);
+    const heatIndex = data.heats.findIndex((h) => roundIds(h).includes(id));
+    const heat = heatIndex >= 0 ? data.heats[heatIndex] : null;
+    const inFinal = finalIds.includes(id);
+    const finalPlace = inFinal ? data.final.placements.indexOf(id) + 1 : null;
+    const heatPlace = heat ? heat.placements.indexOf(id) + 1 : null;
+    entries.push({
+      monsterId: id as Id<"monsters">, monsterName: names.get(id) ?? "Monster", heatIndex: heatIndex >= 0 ? heatIndex : null, heatPlace,
+      heatSize: heat ? roundIds(heat).length : null, inFinal, finalPlace, finalSize: finalIds.length, champion: data.final.winnerId === id,
+      score: inFinal ? (finalPlace ?? 99) : 100 + (heatPlace ?? 99),
+    });
+  };
+  for (const id of finalIds) add(id);
+  for (const h of data.heats) for (const id of roundIds(h)) add(id);
+  return entries.sort((x, y) => x.score - y.score);
+}
+
+// Ergebnis in Worten. Wer im Finale stand, hat seinen Platz unter allen Teilnehmern; sonst zählt der Platz in der Vorrunde.
+function resultLabel(e: Entry, total: number) {
+  if (e.champion) return "Champion";
+  if (e.inFinal && e.finalPlace) return `#${e.finalPlace} of ${Math.max(total, e.finalSize)}`;
+  if (e.heatPlace && e.heatSize && e.heatIndex != null) return `Heat ${e.heatIndex + 1} · #${e.heatPlace} of ${e.heatSize}`;
+  return "Entered";
+}
+
+async function pickRoyale(ctx: QueryCtx, royaleId: string | undefined, includeTest: boolean) {
+  if (!royaleId) return await latestRoyale(ctx, includeTest);
+  const id = ctx.db.normalizeId("royales", royaleId);
+  const doc = id ? await ctx.db.get("royales", id) : null;
+  const data = doc?.rounds as RoyaleData | undefined;
+  return doc && data?.final ? { doc, data } : null;
+}
+
+// Wie lief es für meine Monster in der letzten Royale (oder mit royaleId in einer früheren)?
+// Oben steht das beste Ergebnis, entries listet alle eigenen Monster.
 export const mine = query({
-  args: { deviceId: v.string(), test: v.optional(v.boolean()) },
-  handler: async (ctx, { deviceId, test }) => {
-    const r = await latestRoyale(ctx, test ?? false);
+  args: { deviceId: v.string(), test: v.optional(v.boolean()), royaleId: v.optional(v.string()) },
+  handler: async (ctx, { deviceId, test, royaleId }) => {
+    const r = await pickRoyale(ctx, royaleId, test ?? false);
     if (!r) return null;
     const player = await ctx.db
       .query("players")
@@ -452,31 +512,69 @@ export const mine = query({
       .order("desc")
       .take(200);
     const names = new Map<string, string>(myMonsters.map((m) => [m._id as string, m.name]));
-    const finalIds = roundIds(r.data.final);
-    const entries: {
-      monsterId: Id<"monsters">; monsterName: string; heatIndex: number | null; heatPlace: number | null; heatSize: number | null;
-      inFinal: boolean; finalPlace: number | null; finalSize: number; champion: boolean; score: number;
-    }[] = [];
-    const seen = new Set<string>();
-    const add = (id: string) => {
-      if (seen.has(id) || !names.has(id)) return;
-      seen.add(id);
-      const heatIndex = r.data.heats.findIndex((h) => roundIds(h).includes(id));
-      const heat = heatIndex >= 0 ? r.data.heats[heatIndex] : null;
-      const inFinal = finalIds.includes(id);
-      const finalPlace = inFinal ? r.data.final.placements.indexOf(id) + 1 : null;
-      const heatPlace = heat ? heat.placements.indexOf(id) + 1 : null;
-      entries.push({
-        monsterId: id as Id<"monsters">, monsterName: names.get(id) ?? "Monster", heatIndex: heatIndex >= 0 ? heatIndex : null, heatPlace,
-        heatSize: heat ? roundIds(heat).length : null, inFinal, finalPlace, finalSize: finalIds.length, champion: r.data.final.winnerId === id,
-        score: inFinal ? (finalPlace ?? 99) : 100 + (heatPlace ?? 99),
-      });
-    };
-    for (const id of finalIds) add(id);
-    for (const h of r.data.heats) for (const id of roundIds(h)) add(id);
+    const entries = entriesOf(r.data, names);
     if (!entries.length) return { royaleId: r.doc._id, entered: false as const };
-    entries.sort((x, y) => x.score - y.score);
     const best = entries[0];
-    return { royaleId: r.doc._id, entered: true as const, ...best, entries };
+    return { royaleId: r.doc._id, entered: true as const, ...best, total: r.data.entrantCount, result: resultLabel(best, r.data.entrantCount), entries };
+  },
+});
+
+// Profil: Name, Zahlen und der Verlauf der eigenen Royales (neueste zuerst, höchstens 20), jeweils mit dem besten eigenen Monster.
+// Für die Wiederholung: /arena/replay mit royale = royaleId und round = der hier gelieferte Wert (-1 = Finale, sonst Vorrunde).
+export const profile = query({
+  args: { deviceId: v.string(), test: v.optional(v.boolean()) },
+  handler: async (ctx, { deviceId, test }) => {
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_deviceId", (q) => q.eq("deviceId", deviceId))
+      .unique();
+    if (!player) return null;
+    const mineAll = await ctx.db
+      .query("monsters")
+      .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
+      .order("desc")
+      .take(200);
+    const hatched = mineAll.filter((m) => (m.status ?? "hatched") === "hatched" && !!m.genome);
+    const byId = new Map<string, Doc<"monsters">>(hatched.map((m) => [m._id as string, m]));
+    const names = new Map<string, string>(hatched.map((m) => [m._id as string, m.name]));
+    const history: {
+      royaleId: Id<"royales">; startsAt: number; title: string; entrants: number; monsterId: Id<"monsters">; monsterName: string;
+      element: string | null; golden: boolean; result: string; champion: boolean; championName: string | null; round: number;
+    }[] = [];
+    let bestScore = Infinity;
+    let best: string | null = null;
+    if (hatched.length) {
+      const rows = await ctx.db.query("royales").order("desc").take(30);
+      for (const r of rows) {
+        const data = r.rounds as RoyaleData | undefined;
+        if (!data?.final || (data.test && !test)) continue;
+        const entries = entriesOf(data, names);
+        if (!entries.length) continue;
+        const e = entries[0];
+        const m = byId.get(e.monsterId);
+        const champId = data.final.winnerId ? ctx.db.normalizeId("monsters", data.final.winnerId) : null;
+        const champ = champId ? (byId.get(champId) ?? (await ctx.db.get("monsters", champId))) : null;
+        const result = resultLabel(e, data.entrantCount);
+        if (e.score < bestScore) { bestScore = e.score; best = result; }
+        history.push({
+          royaleId: r._id, startsAt: r.startsAt, title: data.title, entrants: data.entrantCount, monsterId: e.monsterId, monsterName: e.monsterName,
+          element: m?.element ?? null, golden: !!(m?.golden ?? m?.genome?.golden), result, champion: e.champion, championName: champ?.name ?? null,
+          round: e.inFinal || e.heatIndex == null ? -1 : e.heatIndex,
+        });
+        if (history.length >= 20) break;
+      }
+    }
+    return {
+      name: player.name ?? null,
+      since: player._creationTime,
+      stats: {
+        monsters: hatched.length,
+        eggs: mineAll.filter((m) => m.status === "egg").length,
+        royales: history.length,
+        wins: history.filter((h) => h.champion).length,
+        best,
+      },
+      history,
+    };
   },
 });

@@ -31,7 +31,7 @@
       "favicon": "./assets/images/favicon.png",
       "name": "Snappymon",
       "shortName": "Snappymon",
-      "description": "Snap anything. Get an egg. It hatches at 5 PM and fights in the royale.",
+      "description": "Snap anything. Get an egg. It hatches live in the daily royale and fights.",
       "themeColor": "#ffffff",
       "backgroundColor": "#ffffff"
     },
@@ -60,6 +60,6 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "description": "Snap anything. Get an egg. It hatches at 5 PM and fights in the royale."
+    "description": "Snap anything. Get an egg. It hatches live in the daily royale and fights."
   }
 }

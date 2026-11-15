@@ -108,7 +108,7 @@
     const hash = new URLSearchParams(location.hash.slice(1)).get('k');
     if (hash) { KEY = hash; try { localStorage.setItem('snappymon-stats', KEY); } catch {} history.replaceState(null, '', location.pathname); }
 
-    function royaleDayStart(now) { const d = new Date(now); d.setUTCHours(1, 0, 0, 0); return d.getTime() > now ? d.getTime() - DAY : d.getTime(); }
+    function royaleDayStart(now) { const d = new Date(now); d.setUTCHours(2, 0, 0, 0); return d.getTime() > now ? d.getTime() - DAY : d.getTime(); }
     function since() { const r = $('range').value; const now = Date.now(); return r === 'hour' ? now - 3600 * 1000 : r === 'day' ? royaleDayStart(now) : Math.max(LAUNCH, now - 7 * DAY); }
 
     async function call(path, args) {

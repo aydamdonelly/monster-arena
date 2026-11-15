@@ -44,6 +44,7 @@ export default function ReplayScreen() {
       title={title}
       label={`${royaleHour()} · ${round.isFinal ? 'Final' : `Heat ${round.index + 1}`} · ${round.entrants.length} eggs`}
       live={params.live === '1'}
+      speed={round.speed}
       caption={followId ? mine?.entered ? mine.monsterName : null : null}
       onEnd={setResult}>
       {result ? (

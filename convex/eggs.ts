@@ -1,4 +1,4 @@
-// Ei-Ablauf: Foto -> Ei (sofort). Das Monster entsteht verdeckt im Hintergrund und schlüpft erst in der Royale um 17 Uhr.
+// Ei-Ablauf: Foto -> Ei (sofort). Das Monster entsteht verdeckt im Hintergrund und schlüpft erst in der täglichen Royale.
 // Dadurch darf die KI sich Zeit lassen (großes Modell, 20 bis 30 s) und baut das Monster frei aus Bauteilen (Blueprint).
 import { v, ConvexError } from "convex/values";
 import { internalAction, internalMutation, internalQuery, mutation, query } from "./_generated/server";
@@ -7,6 +7,7 @@ import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import { GENOME_SCHEMA, genomeInstructions, genomeFromAI } from "../monster-kit/genome-spec.js";
 import { statsFromTraits, hashString } from "../monster-kit/battle.js";
+import { ROYALE_UTC_MIN } from "./schedule";
 
 const MODELS = ["gpt-6.1-sol", "gpt-6-luna"]; // erst das große Modell, bei Fehlern das schnelle
 export const DAILY_LIMIT = 1; // ein Ei pro Royale; ein zweites gibt es nur als Goldenes Ei (gekauft)
@@ -14,17 +15,17 @@ export const GOLDEN_LIMIT = 1;
 const FLOOD_LIMIT = 150; // Eier in 10 Minuten über alle Spieler
 const RUSH_MS = 3 * 60 * 1000; // so kurz vor der Royale zählt Tempo mehr als das letzte Detail
 
-// Zeitpunkt der nächsten Royale (nächste volle 01:00 UTC)
+// Zeitpunkt der nächsten Royale (Uhrzeit aus schedule.ts)
 export function nextRoyale(now: number) {
   return royaleDayStart(now) + 24 * 60 * 60 * 1000;
 }
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-// Beginn des laufenden Royale-Tages: die letzte volle 01:00 UTC (= 17:00 Uhr Pacific im Winter).
+// Beginn des laufenden Royale-Tages: der letzte Royale-Zeitpunkt (Uhrzeit aus schedule.ts).
 // Eier, die danach gelegt werden, warten auf die nächste Royale.
 export function royaleDayStart(now: number) {
   const d = new Date(now);
-  d.setUTCHours(1, 0, 0, 0);
+  d.setUTCHours(0, ROYALE_UTC_MIN, 0, 0);
   return d.getTime() > now ? d.getTime() - DAY_MS : d.getTime();
 }
 const MAX_ATTEMPTS = 8;

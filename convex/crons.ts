@@ -4,7 +4,8 @@ import { internal } from "./_generated/api";
 
 const crons = cronJobs();
 
-crons.cron("royale 5 pm pacific", "0 1 * * *", internal.royale.run, { title: "Royale" });
+// kickoff wartet kurz auf Eier, die in letzter Minute gelegt wurden, und startet dann die Royale
+crons.cron("royale 5 pm pacific", "0 1 * * *", internal.royale.kickoff, { title: "Royale" });
 // Eier, deren Monster-Bau hängen geblieben ist, neu anstoßen
 crons.interval("revive stuck eggs", { minutes: 3 }, internal.eggs.sweep, {});
 

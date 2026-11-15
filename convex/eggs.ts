@@ -12,6 +12,12 @@ const MODELS = ["gpt-6.1-sol", "gpt-6-luna"]; // erst das große Modell, bei Feh
 export const DAILY_LIMIT = 1; // ein Ei pro Royale; ein zweites gibt es nur als Goldenes Ei (gekauft)
 export const GOLDEN_LIMIT = 1;
 const FLOOD_LIMIT = 150; // Eier in 10 Minuten über alle Spieler
+const RUSH_MS = 3 * 60 * 1000; // so kurz vor der Royale zählt Tempo mehr als das letzte Detail
+
+// Zeitpunkt der nächsten Royale (nächste volle 01:00 UTC)
+export function nextRoyale(now: number) {
+  return royaleDayStart(now) + 24 * 60 * 60 * 1000;
+}
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Beginn des laufenden Royale-Tages: die letzte volle 01:00 UTC (= 17:00 Uhr Pacific im Winter).
@@ -193,7 +199,10 @@ export const generate = internalAction({
     if (!imageUrl) return null;
     const t0 = Date.now();
     try {
-      const ai = await askModel(MODELS[egg.attempts < 2 ? 0 : 1], imageUrl);
+      // In den letzten Minuten vor der Royale baut das schnelle Modell (wenige Sekunden statt rund 30),
+      // damit auch ein spät gelegtes Ei noch mitkämpft. Sonst erst das große Modell, nach zwei Fehlschlägen das schnelle.
+      const rush = nextRoyale(t0) - t0 < RUSH_MS;
+      const ai = await askModel(MODELS[rush || egg.attempts >= 2 ? 1 : 0], imageUrl);
       if (!ai.safe) {
         await ctx.runMutation(internal.eggs.reject, { eggId });
         return null;

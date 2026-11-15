@@ -8,6 +8,7 @@
 // - "test": Probe. Nur Eier von Testspielern plus wilde Monster. Rührt kein echtes Ei an, öffentliche Abfragen zeigen sie nicht.
 import { v, ConvexError } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { runSim } from "../monster-kit/royale-sim.js";
@@ -19,6 +20,9 @@ const LIVE_GAP_MS = 20 * 60 * 60 * 1000;
 const SINGLE_MAX = 32; // bis hierhin eine einzige Arena (mit 24 und 32 im Hochformat geprüft: lesbar, rund eine Minute Kampf)
 const HEAT_SIZE = 16;
 const MIN_ENTRANTS = 8;
+const LATE_WINDOW_MS = 3 * 60 * 1000; // auf Eier warten, die in den letzten 3 Minuten gelegt wurden
+const KICKOFF_WAIT_MS = 5000;
+const KICKOFF_TRIES = 9; // höchstens 45 Sekunden Verzögerung
 export const WILD_DEVICE = "house-wild";
 
 type Stats = { hp: number; atk: number; def: number; spd: number };
@@ -186,7 +190,34 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
   };
 }
 
-// Cron (17:00 Uhr Pacific) und CLI. Probe: npx convex run royale:run '{"title":"Probe","test":true}'
+// Start durch den Cron (17:00 Uhr Pacific). Wartet bis zu 45 Sekunden auf Eier echter Spieler, die in den letzten
+// Minuten gelegt wurden und deren Monster noch gebaut wird, damit niemand knapp vor 17 Uhr leer ausgeht.
+// Die Clients zeigen so lange "HATCHING…". dryRun sagt nur, was passieren würde (für Prüfungen vor dem Start).
+export const kickoff = internalMutation({
+  args: { title: v.string(), tries: v.optional(v.number()), dryRun: v.optional(v.boolean()) },
+  handler: async (ctx, a): Promise<Record<string, unknown>> => {
+    const now = Date.now();
+    const tries = a.tries ?? 0;
+    const unready = await ctx.db
+      .query("monsters")
+      .withIndex("by_status_and_ready", (q) => q.eq("status", "egg").eq("ready", false))
+      .take(300);
+    let late = 0;
+    for (const m of unready) {
+      if (!m.photoId || m._creationTime < now - LATE_WINDOW_MS) continue;
+      const owner = await ctx.db.get("players", m.playerId);
+      if (owner && !owner.isTest) late++;
+    }
+    if (late > 0 && tries < KICKOFF_TRIES) {
+      if (!a.dryRun) await ctx.scheduler.runAfter(KICKOFF_WAIT_MS, internal.royale.kickoff, { title: a.title, tries: tries + 1 });
+      return { waitingFor: late, tries, started: false };
+    }
+    if (a.dryRun) return { waitingFor: late, tries, wouldStart: true };
+    return await runNow(ctx, { title: a.title, mode: "live", minEntrants: MIN_ENTRANTS, force: false });
+  },
+});
+
+// CLI. Probe: npx convex run royale:run '{"title":"Probe","test":true}'
 export const run = internalMutation({
   args: { title: v.string(), test: v.optional(v.boolean()), minEntrants: v.optional(v.number()), force: v.optional(v.boolean()) },
   handler: async (ctx, a) =>

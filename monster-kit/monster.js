@@ -412,16 +412,8 @@ export function updateMonster(root, t) {
   }
 }
 
-// KI-Antwort (scripts/genome-test.mjs, GENOME_SCHEMA) -> Kit-Genom
-export function genomeFromAI(ai, seed) {
-  return {
-    name: ai.name, seed, element: ai.element, lore: ai.lore, object: ai.object, traits: ai.traits,
-    body: { shape: ai.shape, color: ai.colors?.body, proportions: ai.proportions || 'normal' },
-    face: { eyes: ai.eyes, mouth: ai.mouth },
-    limbs: { style: ai.limbStyle, pose: ai.pose },
-    parts: (ai.parts || []).slice(0, 3),
-  };
-}
+// KI-Antwort -> Kit-Genom (liegt abhängigkeitsfrei in genome-spec.js, damit Convex es ohne three.js nutzen kann)
+export { genomeFromAI } from './genome-spec.js';
 
 // ---------- Beispiel-Genome und Zufallsgenerator (für Test 1) ----------
 export const PRESETS = [

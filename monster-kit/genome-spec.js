@@ -53,3 +53,14 @@ Look at the MAIN object in the photo. The monster must be instantly recognizable
 - safe: false if the photo mainly shows a human person or face, nudity, weapons, drugs or anything inappropriate; otherwise true.
 - matchesPrompt: 0 to 1, how well the object fits today's drop task: "${dropPrompt}".`;
 }
+
+// KI-Antwort (GENOME_SCHEMA) -> Genom für buildMonster(). seed: Zahl, z. B. hashString(storageId)
+export function genomeFromAI(ai, seed) {
+  return {
+    name: ai.name, seed, element: ai.element, lore: ai.lore, object: ai.object, traits: ai.traits,
+    body: { shape: ai.shape, color: ai.colors?.body, proportions: ai.proportions || 'normal' },
+    face: { eyes: ai.eyes, mouth: ai.mouth },
+    limbs: { style: ai.limbStyle, pose: ai.pose },
+    parts: (ai.parts || []).slice(0, 3),
+  };
+}

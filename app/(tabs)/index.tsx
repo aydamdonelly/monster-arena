@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMutation, useQuery } from 'convex/react';
 import { ConvexError } from 'convex/values';
 import { Image } from 'expo-image';
-import { router, useNavigation } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -46,6 +46,10 @@ export default function CatchScreen() {
   const me = useQuery(api.players.me, { deviceId, now });
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
   const [sheet, setSheet] = useState(false);
+  const { golden } = useLocalSearchParams<{ golden?: string }>();
+  const goldenReady = !!me && me.goldenEggs > 0;
+  const goldenSettled = !!me && !goldenReady && !me.canGolden;
+  const returning = golden === '1' && !goldenSettled;
   const firstVisit = phase.kind === 'idle' && mine?.length === 0;
   const atLimit = !!me && me.hatchesLeft === 0 && (me.goldenEggs === 0 || !me.canGolden);
   const fullScreen = firstVisit || phase.kind === 'egg';
@@ -90,6 +94,11 @@ export default function CatchScreen() {
     }
   };
 
+  // Zurück vom Whop-Checkout (?golden=1): warten, bis der Webhook das Ei gutschreibt. Ist es schon gelegt, Adresse aufräumen.
+  useEffect(() => {
+    if (golden && goldenSettled) router.setParams({ golden: undefined });
+  }, [golden, goldenSettled]);
+
   const reset = () => setPhase({ kind: 'idle' });
 
   if (firstVisit) return <Landing onCatch={() => onCatch('camera')} />;
@@ -111,8 +120,17 @@ export default function CatchScreen() {
           </View>
 
           {phase.kind === 'idle' && (!mine || !me) ? <ActivityIndicator color={Palette.ink} style={styles.loading} /> : null}
-          {phase.kind === 'idle' && mine && me && atLimit ? <Limit mine={mine} now={now} canGolden={me.canGolden} onGolden={() => setSheet(true)} /> : null}
-          {phase.kind === 'idle' && mine && me && !atLimit ? (
+          {phase.kind === 'idle' && returning && me ? (
+            <GoldenReturn
+              ready={goldenReady}
+              onSnap={() => {
+                router.setParams({ golden: undefined });
+                onCatch('camera');
+              }}
+            />
+          ) : null}
+          {phase.kind === 'idle' && !returning && mine && me && atLimit ? <Limit mine={mine} now={now} canGolden={me.canGolden} onGolden={() => setSheet(true)} /> : null}
+          {phase.kind === 'idle' && !returning && mine && me && !atLimit ? (
             <Idle
               onCatch={onCatch}
               hatchesLeft={me.hatchesLeft}
@@ -138,7 +156,7 @@ export default function CatchScreen() {
           ) : null}
         </ScrollView>
       )}
-      <GoldenEggSheet visible={sheet} onClose={() => setSheet(false)} />
+      <GoldenEggSheet visible={sheet} from="home" onClose={() => setSheet(false)} />
     </SafeAreaView>
   );
 }
@@ -219,6 +237,12 @@ function Limit({ mine, now, canGolden, onGolden }: { mine: Entry[]; now: number;
             )}
           </StageBlock>
         ))}
+        {canGolden ? (
+          <Pressable accessibilityRole="button" accessibilityLabel="Golden Egg" onPress={onGolden} style={styles.goldenSlot}>
+            <Egg seed="golden-offer" width={52} golden rotate={4} />
+            <InkSticker label="$1" rotate={-6} fontSize={12} style={styles.tileSticker} />
+          </Pressable>
+        ) : null}
       </Appear>
       <Appear delay={200} style={styles.limitCopy}>
         <Text style={styles.limitTitle}>{canGolden ? 'Your egg is in.' : 'Both eggs are in.'}</Text>
@@ -240,6 +264,35 @@ function Limit({ mine, now, canGolden, onGolden }: { mine: Entry[]; now: number;
         <OutlineButton label="Watch the arena" onPress={() => router.navigate('/arena')} style={styles.arenaButton} labelStyle={styles.arenaLabel} />
       </Appear>
     </View>
+  );
+}
+
+const GOLDEN_SLOW_MS = 60_000;
+
+function GoldenReturn({ ready, onSnap }: { ready: boolean; onSnap: () => void }) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), GOLDEN_SLOW_MS);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <Appear style={styles.lane}>
+      <View style={styles.goldenReturn}>
+        {ready ? (
+          <>
+            <Image source={require('@/assets/images/renders/bp-golden-capyboogey.png')} style={styles.goldenRender} contentFit="contain" />
+            <Text style={[styles.limitTitle, styles.centerText]}>Your Golden Egg is ready</Text>
+            <PrimaryButton label="Snap your golden egg" onPress={onSnap} style={styles.goldenSnap} />
+          </>
+        ) : (
+          <>
+            <Egg seed="golden-offer" width={72} golden rotate={-4} />
+            <ActivityIndicator color={Palette.ink} />
+            <Text style={[Type.heading, styles.centerText]}>{slow ? 'Still confirming. Your egg will appear here.' : 'Confirming your payment…'}</Text>
+          </>
+        )}
+      </View>
+    </Appear>
   );
 }
 
@@ -347,6 +400,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   limit: { flexGrow: 1 },
+  goldenSlot: {
+    flex: 1,
+    height: 104,
+    borderRadius: Radii.tile,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: Palette.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  goldenReturn: {
+    alignItems: 'center',
+    gap: 14,
+    borderWidth: 2,
+    borderColor: Palette.ink,
+    borderRadius: Radii.card,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+  },
+  goldenRender: { width: 160, height: 160, marginVertical: -12 },
+  goldenSnap: { alignSelf: 'stretch' },
   snapshotter: { position: 'absolute', width: 1, height: 1, opacity: 0 },
   mutedLabel: { color: Palette.muted },
   thumbs: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingTop: 20 },

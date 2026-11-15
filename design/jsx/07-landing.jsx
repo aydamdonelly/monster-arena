@@ -29,18 +29,21 @@ export default function LandingScreen() {
           </div>
         </div>
       </div>
-      <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', paddingInline: '24px', paddingTop: '34px' }}>
-        <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '41px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: '42px', whiteSpace: 'pre' }}>
+      <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', paddingInline: '24px', paddingTop: '28px' }}>
+        <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '38px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: '40px', whiteSpace: 'pre' }}>
           Snap anything.
         </div>
-        <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '41px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: '42px', whiteSpace: 'pre' }}>
-          Hatch a monster.
+        <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '38px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: '40px', whiteSpace: 'pre' }}>
+          Get an egg.
+        </div>
+        <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '38px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: '40px', whiteSpace: 'pre' }}>
+          It hatches at 5 PM.
         </div>
       </div>
       <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', flexBasis: '0%', flexDirection: 'column', flexGrow: '1', gap: '20px', justifyContent: 'center', position: 'relative' }}>
-        <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/23PBYT9XYP67C5P2PNFH7GWADG.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', bottom: '14px', boxSizing: 'border-box', height: '184px', left: '-74px', position: 'absolute', rotate: '14deg', transformOrigin: '0% 0%', width: '184px' }} />
-        <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/59N91NRKAERXG72WGB0HAQDKR8.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '160px', position: 'absolute', right: '-54px', rotate: '-12deg', top: '34px', transformOrigin: '0% 0%', width: '160px' }} />
-        <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/3S9AHKSNFP9YWD3RKV6KPWW1XG.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', bottom: '26px', boxSizing: 'border-box', height: '130px', position: 'absolute', right: '-38px', rotate: '9deg', transformOrigin: '0% 0%', width: '130px' }} />
+        <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/1A6DR12HQZBHPP52R814Z1FN55.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', bottom: '10px', boxSizing: 'border-box', height: '176px', left: '-66px', position: 'absolute', rotate: '12deg', transformOrigin: '0% 0%', width: '176px' }} />
+        <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/4CH494Y24NBSXY9GBA0WGATDQK.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '150px', position: 'absolute', right: '-50px', rotate: '-10deg', top: '26px', transformOrigin: '0% 0%', width: '150px' }} />
+        <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/04TCH5JJ5Q4S6RSYVAW7RDZVQN.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', bottom: '22px', boxSizing: 'border-box', height: '128px', position: 'absolute', right: '-34px', rotate: '8deg', transformOrigin: '0% 0%', width: '128px' }} />
         <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/5MH650FC2NGVHVRMDJHZCBTKMB.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '116px', left: '-30px', position: 'absolute', rotate: '-16deg', top: '6px', transformOrigin: '0% 0%', width: '116px' }} />
         <div style={{ boxSizing: 'border-box', display: 'flex', flexShrink: '0', height: '192px', position: 'relative', width: '192px' }}>
           <div style={{ backgroundColor: 'var(--color-ink)', borderRadius: '91px', boxSizing: 'border-box', height: '182px', left: '10px', position: 'absolute', top: '10px', width: '182px' }} />
@@ -58,7 +61,7 @@ export default function LandingScreen() {
       <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', gap: '8px', justifyContent: 'center', paddingBottom: '2px', paddingInline: '24px' }}>
         <div style={{ backgroundColor: '#4CB867', borderColor: 'var(--color-ink)', borderRadius: '5px', borderStyle: 'solid', borderWidth: '2px', boxSizing: 'border-box', flexShrink: '0', height: '9px', width: '9px' }} />
         <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '15px', fontWeight: 600, lineHeight: '20px' }}>
-          1,204 monsters hatched today
+          148 eggs waiting for 5 PM
         </div>
       </div>
       <div style={{ boxSizing: 'border-box', display: 'flex', flexShrink: '0', justifyContent: 'center', paddingBottom: '8px', paddingTop: '14px' }}>

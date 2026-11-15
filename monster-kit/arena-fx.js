@@ -90,17 +90,19 @@ export function createFx(scene, addFx) {
     },
 
     // Geschoss: Form je Element; update() dreht es und zieht einen Schweif
-    shot(el, big) {
+    // mini: optionale Fabrik für eine Mini-Kopie des Angreifers (die Banane wirft kleine Bananen, der Becher kleine Becher)
+    shot(el, big, mini) {
       const th = themeOf(el); const g = new THREE.Group(); const s = big ? 0.36 : 0.25;
-      const core = new THREE.Mesh(th.shape === 'shard' ? GEO.nut : th.shape === 'leaf' ? GEO.leaf : th.shape === 'flame' ? GEO.ico : GEO.wisp, mat(th.c));
-      if (th.shape === 'leaf') core.scale.set(s * 2.2, s * 0.3, s * 1.2); else core.scale.setScalar(s * 1.5);
-      const inner = new THREE.Mesh(GEO.wisp, mat(th.c2)); inner.scale.setScalar(s * 0.8);
-      const glow = new THREE.Mesh(GEO.wisp, fade(th.c, 0.28)); glow.scale.setScalar(s * 3.2);
+      let core; const copy = mini ? mini() : null;
+      if (copy) { core = copy; core.scale.setScalar(s * 1.05); }
+      else { core = new THREE.Mesh(th.shape === 'shard' ? GEO.nut : th.shape === 'leaf' ? GEO.leaf : th.shape === 'flame' ? GEO.ico : GEO.wisp, mat(th.c)); if (th.shape === 'leaf') core.scale.set(s * 2.2, s * 0.3, s * 1.2); else core.scale.setScalar(s * 1.5); }
+      const inner = new THREE.Mesh(GEO.wisp, mat(th.c2)); inner.scale.setScalar(copy ? 0.001 : s * 0.8);
+      const glow = new THREE.Mesh(GEO.wisp, fade(th.c, copy ? 0.2 : 0.28)); glow.scale.setScalar(s * 3.2);
       g.add(core, inner, glow); scene.add(g); let acc = 0;
       return {
         group: g,
         update(dt) {
-          core.rotation.x += dt * 14; core.rotation.y += dt * 10; glow.scale.setScalar(s * (3 + Math.sin(performance.now() * 0.02) * 0.4));
+          core.rotation.x += dt * (copy ? 9 : 14); core.rotation.y += dt * (copy ? 6 : 10); glow.scale.setScalar(s * (3 + Math.sin(performance.now() * 0.02) * 0.4));
           acc += dt; if (acc > 0.028) { acc = 0; particle(th.shape, g.position.x, g.position.y, g.position.z, new THREE.Vector3(rnd(-0.6, 0.6), rnd(0.2, 1.2), rnd(-0.6, 0.6)), 0.32, s * rnd(0.5, 0.9), Math.random() < 0.4 ? th.c2 : th.c, th.shape === 'flame' || th.shape === 'wisp' ? -2 : 5); }
         },
         dispose() { scene.remove(g); },
@@ -144,8 +146,13 @@ export function createFx(scene, addFx) {
     },
 
     // Eruption: Säulen in der Form des Elements schießen rund um den Angreifer aus dem Boden
-    eruption(x, z, radius, el, big) {
+    eruption(x, z, radius, el, big, mini) {
       const th = themeOf(el); const n = big ? 13 : 8;
+      if (mini) for (let i = 0; i < (big ? 6 : 4); i++) { // kleine Kopien des Angreifers fliegen im Bogen nach außen
+        const a = (i / (big ? 6 : 4)) * Math.PI * 2 + rnd(-0.3, 0.3); const m = mini(); const sc = big ? 0.3 : 0.24; m.position.set(x, 0.3, z); scene.add(m);
+        const v = new THREE.Vector3(Math.cos(a) * radius * 1.7, rnd(4.2, 5.4), Math.sin(a) * radius * 1.7); let t = 0; const life = 0.62;
+        addFx((dt) => { t += dt; v.y -= 15 * dt; m.position.addScaledVector(v, dt); m.rotation.x += dt * 10; m.rotation.z += dt * 7; const k = t / life; m.scale.setScalar(sc * (k < 0.15 ? k / 0.15 : 1 - Math.max(0, (k - 0.7) / 0.3))); if (k >= 1) { scene.remove(m); return false; } return true; });
+      }
       const ground = fade(th.c, 0.35); const disc = new THREE.Mesh(GEO.disc, ground); disc.rotation.x = -Math.PI / 2; disc.position.set(x, 0.03, z); scene.add(disc); let gt = 0;
       addFx((dt) => { gt += dt; const k = Math.min(1, gt / 0.5); disc.scale.setScalar(radius * (0.3 + 0.7 * k)); ground.opacity = 0.35 * (1 - k); if (k >= 1) { scene.remove(disc); ground.dispose(); return false; } return true; });
       ring(x, z, 0.3, radius, th.c, 0.42, 0.9); ring(x, z, 0.2, radius * 0.7, '#ffffff', 0.3, 0.7);

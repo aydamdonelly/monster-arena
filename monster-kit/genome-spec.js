@@ -1,15 +1,21 @@
 // Foto -> Monster-Genom: JSON-Schema und Prompt für die OpenAI Responses API (strict json_schema).
 // Wird von scripts/genome-test.mjs und der Convex-Action benutzt. Keine Abhängigkeiten.
 
+import { BLUEPRINT_EXAMPLES } from './blueprint-examples.js';
+
 export const SHAPES = ['blob', 'egg', 'drop', 'cylinder', 'box', 'cactus', 'strawberry', 'bean'];
-export const PART_TYPES = ['handle', 'coffee', 'steam', 'straw', 'cap', 'stem', 'leafCrown', 'flower', 'seeds', 'spots', 'spikes', 'screen', 'headphones', 'beak', 'ears', 'horns', 'antenna', 'wings', 'tail'];
+export const PART_TYPES = ['handle', 'coffee', 'steam', 'straw', 'cap', 'stem', 'leafCrown', 'flower', 'seeds', 'spots', 'spikes', 'screen', 'headphones', 'beak', 'ears', 'horns', 'antenna', 'wings', 'tail', 'wheels', 'glasses', 'buttons', 'pages', 'flame', 'neck', 'canopy', 'dial', 'band', 'stripes', 'pocket', 'backrest'];
 export const ELEMENTS = ['fire', 'water', 'plant', 'metal', 'fluff', 'spirit'];
 export const MOVE_KINDS = ['melee', 'shot', 'beam', 'burst', 'dash'];
+export const BP_SHAPES = ['box', 'sphere', 'cylinder', 'cone', 'capsule', 'wheel', 'ring', 'dome', 'wedge'];
+const N = { type: 'number' };
+const BP_PART = { type: 'object', additionalProperties: false, required: ['shape', 'x', 'y', 'z', 'w', 'h', 'd', 'rx', 'ry', 'rz', 'color'], properties: { shape: { type: 'string', enum: BP_SHAPES }, x: N, y: N, z: N, w: N, h: N, d: N, rx: N, ry: N, rz: N, color: { type: 'string' } } };
+const BLUEPRINT = { type: 'object', additionalProperties: false, required: ['parts', 'face', 'arms', 'feet'], properties: { parts: { type: 'array', items: BP_PART }, face: { type: 'object', additionalProperties: false, required: ['x', 'y', 'size', 'mouthY'], properties: { x: N, y: N, size: N, mouthY: N } }, arms: { type: 'boolean' }, feet: { type: 'boolean' } } };
 const MOVE = { type: 'object', additionalProperties: false, required: ['name', 'kind', 'element'], properties: { name: { type: 'string' }, kind: { type: 'string', enum: MOVE_KINDS }, element: { type: 'string', enum: ELEMENTS } } };
 
 export const GENOME_SCHEMA = {
   type: 'object', additionalProperties: false,
-  required: ['object', 'safe', 'matchesPrompt', 'name', 'lore', 'element', 'shape', 'proportions', 'colors', 'eyes', 'mouth', 'limbStyle', 'pose', 'parts', 'traits', 'move1', 'move2'],
+  required: ['object', 'safe', 'matchesPrompt', 'name', 'lore', 'element', 'shape', 'proportions', 'colors', 'eyes', 'mouth', 'limbStyle', 'pose', 'parts', 'traits', 'move1', 'move2', 'blueprint'],
   properties: {
     object: { type: 'string' },
     safe: { type: 'boolean' },
@@ -27,6 +33,7 @@ export const GENOME_SCHEMA = {
     parts: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['type', 'color'], properties: { type: { type: 'string', enum: PART_TYPES }, color: { type: 'string' } } } },
     move1: MOVE,
     move2: MOVE,
+    blueprint: BLUEPRINT,
     traits: { type: 'object', additionalProperties: false, required: ['hard', 'sharp', 'fast', 'big', 'soft'], properties: { hard: { type: 'number' }, sharp: { type: 'number' }, fast: { type: 'number' }, big: { type: 'number' }, soft: { type: 'number' } } },
   },
 };
@@ -48,7 +55,11 @@ Look at the MAIN object in the photo. The monster must be instantly recognizable
   cap (bottle caps, pen caps, jar lids), stem (apples, cherries, pears, bananas, chilis), leafCrown (pineapples, strawberries, carrots, potted plants), flower (flowers, flowering plants),
   seeds (strawberries, kiwis, sesame buns), spots (mushrooms, ladybugs, cookies, pizza toppings, dice, cows), spikes (cacti, hedgehogs, studs, sharp things),
   screen (phones, laptops, tablets, monitors, TVs, consoles, calculators: the face appears on the screen), headphones (headphones, earmuffs), beak (ducks, birds, chicks, penguins),
-  ears (cats, bears, bunnies, plush animals), horns (bulls, devils, spicy things), antenna (radios, robots, gadgets, insects), wings (birds, insects, planes, anything that flies), tail (animals, cables, plugs).
+  ears (cats, bears, bunnies, plush animals), horns (bulls, devils, spicy things), antenna (radios, robots, gadgets, insects), wings (birds, insects, planes, anything that flies), tail (animals, cables, plugs),
+  wheels (cars, bikes, scooters, skateboards, strollers, suitcases: replaces the legs), glasses (glasses, sunglasses, goggles, VR headsets), buttons (keyboards, remotes, controllers, calculators), pages (books, notebooks, magazines),
+  flame (candles, lighters, matches, fires), neck (guitars, violins, ukuleles), canopy (umbrellas, mushroom caps, lamp shades, tents, hats), dial (watches, clocks, scales, gauges: the face sits on the dial),
+  band (one label or belt around the body: labeled bottles and cans, jars, belts), stripes (striped things: socks, sweaters, bees, candy canes, zebras), pocket (backpacks, bags, jackets, jeans), backrest (chairs, sofas, thrones, beds).
+  Always pick at least one part. Prefer the part that names the object's defining feature over generic ones like spots or tail.
   Give each part a hex color taken from the photo.
 - eyes: dot (calm, cute), happy (cheerful), wink (cheeky), big (curious, tiny things). mouth: smile, open (excited), fang (tough, spicy, sharp), o (surprised). Match the object's personality and vary them.
 - limbStyle: stick for slim, light, fast or electronic objects; stub for round, heavy or soft objects. pose: cheer (energetic), wave (friendly), rest (lazy or heavy).
@@ -58,6 +69,18 @@ Look at the MAIN object in the photo. The monster must be instantly recognizable
 - move1 (basic attack) and move2 (special attack): two unique attacks that only THIS object could have. name: punchy, 1 to 3 words, a pun on what the object does (mug: "Espresso Splash" and "Handle Hook"; banana: "Peel Slip" and "Potassium Beam"; laptop: "Ctrl Alt Delete" and "Blue Screen").
   kind: melee (hits, bites, slaps at close range), shot (throws or spits one projectile), beam (laser, ray or stream in a long line), burst (explosion, splash or shockwave around itself), dash (charges or leaps at the target). move1 and move2 must have different kinds. Use the full variety: shot, beam and dash are as welcome as melee and burst; let the name decide (a "Beam" or "Ray" is a beam, a "Splash" or "Pop" is a burst, a "Spit" or "Toss" is a shot, a "Slide" or "Rush" is a dash).
   element: usually the monster's own element; the special may use another fitting element.
+- blueprint: the 3D model. Build the object as a chunky low-poly toy from 8 to 24 simple parts so that its silhouette is unmistakable, even as a tiny icon. This matters most.
+  Coordinates: x = right, y = up (the ground is y = 0), z = toward the viewer. Units are free (the model gets rescaled); think of a model about 2 wide and 2 to 2.6 tall. x/y/z is the CENTER of a part.
+  Shapes (w = size along x, h = along y, d = along z, before rotation; rx/ry/rz = rotation in degrees): box; sphere (ellipsoid); cylinder (axis along y; rx=90 turns the axis to z, rz=90 to x);
+  cone (tip up); capsule (axis along y); wheel (upright disc with its axle along x, like a car wheel seen from the front: w = thickness, h = d = diameter; add ry=90 for a wheel seen from the side);
+  ring (torus facing the viewer: w = h = outer diameter, d = thickness); dome (half sphere, flat side down); wedge (ramp: full height at the back, sloping down toward the viewer).
+  Rules: (1) Show the object from its most recognizable side. Most things face the viewer; long thin vehicles (scooters, bikes, skateboards) are shown from the side with their length along x.
+  (2) Chibi toy proportions: compact, a little taller and rounder than reality, defining features exaggerated (car: wheels, windshield, headlights; animal: ears, snout, tail, legs; device: screen, buttons).
+  (3) Real colors from the photo. Add 2 to 6 small detail parts in contrasting colors (lights, labels, buttons, screens, stripes, logos as plain blocks, never text).
+  (4) Parts must touch or overlap, nothing floats, the lowest parts sit on y = 0. Thin details sit 0.02 to 0.06 in front of the surface they belong to.
+  (5) Keep one calm area on the front (+z) for the face, at least 0.7 wide and 0.6 tall, on a light or mid-colored surface if possible. face.x and face.y = center of the eyes on that surface, face.size = 0.6 (small) to 1.2 (large), face.mouthY = y of the mouth (about 0.3 below the eyes, or on a bumper or snout).
+  (6) arms: true adds two little arms (false for vehicles and for animals with their own legs). feet: true adds two little feet (false when the model has wheels, legs or a broad base).
+  Examples of good blueprints: ${JSON.stringify(BLUEPRINT_EXAMPLES)}
 - safe: false if the photo mainly shows a human person or face, nudity, weapons, drugs or anything inappropriate; otherwise true.
 - matchesPrompt: 0 to 1, how well the object fits today's drop task: "${dropPrompt}".`;
 }
@@ -72,5 +95,6 @@ export function genomeFromAI(ai, seed) {
     limbs: { style: ai.limbStyle, pose: ai.pose },
     parts: (ai.parts || []).slice(0, 3),
     moves: [ai.move1, ai.move2].filter(Boolean),
+    ...(ai.blueprint?.parts?.length >= 3 ? { blueprint: ai.blueprint } : {}),
   };
 }

@@ -34,7 +34,7 @@ export default function LimitScreen() {
               Today's drop
             </div>
             <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '26px', fontWeight: 900, letterSpacing: '-0.03em', lineHeight: '28px', whiteSpace: 'pre' }}>
-              Something red
+              Anything
             </div>
           </div>
           <div style={{ alignItems: 'center', backgroundColor: 'var(--color-ink)', borderColor: 'var(--color-ink)', borderRadius: '8px', borderStyle: 'solid', borderWidth: '2px', boxShadow: 'var(--color-ink) 2px 2px 0px', boxSizing: 'border-box', display: 'flex', paddingBlock: '4px', paddingInline: '10px', rotate: '3deg', transformOrigin: '50% 50%' }}>
@@ -62,7 +62,7 @@ export default function LimitScreen() {
           <div style={{ borderBottomLeftRadius: '7px', borderBottomRightRadius: '7px', borderColor: 'var(--color-ink)', borderStyle: 'solid', borderTopLeftRadius: '6px', borderTopRightRadius: '6px', borderWidth: '2px', boxSizing: 'border-box', flexShrink: '0', height: '15px', width: '12px' }} />
         </div>
         <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em', lineHeight: '16px', textTransform: 'uppercase' }}>
-          0 of 3 hatches left today
+          0 of 3 eggs left today
         </div>
       </div>
       <div style={{ boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '8px', paddingInline: '24px', paddingTop: '22px' }}>

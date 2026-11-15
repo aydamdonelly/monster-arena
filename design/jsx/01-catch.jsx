@@ -34,28 +34,21 @@ export default function CatchScreen() {
               Today's drop
             </div>
             <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontFeatureSettings: '"tnum"', fontSize: '13px', fontWeight: 600, letterSpacing: '0.04em', lineHeight: '16px' }}>
-              ends in 01:42:10
+              royale in 03:12:44
             </div>
           </div>
           <div style={{ boxSizing: 'border-box', paddingBottom: '2px', paddingTop: '4px' }}>
             <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '46px', fontWeight: 900, letterSpacing: '-0.035em', lineHeight: '44px' }}>
-              Something red
+              Anything
             </div>
           </div>
-          <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', gap: '10px', paddingTop: '4px' }}>
-            <div style={{ alignItems: 'center', backgroundColor: 'var(--color-fire)', borderColor: 'var(--color-ink)', borderRadius: '8px', borderStyle: 'solid', borderWidth: '2px', boxShadow: 'var(--color-ink) 2px 2px 0px', boxSizing: 'border-box', display: 'flex', paddingBlock: '4px', paddingInline: '10px', rotate: '-3deg', transformOrigin: '50% 50%' }}>
-              <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', lineHeight: '16px', textTransform: 'uppercase' }}>
-                Fire
-              </div>
-            </div>
-            <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '15px', fontWeight: 500, lineHeight: '20px' }}>
-              +10% in the arena
-            </div>
+          <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '15px', fontWeight: 500, lineHeight: '20px' }}>
+            Snap it. Get an egg. It hatches at 5 PM.
           </div>
         </div>
       </div>
       <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', flexBasis: '0%', flexDirection: 'column', flexGrow: '1', gap: '22px', justifyContent: 'center', paddingInline: '24px', paddingTop: '8px', position: 'relative' }}>
-        <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/23PBYT9XYP67C5P2PNFH7GWADG.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '150px', position: 'absolute', right: '-52px', rotate: '-16deg', top: '64px', transformOrigin: '0% 0%', width: '150px' }} />
+        <div style={{ backgroundImage: 'url(https://app.paper.design/file-assets/01M7G9S5H366FFSVQ5X70JQ0KG/1A6DR12HQZBHPP52R814Z1FN55.png)', backgroundPosition: '50%', backgroundRepeat: 'no-repeat', backgroundSize: '100% 100%', boxSizing: 'border-box', height: '150px', position: 'absolute', right: '-52px', rotate: '-14deg', top: '64px', transformOrigin: '0% 0%', width: '150px' }} />
         <div style={{ boxSizing: 'border-box', display: 'flex', flexShrink: '0', height: '190px', position: 'relative', width: '190px' }}>
           <div style={{ backgroundColor: 'var(--color-ground)', borderColor: 'var(--color-ink)', borderRadius: '90px', borderStyle: 'solid', borderWidth: '2px', boxSizing: 'border-box', height: '180px', left: '10px', position: 'absolute', top: '10px', width: '180px' }} />
           <div style={{ alignItems: 'center', backgroundColor: 'var(--color-ink)', borderRadius: '90px', boxSizing: 'border-box', display: 'flex', height: '180px', justifyContent: 'center', left: '0px', position: 'absolute', top: '0px', width: '180px' }}>
@@ -70,7 +63,7 @@ export default function CatchScreen() {
             Snap any object.
           </div>
           <div style={{ boxSizing: 'border-box', color: 'var(--color-muted)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '16px', fontWeight: 500, lineHeight: '22px', textAlign: 'center' }}>
-            It hatches in 5 seconds.
+            You get an egg. It hatches at 5 PM.
           </div>
         </div>
         <div style={{ alignItems: 'center', boxSizing: 'border-box', display: 'flex', gap: '10px', paddingBottom: '6px', position: 'relative' }}>
@@ -80,7 +73,7 @@ export default function CatchScreen() {
             <div style={{ borderBottomLeftRadius: '7px', borderBottomRightRadius: '7px', borderColor: 'var(--color-ink)', borderStyle: 'solid', borderTopLeftRadius: '6px', borderTopRightRadius: '6px', borderWidth: '2px', boxSizing: 'border-box', flexShrink: '0', height: '15px', width: '12px' }} />
           </div>
           <div style={{ boxSizing: 'border-box', color: 'var(--color-ink)', fontFamily: '"Rubik", system-ui, sans-serif', fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em', lineHeight: '16px', textTransform: 'uppercase' }}>
-            2 of 3 hatches left today
+            2 of 3 eggs left today
           </div>
         </div>
       </div>

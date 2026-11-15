@@ -53,12 +53,14 @@ async function runNow(ctx: MutationCtx, title: string, includeTest: boolean) {
     .withIndex("by_creation_time", (q) => q.gte("_creationTime", now - DAY_MS))
     .order("desc")
     .take(600);
-  // Je Spieler zählt sein neuestes Monster; Testspieler nur auf Wunsch
-  const latest = new Map<Id<"players">, Doc<"monsters">>();
-  for (const m of recent) if (!latest.has(m.playerId)) latest.set(m.playerId, m);
+  // Jedes fertige Ei der letzten 24 Stunden kämpft mit (wer drei Eier gelegt hat, hat drei Monster im Rennen).
+  // Testspieler nur auf Wunsch. Eier, deren Monster noch nicht fertig gebaut ist, bleiben bis zur nächsten Royale Eier.
+  const owners = new Map<Id<"players">, Doc<"players"> | null>();
   const entrants: Entrant[] = [];
-  for (const m of latest.values()) {
-    const owner = await ctx.db.get("players", m.playerId);
+  for (const m of recent) {
+    if (m.status !== "egg" || !m.ready || !m.genome) continue;
+    if (!owners.has(m.playerId)) owners.set(m.playerId, await ctx.db.get("players", m.playerId));
+    const owner = owners.get(m.playerId);
     if (!owner || (owner.isTest && !includeTest)) continue;
     entrants.push({
       id: m._id,
@@ -112,6 +114,8 @@ async function runNow(ctx: MutationCtx, title: string, includeTest: boolean) {
   const data: RoyaleData = { title, dayElement, entrantCount: entrants.length, heats, final };
   const championId = (final.winnerId as Id<"monsters"> | null) ?? undefined;
   const royaleId = await ctx.db.insert("royales", { startsAt: now, status: "done", rounds: data, championId });
+  // Jetzt schlüpfen alle: Erst ab hier zeigen die Abfragen Namen und Aussehen der Monster
+  for (const e of entrants) await ctx.db.patch("monsters", e.id, { status: "hatched", hatchedAt: now });
   return { royaleId, championId: championId ?? null, entrants: entrants.length, heats: heats.length, finalists: finalists.length };
 }
 
@@ -198,7 +202,7 @@ export const round = query({
   },
 });
 
-// Wie lief es für mein Monster in der letzten Royale?
+// Wie lief es für meine Monster in der letzten Royale? Oben steht das beste Ergebnis, entries listet alle eigenen Monster.
 export const mine = query({
   args: { deviceId: v.string() },
   handler: async (ctx, { deviceId }) => {
@@ -209,24 +213,30 @@ export const mine = query({
       .withIndex("by_deviceId", (q) => q.eq("deviceId", deviceId))
       .unique();
     if (!player) return { royaleId: r.doc._id, entered: false as const };
-    const find = (rd: Round) => rd.entrants.find((e) => e.playerId === player._id);
-    const inFinal = find(r.data.final);
-    const heatIndex = r.data.heats.findIndex((h) => !!find(h));
-    const me = inFinal ?? (heatIndex >= 0 ? find(r.data.heats[heatIndex]) : undefined);
-    if (!me) return { royaleId: r.doc._id, entered: false as const };
-    const heat = heatIndex >= 0 ? r.data.heats[heatIndex] : null;
-    return {
-      royaleId: r.doc._id,
-      entered: true as const,
-      monsterId: me.id,
-      monsterName: me.name,
-      heatIndex: heatIndex >= 0 ? heatIndex : null,
-      heatPlace: heat ? heat.placements.indexOf(me.id) + 1 : null,
-      heatSize: heat ? heat.entrants.length : null,
-      inFinal: !!inFinal,
-      finalPlace: inFinal ? r.data.final.placements.indexOf(me.id) + 1 : null,
-      finalSize: r.data.final.entrants.length,
-      champion: r.data.final.winnerId === me.id,
+    const entries: {
+      monsterId: Id<"monsters">; monsterName: string; heatIndex: number | null; heatPlace: number | null; heatSize: number | null;
+      inFinal: boolean; finalPlace: number | null; finalSize: number; champion: boolean; score: number;
+    }[] = [];
+    const seen = new Set<string>();
+    const add = (e: Entrant) => {
+      if (seen.has(e.id)) return;
+      seen.add(e.id);
+      const heatIndex = r.data.heats.findIndex((h) => h.entrants.some((x) => x.id === e.id));
+      const heat = heatIndex >= 0 ? r.data.heats[heatIndex] : null;
+      const inFinal = r.data.final.entrants.some((x) => x.id === e.id);
+      const finalPlace = inFinal ? r.data.final.placements.indexOf(e.id) + 1 : null;
+      const heatPlace = heat ? heat.placements.indexOf(e.id) + 1 : null;
+      entries.push({
+        monsterId: e.id, monsterName: e.name, heatIndex: heatIndex >= 0 ? heatIndex : null, heatPlace, heatSize: heat ? heat.entrants.length : null,
+        inFinal, finalPlace, finalSize: r.data.final.entrants.length, champion: r.data.final.winnerId === e.id,
+        score: inFinal ? (finalPlace ?? 99) : 100 + (heatPlace ?? 99),
+      });
     };
+    for (const e of r.data.final.entrants) if (e.playerId === player._id) add(e);
+    for (const h of r.data.heats) for (const e of h.entrants) if (e.playerId === player._id) add(e);
+    if (!entries.length) return { royaleId: r.doc._id, entered: false as const };
+    entries.sort((a, b) => a.score - b.score);
+    const best = entries[0];
+    return { royaleId: r.doc._id, entered: true as const, ...best, entries };
   },
 });

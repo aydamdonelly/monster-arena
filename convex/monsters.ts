@@ -106,6 +106,11 @@ const monsterDoc = v.object({
   stats: v.object({ hp: v.number(), atk: v.number(), def: v.number(), spd: v.number() }),
   stage: v.number(),
   photoId: v.optional(v.id("_storage")),
+  status: v.optional(v.string()),
+  ready: v.optional(v.boolean()),
+  golden: v.optional(v.boolean()),
+  hatchedAt: v.optional(v.number()),
+  attempts: v.optional(v.number()),
 });
 
 export const create = mutation({
@@ -147,13 +152,24 @@ const monsterView = v.object({
   photoId: v.optional(v.id("_storage")),
   photoUrl: v.union(v.string(), v.null()),
   ownerName: v.union(v.string(), v.null()),
+  status: v.string(), // "egg" | "hatched" | "rejected"
+  golden: v.boolean(),
+  ready: v.optional(v.boolean()),
+  hatchedAt: v.optional(v.number()),
+  attempts: v.optional(v.number()),
 });
 
 // Monster plus Foto-URL und Trainername (Testmonster tragen ihr Foto im Genom)
 async function view(ctx: QueryCtx, m: Doc<"monsters">, owner?: Doc<"players"> | null) {
   const player = owner === undefined ? await ctx.db.get("players", m.playerId) : owner;
   const photoUrl = m.photoId ? await ctx.storage.getUrl(m.photoId) : ((m.genome?.photoUrl as string | undefined) ?? null);
-  return { ...m, photoUrl, ownerName: player?.name ?? null };
+  const status = m.status ?? "hatched";
+  const golden = m.golden ?? !!m.genome?.golden;
+  // Ein Ei verrät nichts über sein Monster: kein Genom, kein Name, keine Werte
+  if (status !== "hatched") {
+    return { ...m, genome: null, name: "Egg", element: "unknown", stats: { hp: 0, atk: 0, def: 0, spd: 0 }, ready: undefined, photoUrl, ownerName: player?.name ?? null, status, golden };
+  }
+  return { ...m, photoUrl, ownerName: player?.name ?? null, status, golden };
 }
 
 export const listMine = query({
@@ -187,6 +203,7 @@ export const listToday = query({
     for (const m of monsters) {
       const owner = await ctx.db.get("players", m.playerId);
       if (owner?.isTest && !args.includeTest) continue;
+      if (m.status === "rejected") continue;
       out.push(await view(ctx, m, owner));
     }
     return out;

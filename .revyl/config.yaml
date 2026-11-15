@@ -1,0 +1,33 @@
+project:
+    id: ec9d90f5-c449-40aa-bb12-a673afe598b9
+session:
+    idle_timeout_seconds: 1800
+build:
+    framework: expo
+    env:
+        EXPO_PUBLIC_CONVEX_URL: https://superb-buzzard-616.convex.cloud
+    profiles:
+        pull-request:
+            ios:
+                app_id: 55307733-a41b-4d3e-bc5e-c131607a188f
+                setup_commands:
+                    - npm ci
+                    - npx expo prebuild --platform ios --no-install
+                build_commands:
+                    - cd ios && pod install && WS=$(ls -d *.xcworkspace | head -n 1) && xcodebuild -workspace "$WS" -scheme "${WS%.xcworkspace}" -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' ARCHS=arm64 -derivedDataPath build
+                output_path: ios/build/Build/Products/Release-iphonesimulator/*.app
+pr_review:
+    enabled: true
+    build:
+        kind: revyl
+        profile: pull-request
+    proof_of_changes:
+        enabled: true
+        harness:
+            kind: revyl
+        always_verify:
+            - The app launches to its first screen.
+        system_prompt: >-
+            This app talks to a shared Convex dev deployment, so every proof creates real players.
+            Whenever onboarding asks for a trainer name, enter a name that starts with "QA" (for example "QA Revyl");
+            those players are marked as test players automatically. Never use a name without the QA prefix.

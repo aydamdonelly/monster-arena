@@ -134,7 +134,7 @@
         ['', nf(d.snappers), 'Snapped a photo', pct(d.snappers, d.visitors) + ' of visitors'],
         ['', nf(waiting), 'Eggs laid', d.rejected ? `${nf(d.rejected)} more rejected (people or private)` : (d.building ? `${nf(d.building)} still being built` : 'all built and ready')],
         ['', nf(d.answered), 'Told us their source', pct(d.answered, d.snappers || d.visitors) + (d.snappers ? ' of snappers' : ' of visitors')],
-        ['', nf(d.named), 'Named a trainer', pct(d.named, d.snappers || d.visitors) + (d.snappers ? ' of snappers' : '')],
+        ['', nf(d.named), 'Gave their name', pct(d.named, d.snappers || d.visitors) + (d.snappers ? ' of snappers' : '')],
         ['', nf(d.returning), 'Came back', 'again 30+ minutes after the first visit'],
         ['', nf(d.purchases), 'Golden Eggs sold', d.purchases ? '$' + d.revenueUsd.toFixed(2) : (d.sandboxPurchases ? `payments in test mode · ${nf(d.sandboxPurchases)} test purchase${d.sandboxPurchases === 1 ? '' : 's'}` : 'at $1')],
       ].map(([c, n, l, s]) => `<div class="tile ${c}"><b>${n}</b><span>${l}</span><i>${s}</i></div>`).join('');

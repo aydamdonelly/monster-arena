@@ -54,14 +54,14 @@ export default function ReplayScreen() {
             { label: 'Close', onPress: closeArena },
             round.isFinal
               ? {
-                  label: 'Watch again',
+                  label: 'Again',
                   primary: true,
                   onPress: () => {
                     setResult(null);
                     setTake((t) => t + 1);
                   },
                 }
-              : { label: 'Watch the final', primary: true, onPress: () => router.replace({ pathname: '/arena/replay', params: { round: '-1' } }) },
+              : { label: 'The final', primary: true, onPress: () => router.replace({ pathname: '/arena/replay', params: { round: '-1' } }) },
           ]}
         />
       ) : null}

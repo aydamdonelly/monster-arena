@@ -96,9 +96,9 @@ export function ResultPanel({ headline, detail, actions }: { headline: string; d
         <View style={styles.actions}>
           {actions.map((a) =>
             a.primary ? (
-              <PrimaryButton key={a.label} label={a.label} onPress={a.onPress} style={styles.action} />
+              <PrimaryButton key={a.label} label={a.label} onPress={a.onPress} style={styles.action} labelStyle={styles.actionLabel} />
             ) : (
-              <OutlineButton key={a.label} label={a.label} onPress={a.onPress} style={styles.action} />
+              <OutlineButton key={a.label} label={a.label} onPress={a.onPress} style={styles.action} labelStyle={styles.actionLabel} />
             ),
           )}
         </View>
@@ -150,4 +150,5 @@ const styles = StyleSheet.create({
   },
   actions: { flexDirection: 'row', gap: 10, marginTop: 10 },
   action: { flex: 1 },
+  actionLabel: { fontSize: 17, lineHeight: 21 },
 });

@@ -1,4 +1,5 @@
 import { useMutation } from 'convex/react';
+import * as Device from 'expo-device';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, View } from 'react-native';
 
@@ -17,6 +18,7 @@ const DeviceContext = createContext<DeviceState | null>(null);
 // Woher kommt dieser Besuch? Für die Zahlen (Wiederkehrer, TikTok-Anteil), ohne persönliche Daten.
 function openMeta(): Record<string, string> {
   const meta: Record<string, string> = { os: Platform.OS };
+  if (Platform.OS !== 'web' && !Device.isDevice) meta.sim = '1';
   if (Platform.OS !== 'web' || typeof window === 'undefined') return meta;
   try {
     const q = new URLSearchParams(window.location.search);

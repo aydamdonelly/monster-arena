@@ -112,11 +112,20 @@ export default function EggScreen({
     <Shell onClose={onClose} sticker={golden ? 'Your golden egg is in' : 'Your egg is in'}>
       <EggStage seed={eggId || 'new'} photo={photo} golden={golden} layIn={layIn && !answered} />
       <Appear delay={layIn ? 900 : 0} style={styles.copy}>
-        <Text style={styles.headline}>It hatches at {royaleHour()} sharp.</Text>
-        <Countdown />
-        <Text style={Type.muted}>
-          {royaleLocalNote() ? `That is ${royaleLocalNote()}. ` : ''}Come back to watch it fight.
-        </Text>
+        {demoKey ? (
+          <>
+            <Text style={styles.headline}>Ready to hatch.</Text>
+            <Text style={Type.muted}>Normally it hatches at {royaleHour()} with everyone else. For a demo, hatch it now.</Text>
+          </>
+        ) : (
+          <>
+            <Text style={styles.headline}>It hatches at {royaleHour()} sharp.</Text>
+            <Countdown />
+            <Text style={Type.muted}>
+              {royaleLocalNote() ? `That is ${royaleLocalNote()}. ` : ''}Come back to watch it fight.
+            </Text>
+          </>
+        )}
       </Appear>
       {offer ? (
         <Appear delay={layIn ? 1000 : 80} style={styles.offerLane}>

@@ -1,47 +1,54 @@
 # Snappymon
 
-Take a photo of any real object, it hatches into your own low-poly 3D monster with two unique attacks, and all of today's monsters fight it out in a battle royale.
+Snap a photo of anything and you get an egg. At 5 PM Pacific every egg hatches live in a 3D arena and the monsters fight a free-for-all royale. Afterwards your monster lives in your collection and the fight stays as a replay.
 
 - **Live:** https://snappymon.com (web export of the same Expo app)
-- **Demo video:** _TODO: link coming soon_
 - **Build log:** [hackathon.md](hackathon.md)
 
-Built at the YC Consumer Mobile Hackathon, 2026-11-15.
+Built at the YC Consumer Mobile Hackathon on 2026-11-15.
+
+## Rules
+
+- One free egg per royale.
+- A second egg only as a Golden Egg for $1, paid through Whop. The Whop checkout is still in progress (see below).
+- An egg laid after 5 PM waits for the next day's royale.
 
 ## How it works
 
-1. **Photo.** The app uploads the photo to Convex file storage.
-2. **Genome.** A Convex action ([convex/hatch.ts](convex/hatch.ts)) asks an OpenAI vision model for a genome. The model can only pick from fixed menus (body shape, proportions, parts, element, two attacks), defined as a strict JSON schema in [monster-kit/genome-spec.js](monster-kit/genome-spec.js). It also returns the object's own colors from the photo.
-3. **Monster.** [monster-kit](monster-kit/) builds the monster procedurally in three.js from that genome and those colors. In the app it renders through an Expo DOM component ([components/MonsterView.tsx](components/MonsterView.tsx)).
-4. **Royale.** The fight ([monster-kit/royale-sim.js](monster-kit/royale-sim.js)) is deterministic. The server ([convex/royale.ts](convex/royale.ts)) computes the result and stores the seed, and the arena replays the same seeded fight in 3D ([monster-kit/arena.js](monster-kit/arena.js)).
+1. **Photo to egg.** The app uploads the photo to Convex file storage and calls `eggs.lay`. You get an egg right away ([convex/eggs.ts](convex/eggs.ts)).
+2. **Hidden monster.** In the background a Convex action sends the photo to an OpenAI vision model (`gpt-6.1-sol`, falling back to `gpt-6-luna`). The model returns a strict JSON genome: name, element, two attacks, and a low-poly blueprint of the object built from 8 to 24 primitives (boxes, spheres, cylinders, wheels and so on) ([monster-kit/genome-spec.js](monster-kit/genome-spec.js)). The monster stays hidden inside the egg.
+3. **Hatch and royale at 5 PM.** A Convex cron runs the royale at 5 PM Pacific ([convex/crons.ts](convex/crons.ts)). The server runs the deterministic simulation ([monster-kit/royale-sim.js](monster-kit/royale-sim.js)) and stores only the seed, the entrant ids and the result ([convex/royale.ts](convex/royale.ts)). Every client re-simulates the same fight from seed + entrants and draws it in 3D ([monster-kit/arena.js](monster-kit/arena.js)), so all phones and the `/tv` projector show the same fight. Above 20 entrants there are heats of 16 and a final; below 8, wild house monsters fill the arena.
+4. **Collection and replay.** After the royale the monster shows up in your collection, and the Arena tab shows your placement and replays your heat or the final.
 
 ```mermaid
 flowchart LR
-  P[Photo] --> App[Expo app<br/>iOS, Android, web]
-  App -->|upload| S[(Convex file storage)]
-  App -->|hatch action| H[convex/hatch.ts]
-  H -->|photo + fixed menus| O[OpenAI vision model]
-  O -->|genome JSON| H
-  H --> DB[(Convex DB)]
-  DB -->|realtime queries| App
-  App --> K[monster-kit<br/>three.js monster]
-  R[convex/royale.ts<br/>royale-sim.js] -->|seed + result| DB
-  DB --> A[Arena replay in 3D]
+  P[Photo] --> E[Egg<br/>eggs.lay]
+  E -->|scheduled action| V[Vision model]
+  V -->|genome + blueprint| DB[(Convex)]
+  C[5 PM cron] --> R[royale.run<br/>seed + entrant ids]
+  R --> DB
+  DB -->|realtime query| A[Every client re-simulates<br/>and renders in 3D]
+  A --> Col[Collection + replay]
 ```
 
-## Built with
+## Stack
 
-- **[Capy](https://capy.ai)** built the app in these pull requests, each opened from a Capy thread:
-  - [#1](https://github.com/aydamdonelly/monster-arena/pull/1) Expo + Convex app scaffold with 3D Catch/Arena/Collection tabs
-  - [#2](https://github.com/aydamdonelly/monster-arena/pull/2) Snappymon: photo catch, hatching moment, onboarding, collection
-- **Revyl**: Capy's pull requests were built and checked on a Revyl cloud iPhone (see the "Verified" sections of #1 and #2). Proof of changes on Revyl is being enabled in a parallel pull request.
-- **[Convex](https://convex.dev)**: schema with indexes ([convex/schema.ts](convex/schema.ts)), the hatch action, the royale, realtime queries (`useQuery` in the Arena, Collection and monster pages) and file storage for the photos.
-- **[Expo](https://expo.dev) SDK 58** with Expo Router, and Expo DOM components to run three.js inside the native app.
-- **[three.js](https://threejs.org)** for the procedural low-poly monsters and the arena.
-- **[OpenAI](https://openai.com)**: a vision model through the Responses API with a strict JSON schema turns the photo into a genome.
-- **[Vercel](https://vercel.com)** hosts the web export at snappymon.com ([scripts/deploy-web.sh](scripts/deploy-web.sh)).
-- **[Paper](https://paper.design)**: the screen designs in [design/](design/).
-- **[Claude Code](https://claude.com/claude-code)** for local orchestration. The commits on `main` that did not come from a Capy pull request (monster-kit, the hatch and royale backend, the deploy script, the design handoff) were written with Claude Code.
+- **Expo SDK 58** with Expo Router, for iOS, Android and web from one codebase.
+- **Expo DOM components** (`'use dom'`) run **three.js** inside the native app for the monsters and the arena ([components/MonsterView.tsx](components/MonsterView.tsx), [components/ArenaView.tsx](components/ArenaView.tsx), [monster-kit/](monster-kit/)).
+- **Convex** for the database, file storage, server functions, scheduling and crons ([convex/](convex/)).
+- **Vercel** hosts the web export at snappymon.com ([scripts/deploy-web.sh](scripts/deploy-web.sh)). Screen designs were made in Paper ([design/](design/)).
+
+## Built with the hackathon stack
+
+**Capy.** Each feature was built in its own Capy thread, which opened the pull request: #1 Expo + Convex scaffold (MONS-1), #2 photo catch and hatching (MONS-2), #3 first docs (MONS-6), #4 sticker-sheet design pass (MONS-4), #5 Arena tab, replays and `/tv` (MONS-3), #7 egg-first flow (MONS-7), #8 Revyl config (MONS-5), #6 Keiki back channel (MONS-8), the Whop Golden Egg work (MONS-9) and this docs PR (MONS-10). Several threads ran at the same time on separate machines. Commits on `main` that did not come through a pull request (monster-kit, most of the Convex backend, the deploy script, the design handoff) were written with Claude Code.
+
+**Revyl.** Capy threads built Release iOS simulator apps on Revyl and ran them on a cloud iPhone to check #1, #2 and #5 (see the verification sections of those PRs). [#8](https://github.com/aydamdonelly/monster-arena/pull/8) adds `.revyl/config.yaml` with a pull-request build profile and turns on proof of changes for every PR, with a rule that test players use a "QA" name. #8 is open.
+
+**Convex.** The database (players, monsters/eggs, royales, events, counters), file storage for the photos, and the scheduled monster generation: `eggs.generate` runs as a scheduled action and retries up to 8 times with growing waits, and a cron every 3 minutes restarts stuck eggs. A second cron starts the royale at 5 PM Pacific. The analytics page (`/analytics`) reads the key-protected `stats.overview` query ([convex/stats.ts](convex/stats.ts)). HTTP webhooks (`convex/http.ts`) for Keiki and Whop are in the open PRs, not on `main` yet.
+
+**Whop.** The Golden Egg ($1, a second egg for the same royale) is paid through a Whop checkout: a Convex action creates the checkout and a `/whop` webhook credits the egg. The credit logic is on `main` (`convex/golden.ts`); the checkout and webhook are on the `whop-golden-egg` branch and still in progress. Until they land, the buy button says the egg shop opens soon.
+
+**Keiki.** iMessage is the back channel: the egg screen has "Text me when it hatches", which opens Messages with a link code to Keiki's shared number. Keiki tool webhooks link the phone to the player, and Convex functions send a royale reminder and, afterwards, each player's placement with a replay link. This is [#6](https://github.com/aydamdonelly/monster-arena/pull/6), still open.
 
 ## Run locally
 
@@ -54,5 +61,5 @@ npx expo start
 Environment variables (names only):
 
 - App: `EXPO_PUBLIC_CONVEX_URL` (required), `EXPO_PUBLIC_WEB_URL` (optional, base URL for share links)
-- Convex deployment: `OPENAI_API_KEY` (for hatching), `ADMIN_KEY` (starting a royale)
+- Convex: `OPENAI_API_KEY` (monster generation), `ADMIN_KEY` (admin page, starting a royale), `STATS_KEY` (analytics page)
 - Web deploy only: `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`

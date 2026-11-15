@@ -117,13 +117,13 @@ function bodyGeometry(shape, seed, proportions) {
 const ray = new THREE.Raycaster();
 function hit(body, origin, dir) {
   ray.set(origin, dir.clone().normalize());
-  const h = ray.intersectObject(body, false)[0];
+  const h = ray.intersectObject(body, true)[0];
   return h ? h.point.clone() : null;
 }
 const frontPoint = (body, x, y) => hit(body, new THREE.Vector3(x, y, 10), new THREE.Vector3(0, 0, -1));
 // Kleiner Versatz, damit der Strahl nicht exakt durch einen Pol-Vertex läuft; Treffer unterhalb der Mitte ist ungültig.
 function topPoint(body, x, z) {
-  const bb = body.geometry.boundingBox; const cy = (bb.max.y + bb.min.y) / 2;
+  const bb = body.geometry?.boundingBox || body.userData.bb; const cy = (bb.max.y + bb.min.y) / 2;
   const p = hit(body, new THREE.Vector3(x + 0.011, 10, z + 0.013), new THREE.Vector3(0, -1, 0));
   return p && p.y > cy ? p : new THREE.Vector3(x, bb.max.y - 0.02, z);
 }
@@ -173,18 +173,20 @@ function addDial(rig, body, bb, center, eyeY, color) {
 }
 function addFace(rig, body, bb, center, face) {
   const h = bb.max.y - bb.min.y; const w = bb.max.x - bb.min.x;
-  const eyeY = center.y + h * (face.eyeHeight ?? EYE_HEIGHT[face.shape] ?? 0.08);
-  const dx = w * (face.eyeSpread ?? 0.17);
+  const eyeY = face.eyeYAbs ?? center.y + h * (face.eyeHeight ?? EYE_HEIGHT[face.shape] ?? 0.08);
+  const dx = face.dxAbs ?? w * (face.eyeSpread ?? 0.17);
+  const cx = face.cx ?? 0; const fs = face.fs ?? 1; // Mitte und Größe des Gesichts (für frei gebaute Modelle)
   if (face.screen) addScreen(rig, body, bb, center, eyeY, face.screen);
   else if (face.dial) addDial(rig, body, bb, center, eyeY, face.dial);
   const lift = face.screen || face.dial ? 0.026 : 0; // Gesicht liegt dann auf dem Bildschirm oder Zifferblatt
-  const ink = face.screen ? basic('#9ff3ff') : mat(INK, { roughness: 0.35, flatShading: false, outline: false });
-  const mouthDark = face.screen ? '#9ff3ff' : '#5a2a2a';
+  const ink = face.screen ? basic('#9ff3ff') : face.light ? basic('#ffffff') : mat(INK, { roughness: 0.35, flatShading: false, outline: false });
+  const pupil = mat(INK, { roughness: 0.35, flatShading: false, outline: false });
+  const mouthDark = face.screen ? '#9ff3ff' : face.light ? '#ffffff' : '#5a2a2a';
   const white = basic('#ffffff');
   const kinds = face.eyes === 'wink' ? ['dot', 'happy'] : [face.eyes || 'dot', face.eyes || 'dot'];
   const eyes = [];
   [-1, 1].forEach((s, i) => {
-    const p = frontPoint(body, s * dx, eyeY); if (!p) return;
+    const p = frontPoint(body, cx + s * dx, eyeY); if (!p) return;
     let e;
     if (kinds[i] === 'happy') {
       e = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.038, 6, 14, Math.PI), ink);
@@ -193,11 +195,12 @@ function addFace(rig, body, bb, center, face) {
       e = new THREE.Group();
       const ball = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), ink); ball.scale.z = 0.45; e.add(ball);
       const hl = new THREE.Mesh(new THREE.SphereGeometry(r * 0.32, 10, 8), white); hl.position.set(-r * 0.3, r * 0.38, r * 0.42); e.add(hl);
+      if (face.light) { const pu = new THREE.Mesh(new THREE.SphereGeometry(r * 0.58, 12, 10), pupil); pu.scale.z = 0.5; pu.position.z = r * 0.3; e.add(pu); hl.position.z = r * 0.62; } // auf dunklem Grund: weißes Auge mit Pupille
     }
-    stickTo(e, p, softNormal(p, center), 0.015 + lift); rig.add(e); eyes.push(e);
+    stickTo(e, p, face.flat ? new THREE.Vector3(0, 0, 1) : softNormal(p, center), 0.015 + lift); e.scale.multiplyScalar(fs); e.userData.sy = e.scale.y; rig.add(e); eyes.push(e);
   });
 
-  const mp = frontPoint(body, 0, eyeY - h * (face.beak ? 0.1 : 0.12));
+  const mp = face.mouth === 'none' ? null : frontPoint(body, cx, face.mouthYAbs ?? eyeY - h * (face.beak ? 0.1 : 0.12));
   if (mp && face.beak) { // Entenschnabel ersetzt den Mund
     const bill = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 5), mat(face.beak));
     bill.scale.set(1.3, 0.42, 1.0); bill.position.copy(mp).add(new THREE.Vector3(0, 0, 0.07)); rig.add(bill);
@@ -213,17 +216,17 @@ function addFace(rig, body, bb, center, face) {
     } else if (face.mouth === 'o') {
       m = stickTo(new THREE.Mesh(new THREE.CircleGeometry(0.06, 14), basic(mouthDark)), mp, softNormal(mp, center), 0.012 + lift);
     } else {
-      m = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.036, 6, 14, Math.PI), ink);
-      stickTo(m, mp, softNormal(mp, center), 0.012 + lift); m.rotateZ(Math.PI); // ∪
+      m = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.036, 6, 14, Math.PI), face.mouthLight ? basic('#ffffff') : ink);
+      stickTo(m, mp, face.flat ? new THREE.Vector3(0, 0, 1) : softNormal(mp, center), 0.012 + lift); m.rotateZ(Math.PI); // ∪
     }
-    rig.add(m);
+    m.scale.multiplyScalar(fs); rig.add(m);
   }
 
-  if (face.blush !== false) {
+  if (face.blush !== false && !face.light) {
     [-1, 1].forEach((s) => {
-      const p = frontPoint(body, s * dx * 1.6, eyeY - h * 0.09); if (!p) return;
+      const p = frontPoint(body, cx + s * dx * 1.6, eyeY - (face.dxAbs ? 0.2 * fs : h * 0.09)); if (!p) return;
       const b = new THREE.Mesh(new THREE.CircleGeometry(0.12, 16), basic('#ff7f95', { transparent: true, opacity: 0.6 }));
-      b.scale.y = 0.7; rig.add(stickTo(b, p, softNormal(p, center), 0.01 + lift));
+      b.scale.y = 0.7; b.scale.multiplyScalar(fs); rig.add(stickTo(b, p, softNormal(p, center), 0.01 + lift));
     });
   }
   return eyes;
@@ -237,7 +240,7 @@ function addLimbs(rig, body, bb, center, limbs, bodyColor, skipRightArm, noLegs)
   const m = sticks ? mat(limbs.color || INK, { roughness: 0.6, flatShading: false }) : mat(bodyColor);
   [-1, 1].forEach((s) => {
     if (s === 1 && skipRightArm) return;
-    const p = sidePoint(body, s, center.y - h * 0.05); if (!p) return;
+    const p = sidePoint(body, s, limbs.armY ?? center.y - h * 0.05); if (!p) return;
     const pivot = new THREE.Group(); pivot.position.copy(p);
     const len = sticks ? 0.42 : 0.28; const rad = sticks ? 0.045 : 0.13;
     const arm = new THREE.Mesh(new THREE.CapsuleGeometry(rad, len, 3, 8), m);
@@ -509,8 +512,86 @@ function makeShadow(width) {
   return m;
 }
 
+
+// ---------- Freie Modelle aus Bauteilen (Blueprint) ----------
+// Die KI setzt jedes Objekt aus einfachen Körpern zusammen, damit es wirklich wie das Objekt aussieht.
+// genome.blueprint = { parts: [{ shape, x, y, z, w, h, d, rx, ry, rz, color }], face: { x, y, size }, arms, feet }
+// Koordinaten: x nach rechts, y nach oben (Boden bei 0), z zum Betrachter. Der Maßstab ist egal: Das Modell wird auf Monstergröße gebracht.
+// Formen: box, sphere, cylinder (Achse y), cone (Spitze oben), capsule (Achse y), wheel (Scheibe, Achse x: w = Dicke), ring (in der x-y-Ebene, d = Dicke),
+//         dome (Halbkugel, flache Seite unten), wedge (Keil, hohe Kante hinten, Schräge zeigt nach vorn)
+const BP_GEO = {};
+function bpGeometry(shape) {
+  if (BP_GEO[shape]) return BP_GEO[shape];
+  let g;
+  switch (shape) {
+    case 'sphere': g = new THREE.IcosahedronGeometry(0.5, 1); break;
+    case 'cylinder': g = new THREE.CylinderGeometry(0.5, 0.5, 1, 10).toNonIndexed(); break;
+    case 'cone': g = new THREE.ConeGeometry(0.5, 1, 8).toNonIndexed(); break;
+    case 'capsule': g = new THREE.CapsuleGeometry(0.5, 1, 3, 8).toNonIndexed(); g.scale(1, 0.5, 1); break;
+    case 'wheel': g = new THREE.CylinderGeometry(0.5, 0.5, 1, 14).toNonIndexed(); g.rotateZ(Math.PI / 2); break;
+    case 'ring': g = new THREE.TorusGeometry(0.4, 0.1, 6, 16).toNonIndexed(); break;
+    case 'dome': g = new THREE.SphereGeometry(0.5, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2).toNonIndexed(); g.translate(0, -0.25, 0); g.scale(1, 2, 1); break;
+    case 'wedge': { // Keil: Grundfläche 1 x 1, hintere Kante hoch, vorn flach
+      const v = [-0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5];
+      const idx = [0, 1, 2, 0, 2, 3, 0, 4, 5, 0, 5, 1, 3, 2, 5, 3, 5, 4, 0, 3, 4, 1, 5, 2];
+      g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); g.setIndex(idx); g = g.toNonIndexed(); break;
+    }
+    default: g = new THREE.BoxGeometry(1, 1, 1).toNonIndexed();
+  }
+  g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere(); BP_GEO[shape] = g; return g;
+}
+const num = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
+function buildBlueprint(genome, opts = {}) {
+  const bp = genome.blueprint; const seed = genome.seed ?? hashString(JSON.stringify(genome)); const rand = rng(seed);
+  const golden = !!genome.golden; const gold = new THREE.Color('#f7c531');
+  const root = new THREE.Group(); root.name = genome.name || 'monster'; const rig = new THREE.Group(); root.add(rig);
+  const model = new THREE.Group(); const holders = []; let mainColor = '#f2a3b3'; let mainVol = 0;
+  for (const p of (bp.parts || []).slice(0, 40)) {
+    const w = Math.max(0.02, Math.abs(num(p.w, 0.5))), h = Math.max(0.02, Math.abs(num(p.h, 0.5))), d = Math.max(0.02, Math.abs(num(p.d, 0.5)));
+    let color = /^#[0-9a-f]{6}$/i.test(p.color || '') ? p.color : '#cccccc';
+    if (golden) color = '#' + new THREE.Color(color).lerp(gold, 0.72).getHexString();
+    const holder = new THREE.Group(); holder.position.set(num(p.x), num(p.y), num(p.z)); holder.rotation.set((num(p.rx) * Math.PI) / 180, (num(p.ry) * Math.PI) / 180, (num(p.rz) * Math.PI) / 180);
+    const mesh = new THREE.Mesh(bpGeometry(p.shape), mat(color, { outline: false, ...(golden ? { roughness: 0.34, emissive: '#5a3c00', emissiveIntensity: 0.32 } : {}) }));
+    mesh.scale.set(w, h, p.shape === 'ring' ? d / 0.2 : d); holder.add(mesh); holder.userData = { w, h, d, shape: p.shape }; model.add(holder); holders.push(holder);
+    if (w * h * d > mainVol) { mainVol = w * h * d; mainColor = color; }
+  }
+  // Auf Monstergröße bringen: Boden bei 0, in x und z zentriert
+  model.updateMatrixWorld(true); let raw = new THREE.Box3().setFromObject(model);
+  const size = raw.getSize(new THREE.Vector3()); const s = Math.min(2.35 / Math.max(size.y, 0.01), 2.7 / Math.max(size.x, 0.01), 2.9 / Math.max(size.z, 0.01));
+  const cxRaw = (raw.min.x + raw.max.x) / 2, czRaw = (raw.min.z + raw.max.z) / 2;
+  model.scale.setScalar(s); model.position.set(-cxRaw * s, -raw.min.y * s, -czRaw * s);
+  // Kontur: jedes Bauteil noch einmal, rundum etwas größer und umgestülpt (gleichmäßig dick, auch bei dünnen Teilen)
+  const t = (opts.outline ?? STYLE.outline) / s;
+  if (t > 0) for (const holder of holders) { const { w, h, d, shape } = holder.userData; const o = new THREE.Mesh(bpGeometry(shape), OUTLINE); o.scale.set(w + 2 * t, h + 2 * t, shape === 'ring' ? (d + 2 * t) / 0.2 : d + 2 * t); o.raycast = () => {}; holder.add(o); }
+  rig.add(model); model.updateMatrixWorld(true);
+  const bb = new THREE.Box3().setFromObject(model); const center = bb.getCenter(new THREE.Vector3()); model.userData.bb = bb; model.userData.topX = 0;
+  const H = bb.max.y - bb.min.y;
+  // Gesicht: Position aus dem Bauplan, per Raycast auf die Vorderseite gesetzt. Beide Augen sollen auf demselben Bauteil sitzen.
+  const f = bp.face || {}; const fs = Math.min(1.5, Math.max(0.45, num(f.size, 1)));
+  const fx = (num(f.x, cxRaw) - cxRaw) * s; let fy = (num(f.y, raw.min.y + size.y * 0.6) - raw.min.y) * s; fy = Math.min(bb.max.y - 0.15, Math.max(bb.min.y + 0.2, fy));
+  const probe = (x, y) => { ray.set(new THREE.Vector3(x, y, 20), new THREE.Vector3(0, 0, -1)); return ray.intersectObject(model, true)[0] || null; };
+  const c0 = probe(fx, fy); let dx = 0.3 * fs; let light = false;
+  if (c0) {
+    for (let i = 0; i < 5; i++) { const a = probe(fx - dx, fy), b = probe(fx + dx, fy); if (a && b && Math.abs(a.point.z - c0.point.z) < 0.28 && Math.abs(b.point.z - c0.point.z) < 0.28) break; dx *= 0.78; }
+    const col = c0.object.material?.color; if (col) { const hsl = col.getHSL({}); light = hsl.l < 0.2; }
+  }
+  const face = genome.face || {};
+  const my = f.mouthY !== undefined && f.mouthY !== null ? (num(f.mouthY) - raw.min.y) * s : fy - 0.3 * fs; const mh = probe(fx, my); const mcol = mh?.object.material?.color;
+  const eyes = addFace(rig, model, bb, center, { ...face, cx: fx, eyeYAbs: fy, dxAbs: dx, fs: fs * Math.min(1, dx / (0.3 * fs) + 0.25), mouthYAbs: my, light, mouthLight: mcol ? mcol.getHSL({}).l < 0.2 : light, flat: true, mouth: f.mouth === false || !mh ? 'none' : face.mouth });
+  const limbs = addLimbs(rig, model, bb, center, { ...(genome.limbs || {}), armY: Math.min(fy - 0.15, center.y) }, mainColor, bp.arms === false, bp.feet === false);
+  if (bp.arms === false) { for (const a of limbs.arms) rig.remove(a); limbs.arms = []; }
+  const anim = { floaters: [] };
+  if (golden) addGolden(rig, model, bb, anim);
+  const box = new THREE.Box3().setFromObject(rig); rig.position.y = -box.min.y;
+  root.add(makeShadow(Math.max(bb.max.x - bb.min.x, 1.2)));
+  root.scale.setScalar(genome.scale ?? 1);
+  root.userData.monster = { rig, eyes, limbs, anim, phase: rand() * 10, baseY: rig.position.y, height: box.max.y - box.min.y, model };
+  return root;
+}
+
 // ---------- Öffentliche API ----------
 export function buildMonster(genome, opts = {}) {
+  if (genome.blueprint?.parts?.length >= 3) { try { return buildBlueprint(genome, opts); } catch (e) { console.warn('blueprint failed, falling back', e); } }
   const seed = genome.seed ?? hashString(JSON.stringify(genome));
   const rand = rng(seed);
   const golden = !!genome.golden; // Goldenes Ei: goldener Körper, Krone, Funken (nur Optik, keine besseren Werte)
@@ -545,7 +626,7 @@ export function updateMonster(root, t) {
   m.rig.position.y = m.baseY + Math.abs(Math.sin(tt * 2.2)) * 0.06;
   const sq = 1 + Math.sin(tt * 4.4) * 0.025; m.rig.scale.set(1 / Math.sqrt(sq), sq, 1 / Math.sqrt(sq));
   m.rig.rotation.z = Math.sin(tt * 1.3) * 0.035;
-  const blink = (tt % 3.7) < 0.12 ? 0.12 : 1; for (const e of m.eyes) e.scale.y = blink;
+  const blink = (tt % 3.7) < 0.12 ? 0.12 : 1; for (const e of m.eyes) e.scale.y = (e.userData.sy ?? 1) * blink;
   for (const a of m.limbs.arms) a.rotation.z = a.userData.base + Math.sin(tt * 3 + a.userData.side) * 0.16;
   for (const f of m.anim.floaters) {
     if (f.flap) f.mesh.rotation.y = f.side * (0.6 + Math.sin(tt * 8) * 0.35);

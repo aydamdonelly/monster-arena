@@ -17,7 +17,7 @@ import TrainerRow from '@/components/TrainerRow';
 import { Appear, InkSticker, OutlineButton, PrimaryButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
-import { clock, royaleHour, royaleLocalNote, royaleTimeToday, useNow } from '@/lib/arena';
+import { clock, royaleHour, royaleIsToday, royaleLocalNote, royaleTimeToday, useNow } from '@/lib/arena';
 import { useDemoKey } from '@/lib/demo';
 import { useDeviceId } from '@/lib/device';
 import { Fonts, Palette, Radii, Type } from '@/lib/theme';
@@ -119,10 +119,10 @@ export default function EggScreen({
           </>
         ) : (
           <>
-            <Text style={styles.headline}>It hatches at {royaleHour()} sharp.</Text>
+            <Text style={styles.headline}>{royaleIsToday() ? `It hatches at ${royaleHour()} sharp.` : 'It hatches in tomorrow’s royale.'}</Text>
             <Countdown />
             <Text style={Type.muted}>
-              {royaleLocalNote() ? `That is ${royaleLocalNote()}. ` : ''}Come back to watch it fight.
+              {royaleIsToday() && royaleLocalNote() ? `That is ${royaleLocalNote()}. ` : ''}Come back to watch it fight.
             </Text>
           </>
         )}
@@ -184,7 +184,7 @@ function TextMe({ deviceId, quiet }: { deviceId: string; quiet: boolean }) {
       />
     </Svg>
   );
-  if (asked) return <OutlineButton label={`We'll text you at ${royaleHour()}`} icon={icon} onPress={() => {}} disabled />;
+  if (asked) return <OutlineButton label={royaleIsToday() ? `We'll text you at ${royaleHour()}` : "We'll text you tomorrow"} icon={icon} onPress={() => {}} disabled />;
   const Button = quiet ? OutlineButton : PrimaryButton;
   return (
     <Button
@@ -220,6 +220,16 @@ function Countdown() {
   const now = useNow();
   const left = royaleTimeToday() - now;
   const { live, watch } = useLiveRoyale();
+  if (!royaleIsToday()) {
+    return (
+      <View style={styles.countdown}>
+        <Text style={styles.clock} numberOfLines={1} adjustsFontSizeToFit>
+          TOMORROW
+        </Text>
+        <Text style={[Type.label, styles.muted, styles.toGo]}>the time is a surprise</Text>
+      </View>
+    );
+  }
   return (
     <View style={styles.countdown}>
       <Text style={styles.clock} numberOfLines={1} adjustsFontSizeToFit>

@@ -11,7 +11,7 @@ import MonsterView from '@/components/MonsterView';
 import ShareButton from '@/components/ShareButton';
 import { Appear, HardShadow, InkSticker, PrimaryButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
-import { clock, replayRound, royaleHour, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
+import { clock, replayRound, royaleHour, royaleIsToday, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
 import { getItem, setItem } from '@/lib/kv';
 import { useDemoKey } from '@/lib/demo';
@@ -90,7 +90,7 @@ function BeforeRoyale({ since }: { since: number }) {
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.titleRow}>
         <Text style={styles.title}>Royale</Text>
-        <InkSticker label={`${royaleHour()} sharp`} rotate={4} />
+        <InkSticker label={royaleIsToday() ? `Today · ${royaleHour()} sharp` : 'Tomorrow'} rotate={4} />
       </View>
 
       <View style={styles.countLane}>
@@ -98,7 +98,7 @@ function BeforeRoyale({ since }: { since: number }) {
           <View style={styles.countBlock}>
             <Text style={Type.label}>{left > 0 ? 'Hatching in' : 'Hatching'}</Text>
             <Text style={[styles.countdown, left <= 0 && styles.countdownSoon]} numberOfLines={1} adjustsFontSizeToFit>
-              {left > 0 ? clock(left) : 'HATCHING…'}
+              {!royaleIsToday() ? 'TOMORROW' : left > 0 ? clock(left) : 'HATCHING…'}
             </Text>
           </View>
         </HardShadow>
@@ -138,7 +138,9 @@ function BeforeRoyale({ since }: { since: number }) {
       </View>
       {eggs && waiting !== undefined && total === 0 ? <Text style={[Type.muted, styles.empty]}>No eggs yet today. Be the first.</Text> : null}
 
-      <Text style={styles.footer}>At {royaleHour()} every egg hatches and they all fight. Last monster standing wins.</Text>
+      <Text style={styles.footer}>
+        {royaleIsToday() ? `At ${royaleHour()} every egg hatches` : 'At the next royale every egg hatches'} and they all fight. Last monster standing wins.
+      </Text>
     </ScrollView>
   );
 }
@@ -210,7 +212,7 @@ function RoyaleResult({ summary, mine }: { summary: Summary; mine: Mine }) {
       ) : (
         <Appear style={styles.placeBlock}>
           <Text style={styles.watchLine}>{"You weren't in this one"}</Text>
-          <Text style={Type.muted}>{`Snap something before ${royaleHour()} to enter the next royale.`}</Text>
+          <Text style={Type.muted}>{royaleIsToday() ? `Snap something before ${royaleHour()} to enter the next royale.` : 'Snap something today to enter the next royale.'}</Text>
         </Appear>
       )}
       <View style={styles.resultActions}>
@@ -253,6 +255,7 @@ function RoyaleResult({ summary, mine }: { summary: Summary; mine: Mine }) {
 
 function NextRoyale() {
   const left = royaleTimeToday() - useNow();
+  if (!royaleIsToday()) return <Text style={styles.next}>Next royale tomorrow. New drop, new time.</Text>;
   return <Text style={styles.next}>{left > 0 ? `Next royale in ${clock(left)}` : 'Next royale starting'}</Text>;
 }
 

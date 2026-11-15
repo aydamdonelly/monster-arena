@@ -9,7 +9,7 @@ import MonsterDetails, { hatchedAt, MonsterTopBar } from '@/components/MonsterDe
 import ShareButton from '@/components/ShareButton';
 import { Appear, OutlineButton, PrimaryButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
-import { royaleHour } from '@/lib/arena';
+import { royaleHour, royaleIsToday } from '@/lib/arena';
 import type { Id } from '@/convex/_generated/dataModel';
 import { Palette, Type } from '@/lib/theme';
 
@@ -38,7 +38,7 @@ export default function MonsterPage({ id, mode }: { id: string; mode: 'owner' | 
             <MonsterDetails monster={monster} />
             {mode === 'public' ? (
               <Appear delay={460} style={styles.cta}>
-                <Text style={styles.tagline}>{`Snap anything. Get an egg. It hatches at ${royaleHour()} and fights in the royale.`}</Text>
+                <Text style={styles.tagline}>{`Snap anything. Get an egg. It hatches ${royaleIsToday() ? `at ${royaleHour()}` : 'tomorrow'} and fights in the royale.`}</Text>
                 <PrimaryButton label="Catch your own" onPress={catchOwn} />
                 <ShareButton id={monster._id} name={monster.name} variant="outline" />
               </Appear>
@@ -59,7 +59,7 @@ function EggTeaser({ id, photoUrl }: { id: string; photoUrl: string | null }) {
   return (
     <View style={styles.missing}>
       <Egg seed={id} width={150} photoUrl={photoUrl} />
-      <Text style={[Type.heading, styles.center]}>{`This egg hatches at ${royaleHour()}.`}</Text>
+      <Text style={[Type.heading, styles.center]}>{royaleIsToday() ? `This egg hatches at ${royaleHour()}.` : 'This egg hatches in tomorrow’s royale.'}</Text>
       <Text style={[Type.muted, styles.center]}>Snap anything to get your own.</Text>
       <PrimaryButton label="Snap your own" onPress={() => router.replace('/')} style={styles.full} />
     </View>

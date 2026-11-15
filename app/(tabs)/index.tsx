@@ -19,7 +19,7 @@ import { useLiveRoyale } from '@/components/RoyaleTakeover';
 import { Appear, HardShadow, InkSticker, OutlineButton, PrimaryButton, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
-import { clock, royaleHour, royaleTimeToday, useNow } from '@/lib/arena';
+import { clock, royaleHour, royaleIsToday, royaleTimeToday, useNow } from '@/lib/arena';
 import { useDemoKey } from '@/lib/demo';
 import { useDeviceId } from '@/lib/device';
 import { celebrate, tap } from '@/lib/haptics';
@@ -220,7 +220,7 @@ function EggTile({ entry }: { entry: Entry }) {
   return (
     <Pressable accessibilityRole="button" onPress={() => router.push(`/egg/${entry._id}`)} style={styles.eggTile}>
       <Egg seed={entry._id} width={58} golden={entry.golden} rotate={-4} />
-      <InkSticker label={royaleHour()} rotate={-4} fontSize={12} style={styles.tileSticker} />
+      <InkSticker label={royaleIsToday() ? royaleHour() : 'Tomorrow'} rotate={-4} fontSize={12} style={styles.tileSticker} />
       {entry.photoUrl ? (
         <View style={styles.tilePhoto}>
           <HardShadow offset={3} radius={6} rotate={8}>
@@ -337,6 +337,16 @@ function HatchClock() {
   const now = useNow();
   const left = royaleTimeToday() - now;
   const { live, watch } = useLiveRoyale();
+  if (!royaleIsToday()) {
+    return (
+      <View style={styles.hatchClock}>
+        <Text style={styles.hatchClockTime} numberOfLines={1} adjustsFontSizeToFit>
+          TOMORROW
+        </Text>
+        <Text style={[Type.label, styles.mutedLabel]}>the time is a surprise</Text>
+      </View>
+    );
+  }
   return (
     <View style={styles.hatchClock}>
       <Text style={styles.hatchClockTime} numberOfLines={1} adjustsFontSizeToFit>
@@ -354,6 +364,19 @@ function HatchClock() {
 function DropCard() {
   const now = useNow();
   const left = royaleTimeToday() - now;
+  if (!royaleIsToday()) {
+    return (
+      <HardShadow offset={5} radius={Radii.card}>
+        <View style={styles.drop}>
+          <View style={styles.dropTop}>
+            <Text style={Type.label}>{"Tomorrow's drop"}</Text>
+          </View>
+          <Text style={styles.dropTitle}>Surprise</Text>
+          <Text style={styles.dropLine}>New drop, new time. Snap today, it hatches in tomorrow’s royale.</Text>
+        </View>
+      </HardShadow>
+    );
+  }
   return (
     <HardShadow offset={5} radius={Radii.card}>
       <View style={styles.drop}>

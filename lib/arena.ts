@@ -51,6 +51,10 @@ export function replayRound(mine: { entered: boolean; inFinal?: boolean; heatInd
   return mine?.entered && !mine.inFinal && mine.heatIndex != null ? String(mine.heatIndex) : '-1';
 }
 
+export function royaleIsToday() {
+  return royaleTimeToday() - Date.now() <= 12 * 60 * 60 * 1000;
+}
+
 export function formatCountdown(ms: number) {
   if (ms <= 0) return 'any moment now';
   const s = Math.floor(ms / 1000);

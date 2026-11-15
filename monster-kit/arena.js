@@ -242,7 +242,7 @@ export function createArena(container, opts = {}) {
       if (target) { cx = target.x; cz = target.y; yaw += Math.atan2(-target.fx, -target.fy); }
       pitch = 0.5; dist = 7.5;
     } else { // auto: alle Lebenden im Bild, zieht sich mit der Zone zusammen
-      if (winnerId) { const w = sim.state.monsters.find((m) => m.id === winnerId); if (w) { cx = w.x; cz = w.y; } pitch = 0.3; dist = 8.5; yaw += now * 0.0005; }
+      if (winnerId) { const w = sim.state.monsters.find((m) => m.id === winnerId); if (w) { cx = w.x; cz = w.y; yaw = rig.userYaw + Math.atan2(w.fx, w.fy) + Math.sin(now * 0.0011) * 0.5; } pitch = 0.3; dist = 8.5; }
       else if (alive.length) {
         for (const m of alive) { cx += m.x; cz += m.y; } cx /= alive.length; cz /= alive.length;
         let far = 0; for (const m of alive) far = Math.max(far, Math.sqrt((m.x - cx) * (m.x - cx) + (m.y - cz) * (m.y - cz)));
@@ -321,7 +321,7 @@ export function createArena(container, opts = {}) {
       updateMonster(a.root, simTime * (m.alive ? 1.6 : 0));
       // HP-Balken, Namen, Angriffs-Label
       const p = toScreen(a.holder.position.x, a.height + 0.28 + a.holder.position.y, a.holder.position.z);
-      const showHp = m.alive && p.ok && started;
+      const showHp = m.alive && p.ok && started && !winnerId;
       a.hp.style.display = showHp ? 'block' : 'none';
       if (showHp) { a.hp.style.left = p.x + 'px'; a.hp.style.top = p.y + 'px'; }
       if (a.shownHp !== m.hp) { a.shownHp = m.hp; const f = Math.max(0, m.hp / m.maxHp); const col = f < 0.3 ? '#ff5a4a' : f < 0.6 ? '#f5c542' : '#4cc38a'; a.hpFill.style.width = a.fillEl.style.width = `${f * 100}%`; a.hpFill.style.background = a.fillEl.style.background = col; }

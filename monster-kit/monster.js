@@ -363,6 +363,18 @@ function addParts(rig, body, bb, center, parts, bodyColor, rand, shape) {
   return anim;
 }
 
+// Goldenes Ei: schwebende Krone und kreisende Funken
+function addGolden(rig, body, bb, anim) {
+  const gold = mat('#ffd23f', { roughness: 0.3, emissive: '#7a5200', emissiveIntensity: 0.4 });
+  const tp = apexPoint(body); const crown = new THREE.Group();
+  crown.add(new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.27, 0.1, 8), gold));
+  for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2; const sp = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.18, 4), gold); sp.position.set(Math.cos(a) * 0.2, 0.13, Math.sin(a) * 0.2); crown.add(sp); }
+  crown.position.copy(tp).add(new THREE.Vector3(0, 0.46, 0)); crown.rotation.z = 0.14; rig.add(crown);
+  anim.floaters.push({ mesh: crown, base: crown.position.y, amp: 0.05, speed: 2.4 });
+  const r = (bb.max.x - bb.min.x) / 2 + 0.36; const h = bb.max.y - bb.min.y; const spark = basic('#fff3b0');
+  for (let i = 0; i < 4; i++) { const sp = new THREE.Mesh(new THREE.OctahedronGeometry(0.075), spark); rig.add(sp); anim.floaters.push({ mesh: sp, orbit: true, r, y: bb.min.y + h * (0.22 + 0.19 * i), speed: 1.1 + i * 0.23, phase: i * 1.7 }); }
+}
+
 function makeShadow(width) {
   const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
   const grd = g.createRadialGradient(64, 64, 0, 64, 64, 64); grd.addColorStop(0, 'rgba(0,0,0,0.26)'); grd.addColorStop(1, 'rgba(0,0,0,0)');
@@ -376,11 +388,12 @@ function makeShadow(width) {
 export function buildMonster(genome) {
   const seed = genome.seed ?? hashString(JSON.stringify(genome));
   const rand = rng(seed);
-  const bodyColor = genome.body?.color || '#f2a3b3';
+  const golden = !!genome.golden; // Goldenes Ei: goldener Körper, Krone, Funken (nur Optik, keine besseren Werte)
+  const bodyColor = golden ? '#' + new THREE.Color(genome.body?.color || '#f2a3b3').lerp(new THREE.Color('#f7c531'), 0.74).getHexString() : genome.body?.color || '#f2a3b3';
   const shape = genome.body?.shape || 'blob'; const proportions = shape === 'bean' && genome.body?.proportions === 'wide' ? 'normal' : genome.body?.proportions || 'normal';
   const root = new THREE.Group(); root.name = genome.name || 'monster';
   const rig = new THREE.Group(); root.add(rig);
-  const body = new THREE.Mesh(bodyGeometry(shape, seed, proportions), mat(bodyColor));
+  const body = new THREE.Mesh(bodyGeometry(shape, seed, proportions), mat(bodyColor, golden ? { roughness: 0.34, emissive: '#5a3c00', emissiveIntensity: 0.32 } : {}));
   body.userData.topX = (TOP_X[shape] || 0) * (PROPORTIONS[proportions] || PROPORTIONS.normal)[0];
   body.updateMatrixWorld(true);
   const bb = body.geometry.boundingBox.clone(); const center = bb.getCenter(new THREE.Vector3());
@@ -389,6 +402,7 @@ export function buildMonster(genome) {
   const eyes = addFace(rig, body, bb, center, { shape, ...(genome.face || {}), beak: has('beak') ? colorOf('beak', '#ffa23a') : null, screen: has('screen') ? colorOf('screen', '#1f2633') : null });
   const limbs = addLimbs(rig, body, bb, center, genome.limbs || {}, bodyColor, has('handle'));
   const anim = addParts(rig, body, bb, center, parts, bodyColor, rand, shape);
+  if (golden) addGolden(rig, body, bb, anim);
   rig.add(body);
   const box = new THREE.Box3().setFromObject(rig);
   rig.position.y = -box.min.y;
@@ -408,6 +422,7 @@ export function updateMonster(root, t) {
   for (const a of m.limbs.arms) a.rotation.z = a.userData.base + Math.sin(tt * 3 + a.userData.side) * 0.16;
   for (const f of m.anim.floaters) {
     if (f.flap) f.mesh.rotation.y = f.side * (0.6 + Math.sin(tt * 8) * 0.35);
+    else if (f.orbit) { const a = tt * f.speed + f.phase; f.mesh.position.set(Math.cos(a) * f.r, f.y + Math.sin(tt * 2 + f.phase) * 0.08, Math.sin(a) * f.r); f.mesh.rotation.y = a * 2; f.mesh.scale.setScalar(0.65 + 0.55 * Math.abs(Math.sin(tt * 3 + f.phase))); }
     else f.mesh.position.y = f.base + Math.sin(tt * f.speed + (f.phase || 0)) * f.amp;
   }
 }

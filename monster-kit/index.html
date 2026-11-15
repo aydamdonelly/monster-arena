@@ -14,7 +14,7 @@
   <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }</script>
 </head>
 <body>
-  <div id="ui"><button id="presets">Presets</button><button id="shuffle">Zufall</button><button id="fotos">Fotos ▶</button></div>
+  <div id="ui"><button id="presets">Presets</button><button id="shuffle">Zufall</button><button id="fotos">Fotos ▶</button><button id="gold">Gold</button></div>
   <div id="labels"></div>
   <script type="module">
     import * as THREE from 'three';
@@ -46,6 +46,7 @@
       show(rows.slice(from, from + 5).map((r, i) => ({ ...genomeFromAI(r.genome, 1000 + from + i), photo: r.image })));
     }
     document.getElementById('fotos').onclick = fotos;
+    document.getElementById('gold').onclick = () => show(PRESETS.map((g) => ({ ...g, golden: true })));
     function resize() {
       const w = window.innerWidth, h = window.innerHeight; renderer.setSize(w, h); camera.aspect = w / h;
       const width = Math.max(8, count * 2.9 + 0.8); const d = width / (2 * Math.tan((camera.fov * Math.PI) / 360) * camera.aspect);

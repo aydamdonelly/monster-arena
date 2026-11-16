@@ -23,6 +23,7 @@ type Props = {
   camera?: 'auto' | 'tilt' | 'top' | 'follow';
   followId?: string | null;
   speed?: number;
+  hatchPace?: number;
   bottom?: number;
   intro?: number;
   title?: string;
@@ -33,7 +34,7 @@ type Props = {
 
 type Arena = ReturnType<typeof createArena>;
 
-export default function ArenaView({ entrants, seed, dayElement, camera = 'auto', followId, speed = 1, bottom = 0, intro = 3, title, controls = true, onEnd }: Props) {
+export default function ArenaView({ entrants, seed, dayElement, camera = 'auto', followId, speed = 1, hatchPace = 1, bottom = 0, intro = 3, title, controls = true, onEnd }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const arena = useRef<Arena | null>(null);
   const entrantsKey = JSON.stringify(entrants);
@@ -49,6 +50,7 @@ export default function ArenaView({ entrants, seed, dayElement, camera = 'auto',
       camera,
       followId: followId ?? null,
       speed,
+      hatchPace,
       bottom,
       intro,
       title,
@@ -70,7 +72,7 @@ export default function ArenaView({ entrants, seed, dayElement, camera = 'auto',
     } catch (e) {
       host.textContent = String(e);
     }
-  }, [entrantsKey, seed, dayElement, intro, title, controls]);
+  }, [entrantsKey, seed, dayElement, intro, title, controls, hatchPace]);
 
   useEffect(() => arena.current?.setCamera(camera), [camera]);
   useEffect(() => arena.current?.setFollow(followId ?? null), [followId]);

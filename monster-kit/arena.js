@@ -354,13 +354,15 @@ export function createArena(container, opts = {}) {
     if (o.hatch) { // Eier stehen an den Startplätzen und platzen nacheinander auf, das eigene zuletzt
       const order = sim.state.monsters.map((m) => m.id).sort((a, b) => (a === followId ? 1 : 0) - (b === followId ? 1 : 0));
       const hasOwn = !!followId && order.includes(followId); const others = order.length - (hasOwn ? 1 : 0);
-      const gap = Math.min(0.3, Math.max(0.15, 3.4 / Math.max(1, others))); const t0 = 1.15; montage = []; montageCur = null;
+      // opts.hatchPace: Zeit je Ei relativ zum Grundtempo (1 = rund 0,3 s je Ei; 1,5 = etwas ruhiger, kommt vom Server)
+      const pace = Math.min(3, Math.max(0.6, o.hatchPace || 1)); const lead = 0.09 * pace;
+      const gap = Math.min(0.3 * pace, Math.max(0.15 * pace, (3.4 * pace) / Math.max(1, others))); const t0 = 1.15; montage = []; montageCur = null;
       order.forEach((id, i) => {
         const a = actors.get(id); const m = sim.state.monsters.find((x) => x.id === id); if (!a || !m) return; const own = id === followId;
-        a.hatchAt = t0 + i * gap + (own ? 0.4 : 0); a.shotAt = a.hatchAt - (own ? 0.4 : 0.09); a.order = i; montage.push(a);
+        a.hatchAt = t0 + i * gap + (own ? 0.45 : 0); a.shotAt = a.hatchAt - (own ? 0.45 : lead); a.order = i; montage.push(a);
         a.egg.position.set(m.x, 0, m.y); a.egg.scale.setScalar(0.001); a.dropAt = i * 0.05;
       });
-      hatchEnd = t0 + Math.max(0, order.length - 1) * gap + (hasOwn ? 0.4 + 1.2 : 0.7);
+      hatchEnd = t0 + Math.max(0, order.length - 1) * gap + (hasOwn ? 0.45 + 1.3 : 0.8);
       banner(o.title || 'THE EGGS ARE IN', 1.0);
     } else if (o.intro > 0) banner(o.title || 'CHOOSE YOUR MONSTER!', 0); else start();
   }

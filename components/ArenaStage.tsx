@@ -6,7 +6,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import ArenaView from '@/components/ArenaView';
 import { HardShadow, InkSticker, OutlineButton, PrimaryButton } from '@/components/ui';
-import { getFightSpeed, type ArenaResult, type Entrant } from '@/lib/arena';
+import { getFightSpeed, getHatchPace, type ArenaResult, type Entrant } from '@/lib/arena';
 import { Fonts, Palette, Radii, Type } from '@/lib/theme';
 
 type Props = {
@@ -19,6 +19,7 @@ type Props = {
   live?: boolean;
   caption?: string | null;
   speed?: number;
+  hatchPace?: number;
   onEnd: (result: ArenaResult) => void;
   children?: ReactNode;
 };
@@ -28,7 +29,7 @@ export function closeArena() {
   else router.replace('/arena');
 }
 
-export default function ArenaStage({ entrants, seed, dayElement, followId, title, label, live, caption, speed, onEnd, children }: Props) {
+export default function ArenaStage({ entrants, seed, dayElement, followId, title, label, live, caption, speed, hatchPace, onEnd, children }: Props) {
   const insets = useSafeAreaInsets();
   return (
     <View style={styles.root}>
@@ -64,6 +65,7 @@ export default function ArenaStage({ entrants, seed, dayElement, followId, title
           followId={followId}
           camera={followId ? 'follow' : 'auto'}
           speed={speed ?? getFightSpeed()}
+          hatchPace={hatchPace ?? getHatchPace()}
           bottom={!children && caption ? insets.bottom + 88 : 0}
           title={title}
           onEnd={async (r) => onEnd(r)}

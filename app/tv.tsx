@@ -195,6 +195,7 @@ function Show({ summary, adminKey, includeTest }: { summary: Summary; adminKey?:
         seed={round.seed}
         dayElement={round.dayElement}
         speed={round.speed ?? 2}
+        hatchPace={round.hatchPace ?? 1.5}
         title={isFinal ? 'FINAL' : `HEAT ${step + 1}/${heats}`}
         controls={false}
         onEnd={async () => setEnded(true)}

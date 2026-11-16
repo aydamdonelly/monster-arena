@@ -2,6 +2,8 @@ import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import { Platform } from 'react-native';
 
+import { captureWebcam, webcamSupported } from '@/lib/webcam';
+
 const MAX_SIDE = 1024;
 
 export type Photo = { uri: string; width: number; height: number };
@@ -21,6 +23,10 @@ export async function pickPhoto(source: 'camera' | 'library'): Promise<Photo | n
 
 async function launchPicker(source: 'camera' | 'library'): Promise<Photo | null> {
   const options: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 1 };
+  if (source === 'camera' && Platform.OS === 'web' && webcamSupported()) {
+    const webcam = await captureWebcam(async () => toPhoto(await ImagePicker.launchImageLibraryAsync(options)));
+    if (webcam !== 'unavailable') return webcam.photo;
+  }
   let result: ImagePicker.ImagePickerResult;
   if (source === 'camera' && Platform.OS !== 'web') {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -32,6 +38,10 @@ async function launchPicker(source: 'camera' | 'library'): Promise<Photo | null>
   } else {
     result = await ImagePicker.launchImageLibraryAsync(options);
   }
+  return toPhoto(result);
+}
+
+function toPhoto(result: ImagePicker.ImagePickerResult): Photo | null {
   const asset = result.canceled ? null : result.assets[0];
   return asset ? { uri: asset.uri, width: asset.width, height: asset.height } : null;
 }

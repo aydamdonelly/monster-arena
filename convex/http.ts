@@ -1,4 +1,4 @@
-// HTTP-Endpunkte. /whop: Webhook von Whop (payment.succeeded) für das Goldene Ei.
+// HTTP-Endpunkte. /whop: Webhook von Whop (payment.succeeded) für das Goldene Ei. /keiki/: Webhook-Tools des Keiki-Agenten.
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
@@ -74,6 +74,33 @@ http.route({
       }
     }
     return new Response("OK", { status: 200 });
+  }),
+});
+
+// Keiki-Webhook-Tools: POST /keiki/<KEIKI_TOOL_TOKEN>/link_player und /keiki/<KEIKI_TOOL_TOKEN>/unlink_player
+// Keiki schickt { input, context }; context.phone ist der Kontakt, der gerade schreibt.
+http.route({
+  pathPrefix: "/keiki/",
+  method: "POST",
+  handler: httpAction(async (ctx, req) => {
+    const [token = "", tool = ""] = new URL(req.url).pathname.slice("/keiki/".length).split("/");
+    const expected = process.env.KEIKI_TOOL_TOKEN ?? "";
+    if (expected.length < 32 || !sameString(token, expected)) return new Response("Not found", { status: 404 });
+
+    const body = (await req.json().catch(() => null)) as { input?: unknown; context?: unknown } | null;
+    const input = (body?.input ?? {}) as { code?: unknown };
+    const context = (body?.context ?? {}) as { phone?: unknown };
+    const phone = typeof context.phone === "string" ? context.phone.trim() : "";
+    if (!phone) return Response.json({ ok: false, error: "No contact phone in the tool context." }, { status: 400 });
+
+    if (tool === "link_player") {
+      if (typeof input.code !== "string" || !input.code.trim()) {
+        return Response.json({ ok: false, error: "Pass the SNAP-XXXXX code as code." }, { status: 400 });
+      }
+      return Response.json(await ctx.runMutation(internal.keiki.link, { code: input.code, phone }));
+    }
+    if (tool === "unlink_player") return Response.json(await ctx.runMutation(internal.keiki.unlink, { phone }));
+    return new Response("Not found", { status: 404 });
   }),
 });
 

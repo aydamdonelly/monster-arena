@@ -1,6 +1,5 @@
 import { useMutation, useQuery } from 'convex/react';
 import type { FunctionReturnType } from 'convex/server';
-import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { type ComponentRef, type ReactNode, type Ref, useEffect, useRef, useState } from 'react';
 import { Image } from 'expo-image';
@@ -14,6 +13,7 @@ import GoldenEggSheet from '@/components/GoldenEggSheet';
 import { useLiveRoyale } from '@/components/RoyaleTakeover';
 import SourceChips, { useSource } from '@/components/SourceChips';
 import ShareButton from '@/components/ShareButton';
+import TextMeButton from '@/components/TextMeButton';
 import TrainerRow from '@/components/TrainerRow';
 import { Appear, InkSticker, OutlineButton, PrimaryButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
@@ -26,7 +26,6 @@ import { Fonts, Palette, Radii, Type } from '@/lib/theme';
 export type Entry = FunctionReturnType<typeof api.monsters.listMine>[number];
 
 const native = Platform.OS !== 'web';
-const SMS_NUMBER = process.env.EXPO_PUBLIC_SMS_NUMBER;
 
 export default function EggScreen({
   eggId,
@@ -153,12 +152,8 @@ export default function EggScreen({
         />
       </Appear>
       <Appear delay={layIn ? 1100 : 160} style={styles.actions}>
-        {demoKey ? <HatchNowButton /> : SMS_NUMBER ? <TextMe deviceId={deviceId} quiet={offer} /> : null}
-        <ShareButton
-          variant={demoKey || SMS_NUMBER || offer ? 'outline' : 'primary'}
-          style={demoKey || SMS_NUMBER || offer ? styles.share : undefined}
-          labelStyle={demoKey || SMS_NUMBER || offer ? styles.shareLabel : undefined}
-        />
+        {demoKey ? <HatchNowButton /> : <TextMeButton primary={!offer} label="Text me when it hatches" />}
+        <ShareButton variant="outline" style={styles.share} labelStyle={styles.shareLabel} />
         {me?.admin ? <AdminStartButton onStarted={onClose} /> : null}
       </Appear>
       <GoldenEggSheet visible={sheet} from="egg" onClose={() => setSheet(false)} />
@@ -186,33 +181,6 @@ function GoldenOffer({ onPress }: { onPress: () => void }) {
         onPress={onPress}
       />
     </View>
-  );
-}
-
-function TextMe({ deviceId, quiet }: { deviceId: string; quiet: boolean }) {
-  const [asked, setAsked] = useState(false);
-  const icon = (
-    <Svg width={20} height={20} viewBox="0 0 24 24">
-      <Path
-        d="M4 6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-6l-5 4v-4a3 3 0 0 1-2-3z"
-        fill="none"
-        stroke={Palette.ink}
-        strokeWidth={2.2}
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-  if (asked) return <OutlineButton label={royaleIsToday() ? `We'll text you at ${royaleHour()}` : "We'll text you tomorrow"} icon={icon} onPress={() => {}} disabled />;
-  const Button = quiet ? OutlineButton : PrimaryButton;
-  return (
-    <Button
-      label="Text me when it hatches"
-      icon={icon}
-      onPress={() => {
-        setAsked(true);
-        Linking.openURL(`sms:${SMS_NUMBER}&body=${encodeURIComponent(`ROYALE ${deviceId.slice(0, 6)}`)}`);
-      }}
-    />
   );
 }
 

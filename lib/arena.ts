@@ -33,6 +33,13 @@ export function getFightSpeed() {
   return fightSpeed;
 }
 
+// Startzeit der letzten echten Royale (vom Server, siehe components/RoyaleClock.tsx)
+let lastRoyaleAt = 0;
+
+export function setLastRoyale(startsAt: number) {
+  if (Number.isFinite(startsAt)) lastRoyaleAt = startsAt;
+}
+
 function pacificMinutes() {
   return (((royaleUtcMin + PACIFIC_OFFSET_MIN) % 1440) + 1440) % 1440;
 }
@@ -51,14 +58,15 @@ function pacificLabel() {
   return `${h12}${mm ? `:${String(mm).padStart(2, '0')}` : ''} ${h < 12 ? 'AM' : 'PM'}`;
 }
 
-// Zeitpunkt der Royale als absoluter Moment, egal in welcher Zeitzone das Gerät steht.
-// Bis 30 Minuten danach bleibt es die heutige, dann zählt der Countdown zur nächsten.
+// Zeitpunkt der nächsten Royale als absoluter Moment, egal in welcher Zeitzone das Gerät steht.
+// Sobald die heutige Royale gelaufen ist, zählt alles zur nächsten: Ein Ei, das eine Minute nach dem Kampf gelegt wird,
+// schlüpft morgen. Solange sie noch nicht gestartet ist (der Start wartet kurz auf späte Eier), bleibt es bis zu 30 Minuten die heutige.
 export function royaleTimeToday() {
   const now = Date.now();
   const d = new Date(now);
   d.setUTCHours(0, royaleUtcMin, 0, 0);
   let t = d.getTime();
-  if (now > t + GRACE_MS) t += DAY_MS;
+  if (now > t + GRACE_MS || lastRoyaleAt >= t - 60 * 1000) t += DAY_MS;
   return t;
 }
 

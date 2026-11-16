@@ -3,7 +3,7 @@ import { router, usePathname } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
 import { api } from '@/convex/_generated/api';
-import { replayRound, royaleTimeToday, useNow } from '@/lib/arena';
+import { replayRound, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
 import { getItem, setItem } from '@/lib/kv';
 import { photoFlowActive } from '@/lib/photo';
@@ -43,7 +43,8 @@ export function useLiveRoyale() {
   const testMode = useTestMode();
   const summary = useQuery(api.royale.summary, testArgs(testMode));
   const mine = useQuery(api.royale.mine, deviceId ? { deviceId, ...testArgs(testMode) } : 'skip');
-  const live = !!summary && summary.startsAt >= royaleTimeToday() - 5 * 60 * 1000;
+  const now = useNow(5000);
+  const live = !!summary && now - summary.startsAt < TAKEOVER_WINDOW_MS; // "live" heißt: in den ersten 15 Minuten nach dem Start
   const watch = () => {
     if (!summary) return;
     setItem(`snappymon.watched.${summary._id}`, '1');

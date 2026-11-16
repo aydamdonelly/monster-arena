@@ -39,10 +39,8 @@ export default function AdminStartButton({ onStarted }: { onStarted?: () => void
     try {
       const { royaleId, round } = await adminStart({ deviceId });
       await setItem(`snappymon.watched.${royaleId}`, '1');
-      // Auf diesem Gerät gilt die heutige Royale ab jetzt als gelaufen: Die App zeigt danach das Thema von morgen
-      const at = Date.now();
-      setRoyalePreview(at);
-      await setItem('snappymon.preview', String(at));
+      // Auf diesem Gerät gilt die heutige Royale ab jetzt als gelaufen (der Server merkt es sich, siehe RoyaleClock)
+      setRoyalePreview(Date.now());
       onStarted?.();
       router.push({ pathname: '/arena/replay', params: { royale: royaleId, round: String(round), live: '1' } });
     } catch (e) {

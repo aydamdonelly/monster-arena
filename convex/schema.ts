@@ -15,6 +15,7 @@ export default defineSchema({
     source: v.optional(v.string()),
     isTest: v.boolean(),
     goldenEggs: v.optional(v.number()), // gekaufte, noch nicht benutzte Goldene Eier
+    previewAt: v.optional(v.number()), // Vorab-Kampf des Admins: ab dann zeigt sein Gerät die heutige Royale als gelaufen
     // Für die Zahlen (convex/stats.ts). Alles ohne persönliche Daten.
     eggs: v.optional(v.number()), // gelegte Eier insgesamt
     rejects: v.optional(v.number()), // davon abgelehnt (Menschen, Privates)
@@ -57,6 +58,7 @@ export default defineSchema({
     ready: v.optional(v.boolean()),
     golden: v.optional(v.boolean()),
     hatchedAt: v.optional(v.number()),
+    snapId: v.optional(v.id("_storage")), // fertiges Bild des Monsters für Listen (Sammlung, Profil)
     attempts: v.optional(v.number()),
     genAt: v.optional(v.number()), // letzter (geplanter) Bauversuch, für den Aufräum-Cron
     // Beispiel-Monster eines Vorführkontos (dev.seedSample): gehört nur in die eigene Sammlung und den eigenen Verlauf,

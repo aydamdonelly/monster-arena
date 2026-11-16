@@ -61,7 +61,7 @@ export function setLastRoyale(startsAt: number) {
 let previewAt = 0;
 
 export function setRoyalePreview(at: number) {
-  if (Number.isFinite(at)) previewAt = at;
+  previewAt = Number.isFinite(at) ? at : 0;
 }
 
 function pacificMinutes() {

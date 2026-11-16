@@ -112,3 +112,49 @@ export const me = query({
     };
   },
 });
+
+// Vorab-Kampf des Admins (royale.adminStart): Seit wann gilt die heutige Royale auf diesem Gerät als gelaufen?
+export const previewAt = query({
+  args: { deviceId: v.string() },
+  returns: v.union(v.number(), v.null()),
+  handler: async (ctx, { deviceId }) => {
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_deviceId", (q) => q.eq("deviceId", deviceId))
+      .unique();
+    return player?.previewAt ?? null;
+  },
+});
+
+// Der Gründer setzt sein eigenes Konto auf den Tagesanfang zurück (für eine neue Aufnahme): keine Eier und Monster von heute,
+// kein Goldenes Ei, kein Vorab-Kampf. Frühere Monster (auch die Beispiel-Monster) bleiben. Nur auf seinen Geräten.
+export const adminReset = mutation({
+  args: { deviceId: v.string() },
+  returns: v.object({ removed: v.number() }),
+  handler: async (ctx, { deviceId }) => {
+    if (!isOwnerDevice(deviceId)) throw new Error("Admins only.");
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_deviceId", (q) => q.eq("deviceId", deviceId))
+      .unique();
+    if (!player) throw new Error("Open the app once first.");
+    const dayStart = royaleDayStart(Date.now());
+    const mine = await ctx.db
+      .query("monsters")
+      .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
+      .order("desc")
+      .take(200);
+    const today = mine.filter((m) => m._creationTime >= dayStart && !m.sample);
+    let waiting = 0;
+    for (const m of today) {
+      if (m.status === "egg") waiting++;
+      await ctx.db.delete("monsters", m._id);
+    }
+    if (waiting && !player.isTest) await bumpCounter(ctx, "eggsWaiting", -waiting);
+    // Vorab-Kämpfe von heute gehören zu den gelöschten Monstern
+    const royales = await ctx.db.query("royales").order("desc").take(40);
+    for (const r of royales) if (r.rounds?.preview && r.startsAt >= dayStart) await ctx.db.delete("royales", r._id);
+    await ctx.db.patch("players", player._id, { goldenEggs: 0, previewAt: undefined });
+    return { removed: today.length };
+  },
+});

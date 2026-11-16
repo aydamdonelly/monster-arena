@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, query, QueryCtx } from "./_generated/server";
+import { internalMutation, mutation, query, QueryCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { playerByDevice } from "./players";
 
@@ -114,6 +114,7 @@ const monsterDoc = v.object({
   attempts: v.optional(v.number()),
   genAt: v.optional(v.number()),
   sample: v.optional(v.boolean()),
+  snapId: v.optional(v.id("_storage")),
 });
 
 // Nur intern: Von außen entsteht ein Monster ausschließlich über eggs.lay (sonst ließen sich Monster an der Royale vorbei einschleusen).
@@ -164,6 +165,8 @@ const monsterView = v.object({
   attempts: v.optional(v.number()),
   genAt: v.optional(v.number()),
   sample: v.optional(v.boolean()),
+  snapId: v.optional(v.id("_storage")),
+  snapUrl: v.union(v.string(), v.null()), // fertiges Bild des Monsters, falls schon eines gerendert wurde
 });
 
 // Monster plus Foto-URL und Trainername (Testmonster tragen ihr Foto im Genom)
@@ -178,9 +181,9 @@ async function view(ctx: QueryCtx, m: Doc<"monsters">, owner?: Doc<"players"> | 
   const golden = m.golden ?? !!m.genome?.golden;
   // Ein Ei verrät nichts über sein Monster: kein Genom, kein Name, keine Werte
   if (status !== "hatched") {
-    return { ...m, genome: null, name: "Egg", element: "unknown", stats: { hp: 0, atk: 0, def: 0, spd: 0 }, ready: undefined, photoUrl, ownerName: player?.name ?? null, status, golden };
+    return { ...m, genome: null, name: "Egg", element: "unknown", stats: { hp: 0, atk: 0, def: 0, spd: 0 }, ready: undefined, photoUrl, snapUrl: null, ownerName: player?.name ?? null, status, golden };
   }
-  return { ...m, photoUrl, ownerName: player?.name ?? null, status, golden };
+  return { ...m, photoUrl, snapUrl: m.snapId ? await ctx.storage.getUrl(m.snapId) : null, ownerName: player?.name ?? null, status, golden };
 }
 
 export const listMine = query({
@@ -232,5 +235,30 @@ export const get = query({
   handler: async (ctx, args) => {
     const m = await ctx.db.get("monsters", args.id);
     return m ? await view(ctx, m) : null;
+  },
+});
+
+// Bilder der Monster für Listen. Ein Helfer außerhalb der Apps rendert sie und legt sie hier ab (ADMIN_KEY),
+// weil der unsichtbare Renderer in der iPhone-App keine Bilder liefert.
+export const missingSnapshots = query({
+  args: { key: v.string() },
+  handler: async (ctx, { key }) => {
+    if (!process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) throw new Error("Wrong key.");
+    const rows = await ctx.db.query("monsters").order("desc").take(500);
+    return rows
+      .filter((m) => (m.status ?? "hatched") === "hatched" && !!m.genome && !m.snapId)
+      .slice(0, 60)
+      .map((m) => ({ id: m._id, name: m.name, genome: m.genome }));
+  },
+});
+
+export const setSnapshot = mutation({
+  args: { key: v.string(), id: v.id("monsters"), storageId: v.id("_storage") },
+  returns: v.null(),
+  handler: async (ctx, { key, id, storageId }) => {
+    if (!process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) throw new Error("Wrong key.");
+    const m = await ctx.db.get("monsters", id);
+    if (m) await ctx.db.patch("monsters", id, { snapId: storageId });
+    return null;
   },
 });

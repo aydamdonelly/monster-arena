@@ -534,6 +534,7 @@ export const adminStart = mutation({
     if (res.skipped !== null || !res.royaleId) {
       throw new ConvexError({ code: res.skipped ?? "failed", message: "The fight could not start. Try again." });
     }
+    await ctx.db.patch("players", player._id, { previewAt: now }); // sein Gerät zeigt die heutige Royale ab jetzt als gelaufen
     const doc = await ctx.db.get("royales", res.royaleId);
     const data = doc?.rounds as RoyaleData;
     const names = new Map<string, string>(mine.map((m) => [m._id as string, m.name]));
@@ -635,7 +636,7 @@ export const profile = query({
     const history: {
       royaleId: Id<"royales">; startsAt: number; title: string; entrants: number; monsterId: Id<"monsters">; monsterName: string;
       element: string | null; golden: boolean; result: string; champion: boolean; championName: string | null; round: number;
-      sample: boolean; score: number;
+      sample: boolean; score: number; photoUrl: string | null; snapUrl: string | null;
     }[] = [];
     // Ein Monster schlüpft genau zum Startzeitpunkt seiner Royale: Darüber finden wir die eigenen Royales direkt (Index),
     // ohne alle Royales zu lesen. Nur für alte Monster ohne Schlüpfzeit schauen wir zusätzlich in die letzten 30.
@@ -669,6 +670,9 @@ export const profile = query({
         result: data.sample ? `Sample · ${resultLabel(e, data.entrantCount)}` : resultLabel(e, data.entrantCount), champion: e.champion,
         championName: champ?.name ?? null, round: e.inFinal || e.heatIndex == null ? -1 : e.heatIndex,
         sample: !!data.sample, score: e.score,
+        // Bilder für die Karte im Profil: das Foto, aus dem das Monster entstand, und das fertige Bild des Monsters
+        photoUrl: m && (m.thumbId ?? m.photoId) ? await ctx.storage.getUrl((m.thumbId ?? m.photoId)!) : ((m?.genome?.photoUrl as string | undefined) ?? null),
+        snapUrl: m?.snapId ? await ctx.storage.getUrl(m.snapId) : null,
       });
     }
     history.sort((x, y) => y.startsAt - x.startsAt);

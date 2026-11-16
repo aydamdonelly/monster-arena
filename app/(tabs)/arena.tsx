@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Egg from '@/components/Egg';
 import MonsterView from '@/components/MonsterView';
 import ShareButton from '@/components/ShareButton';
+import TextMeButton from '@/components/TextMeButton';
 import { Appear, HardShadow, InkSticker, PrimaryButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import { clock, replayRound, royaleHour, royaleIsToday, royaleTimeToday, startOfToday, useNow } from '@/lib/arena';
@@ -141,6 +142,7 @@ function BeforeRoyale({ since }: { since: number }) {
       <Text style={styles.footer}>
         {royaleIsToday() ? `At ${royaleHour()} every egg hatches` : 'At the next royale every egg hatches'} and they all fight. Last monster standing wins.
       </Text>
+      <TextMeButton style={styles.countLane} />
     </ScrollView>
   );
 }

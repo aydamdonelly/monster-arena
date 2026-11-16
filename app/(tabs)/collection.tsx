@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import MonsterSnapshots from '@/components/MonsterSnapshots';
+import TextMeButton from '@/components/TextMeButton';
 import Egg from '@/components/Egg';
 import { Appear, HardShadow, InkSticker, MonsterPicture, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
@@ -42,6 +43,7 @@ export default function CollectionScreen() {
               ) : null}
             </View>
             {monsters?.length === 0 ? <Text style={Type.muted}>{`Nothing here yet. Your first snap lays an egg that hatches ${royaleIsToday() ? `at ${royaleHour()}` : "in tomorrow's royale"}.`}</Text> : null}
+            <TextMeButton style={styles.textMe} />
           </View>
         }
         ListEmptyComponent={<ActivityIndicator color={Palette.ink} style={styles.loading} />}
@@ -140,6 +142,7 @@ const styles = StyleSheet.create({
   column: { gap: 14 },
   headerWrap: { gap: 8, paddingTop: 14, paddingHorizontal: 4, paddingBottom: 2 },
   header: { gap: 2 },
+  textMe: { marginTop: 6 },
   count: { color: Palette.muted },
   loading: { marginTop: 60 },
   cell: { flex: 1, maxWidth: '50%' },

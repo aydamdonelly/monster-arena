@@ -16,6 +16,7 @@ import type * as events from "../events.js";
 import type * as golden from "../golden.js";
 import type * as hatch from "../hatch.js";
 import type * as http from "../http.js";
+import type * as keiki from "../keiki.js";
 import type * as monsters from "../monsters.js";
 import type * as players from "../players.js";
 import type * as royale from "../royale.js";
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   golden: typeof golden;
   hatch: typeof hatch;
   http: typeof http;
+  keiki: typeof keiki;
   monsters: typeof monsters;
   players: typeof players;
   royale: typeof royale;

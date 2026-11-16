@@ -91,6 +91,21 @@ export default defineSchema({
     championId: v.optional(v.id("monsters")),
   }).index("by_startsAt", ["startsAt"]), // Verlauf im Profil: Ein Monster schlüpft genau zum Startzeitpunkt seiner Royale
 
+  // Keiki iMessage: kurze Codes aus der App (SNAP-XXXXX) und Nummern, die damit verbunden wurden
+  keikiLinkCodes: defineTable({
+    code: v.string(),
+    playerId: v.id("players"),
+    expiresAt: v.number(),
+  })
+    .index("by_code", ["code"])
+    .index("by_playerId", ["playerId"]),
+
+  keikiContacts: defineTable({
+    phone: v.string(),
+    playerId: v.id("players"),
+    lastResultRoyaleId: v.optional(v.id("royales")),
+  }).index("by_phone", ["phone"]),
+
   events: defineTable({
     playerId: v.id("players"),
     type: v.string(),

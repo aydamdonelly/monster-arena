@@ -9,7 +9,7 @@ Built at the YC Consumer Mobile Hackathon on 2026-11-15. Build log: [hackathon.m
 - Open **https://snappymon.com** on your phone (web export of the same Expo app) and snap something.
 - The royale runs at **6 PM Pacific every day**. If the app is open then, or you open it within 15 minutes, it takes you straight to the live fight.
 
-> **Numbers from launch day: to be filled in after the 6 PM royale.**
+> **Numbers from launch day** (launched at 1:31 PM Pacific, numbers from the analytics page; test devices, agent runs and the founder's own devices are excluded): 85 visitors, 53 of them snapped a photo, 52 eggs hatched in the 6 PM royale (4 heats and a final of 8, no filler monsters). They said they came from YouTube 20, Instagram 14, a friend 8, the street 3, Reddit 2, the hackathon 2, TikTok 2. 10 came back later, 4 reached the Golden Egg checkout (payments ran in Whop's test mode, so none could pay). The champion was Extinguishimp, born from a red fire extinguisher.
 
 ## Rules
 

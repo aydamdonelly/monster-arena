@@ -154,8 +154,12 @@ better build.
   README.
 - **17:27** Arena: the hatching can be skipped in replays, clearer camera
   buttons, tap a monster or its name to follow it.
+- **17:46** `a476979` The admin fight takes all ready eggs in one arena (fast
+  pan while hatching, compact roster), skip and fast forward in every fight,
+  no reminders once an egg is in.
+- **18:00:26** The real royale ran from the cron: 52 eggs, 4 heats, final of 8.
 - **Still open:** PR #6 (Keiki, dropped for today), PR #15, PR #20.
 
 ## Launch day
 
-**Numbers from launch day: to be filled in after the 6 PM royale.**
+**Numbers from launch day** (launch 1:31 PM Pacific, analytics page, test devices and the founder's devices excluded): 85 visitors, 53 snapped a photo, 52 eggs hatched in the royale that the cron started at 6:00:26 PM (it waited 26 seconds for late eggs): 4 heats and a final of 8, no filler monsters. Sources: YouTube 20, Instagram 14, a friend 8, the street 3, Reddit 2, the hackathon 2, TikTok 2. 10 came back later, 4 reached the Golden Egg checkout (Whop test mode, no real payments). Champion: Extinguishimp, born from a red fire extinguisher.

@@ -1,7 +1,7 @@
 import { useQuery } from 'convex/react';
 import { router } from 'expo-router';
 import Head from 'expo-router/head';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Egg from '@/components/Egg';
@@ -21,13 +21,15 @@ export default function MonsterPage({ id, mode }: { id: string; mode: 'owner' | 
     ? 'Snappymon'
     : mode === 'public' && monster.ownerName
       ? `Caught by ${monster.ownerName}`
-      : `Hatched ${hatchedAt(monster._creationTime)}`;
+      : `Hatched ${hatchedAt(monster.hatchedAt ?? monster._creationTime)}`;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <Head>
-        <title>{monster ? `${monster.name} · Snappymon` : 'Snappymon'}</title>
-      </Head>
+      {Platform.OS === 'web' ? (
+        <Head>
+          <title>{monster ? `${monster.name} · Snappymon` : 'Snappymon'}</title>
+        </Head>
+      ) : null}
       <MonsterTopBar label={label} onBack={mode === 'owner' ? back : undefined} />
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         {monster === undefined ? <ActivityIndicator color={Palette.ink} style={styles.loading} /> : null}

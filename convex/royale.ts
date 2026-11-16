@@ -7,12 +7,12 @@
 //   füllen wilde Monster (Hausspieler WILD_DEVICE) die Arena auf. Läuft höchstens einmal in 20 Stunden.
 // - "test": Probe. Nur Eier von Testspielern plus wilde Monster. Rührt kein echtes Ei an, öffentliche Abfragen zeigen sie nicht.
 import { v, ConvexError } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { runSim } from "../monster-kit/royale-sim.js";
-import { hashString } from "../monster-kit/battle.js";
+import { hashString, statsFromTraits } from "../monster-kit/battle.js";
 import { FIGHT_SPEED, ROYALE_UTC_MIN, fightSpeed } from "./schedule";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -21,13 +21,14 @@ const LIVE_GAP_MS = 20 * 60 * 60 * 1000;
 const SINGLE_MAX = 24; // bis hierhin eine einzige Arena (mit 24 im Hochformat geprüft: lesbar, knapp eine Minute Kampf)
 const HEAT_SIZE = 16;
 const MIN_ENTRANTS = 8;
+const DEMO_ARENA = 14; // Vorführmodus nach der echten Royale: das eigene Ei plus 13 Monster dieser Royale
 const LATE_WINDOW_MS = 3 * 60 * 1000; // auf Eier warten, die in den letzten 3 Minuten gelegt wurden
 const KICKOFF_WAIT_MS = 5000;
 const KICKOFF_TRIES = 9; // höchstens 45 Sekunden Verzögerung
 export const WILD_DEVICE = "house-wild";
 
 type Stats = { hp: number; atk: number; def: number; spd: number };
-type Fighter = { id: Id<"monsters">; name: string; element: string; stats: Stats; traits: unknown; moves: unknown };
+export type Fighter = { id: Id<"monsters">; name: string; element: string; stats: Stats; traits: unknown; moves: unknown };
 // Gespeichert werden nur die IDs in Kampfreihenfolge. Aussehen und Werte stehen am Monster und ändern sich nach dem Schlüpfen nicht mehr.
 // Ältere Einträge (Format 1) tragen stattdessen die vollständigen Teilnehmer in `entrants`.
 type OldEntrant = Fighter & { playerId: Id<"players">; genome: unknown; photoId: Id<"_storage"> | null; ownerName: string | null };
@@ -38,11 +39,12 @@ type RoyaleData = {
   entrantCount: number;
   wildCount?: number;
   test?: boolean;
+  sample?: boolean; // Beispiel-Royale eines Vorführkontos (dev.seedSample): nur über ihre ID und im Profil des Besitzers sichtbar
   heats: Round[];
   final: Round;
 };
 
-function mulberry(seed: number) {
+export function mulberry(seed: number) {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) | 0;
@@ -52,7 +54,7 @@ function mulberry(seed: number) {
   };
 }
 
-function shuffle<T>(list: T[], rand: () => number) {
+export function shuffle<T>(list: T[], rand: () => number) {
   for (let i = list.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [list[i], list[j]] = [list[j], list[i]];
@@ -132,9 +134,35 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
   }
   const fighters: Fighter[] = hatching.map(fighterOf);
   let wildCount = 0;
+  if (a.onlyPlayer) {
+    // Vorführmodus: Das Ei des Vorführgeräts kämpft gegen die Monster der letzten echten Royale (zusammen 14, eine Arena).
+    // Die echten Monster werden nur gelesen. Gibt es noch keine echte Royale, füllen unten wie bisher wilde Monster auf.
+    const live = await latestRoyale(ctx, false);
+    if (live) {
+      const ids = [...new Set([...roundIds(live.data.final), ...live.data.heats.flatMap(roundIds)])].sort();
+      const real: Doc<"monsters">[] = [];
+      const rest: Doc<"monsters">[] = [];
+      for (const raw of ids) {
+        const id = ctx.db.normalizeId("monsters", raw);
+        const m = id ? await ctx.db.get("monsters", id) : null;
+        if (!m?.genome || m.sample || hatching.some((h) => h._id === m._id)) continue;
+        if (!owners.has(m.playerId)) owners.set(m.playerId, await ctx.db.get("players", m.playerId));
+        const owner = owners.get(m.playerId);
+        (owner && !owner.isTest && owner.deviceId !== WILD_DEVICE ? real : rest).push(m);
+      }
+      const room = Math.max(0, DEMO_ARENA - fighters.length);
+      // Echte Monster zuerst; wilde und Test-Monster der Royale nur, wenn es sonst nicht reicht
+      const picked = [...shuffle(real, rand), ...shuffle(rest, rand)].slice(0, room);
+      for (const m of picked) {
+        if (owners.get(m.playerId)?.deviceId === WILD_DEVICE) wildCount++;
+        fighters.push(fighterOf(m));
+      }
+    }
+  }
   if (fighters.length < a.minEntrants) {
-    const pool = shuffle(await wildPool(ctx), rand).slice(0, a.minEntrants - fighters.length);
-    wildCount = pool.length;
+    const have = new Set<string>(fighters.map((f) => f.id));
+    const pool = shuffle((await wildPool(ctx)).filter((m) => !have.has(m._id)), rand).slice(0, a.minEntrants - fighters.length);
+    wildCount += pool.length;
     for (const m of pool) fighters.push(fighterOf(m));
   }
   if (fighters.length < 2) return { skipped: "too_few" as const, royaleId: null };
@@ -318,7 +346,7 @@ export const markTest = internalMutation({
     const rows = royaleId ? [await ctx.db.get("royales", royaleId)] : await ctx.db.query("royales").order("desc").take(100);
     let n = 0;
     for (const r of rows) {
-      if (!r || !r.rounds || r.rounds.test) continue;
+      if (!r || !r.rounds || r.rounds.test || r.rounds.sample) continue;
       await ctx.db.patch("royales", r._id, { rounds: { ...r.rounds, test: true } });
       n++;
     }
@@ -330,7 +358,7 @@ async function latestRoyale(ctx: QueryCtx, includeTest: boolean) {
   const rows = await ctx.db.query("royales").order("desc").take(40);
   for (const r of rows) {
     const data = r.rounds as RoyaleData | undefined;
-    if (!data?.final) continue;
+    if (!data?.final || data.sample) continue; // Beispiel-Royales eines Vorführkontos sind nie "die letzte Royale"
     if (data.test && !includeTest) continue;
     return { doc: r, data };
   }
@@ -540,41 +568,272 @@ export const profile = query({
     const history: {
       royaleId: Id<"royales">; startsAt: number; title: string; entrants: number; monsterId: Id<"monsters">; monsterName: string;
       element: string | null; golden: boolean; result: string; champion: boolean; championName: string | null; round: number;
+      sample: boolean; score: number;
     }[] = [];
-    let bestScore = Infinity;
-    let best: string | null = null;
-    if (hatched.length) {
-      const rows = await ctx.db.query("royales").order("desc").take(30);
-      for (const r of rows) {
-        const data = r.rounds as RoyaleData | undefined;
-        if (!data?.final || (data.test && !test)) continue;
-        const entries = entriesOf(data, names);
-        if (!entries.length) continue;
-        const e = entries[0];
-        const m = byId.get(e.monsterId);
-        const champId = data.final.winnerId ? ctx.db.normalizeId("monsters", data.final.winnerId) : null;
-        const champ = champId ? (byId.get(champId) ?? (await ctx.db.get("monsters", champId))) : null;
-        const result = resultLabel(e, data.entrantCount);
-        if (e.score < bestScore) { bestScore = e.score; best = result; }
-        history.push({
-          royaleId: r._id, startsAt: r.startsAt, title: data.title, entrants: data.entrantCount, monsterId: e.monsterId, monsterName: e.monsterName,
-          element: m?.element ?? null, golden: !!(m?.golden ?? m?.genome?.golden), result, champion: e.champion, championName: champ?.name ?? null,
-          round: e.inFinal || e.heatIndex == null ? -1 : e.heatIndex,
-        });
-        if (history.length >= 20) break;
-      }
+    // Ein Monster schlüpft genau zum Startzeitpunkt seiner Royale: Darüber finden wir die eigenen Royales direkt (Index),
+    // ohne alle Royales zu lesen. Nur für alte Monster ohne Schlüpfzeit schauen wir zusätzlich in die letzten 30.
+    const rows: Doc<"royales">[] = [];
+    const times = [...new Set(hatched.map((m) => m.hatchedAt).filter((t): t is number => typeof t === "number"))].sort((x, y) => y - x).slice(0, 40);
+    for (const t of times) {
+      rows.push(
+        ...(await ctx.db
+          .query("royales")
+          .withIndex("by_startsAt", (q) => q.eq("startsAt", t))
+          .take(3)),
+      );
     }
+    if (hatched.some((m) => typeof m.hatchedAt !== "number")) {
+      const seen = new Set<string>(rows.map((r) => r._id));
+      for (const r of await ctx.db.query("royales").order("desc").take(30)) if (!seen.has(r._id)) rows.push(r);
+    }
+    for (const r of rows) {
+      const data = r.rounds as RoyaleData | undefined;
+      if (!data?.final || (data.test && !test)) continue;
+      const entries = entriesOf(data, names);
+      if (!entries.length) continue;
+      const e = entries[0];
+      const m = byId.get(e.monsterId);
+      const champId = data.final.winnerId ? ctx.db.normalizeId("monsters", data.final.winnerId) : null;
+      const champ = champId ? (byId.get(champId) ?? (await ctx.db.get("monsters", champId))) : null;
+      history.push({
+        royaleId: r._id, startsAt: r.startsAt, title: data.title, entrants: data.entrantCount, monsterId: e.monsterId, monsterName: e.monsterName,
+        element: m?.element ?? null, golden: !!(m?.golden ?? m?.genome?.golden), result: resultLabel(e, data.entrantCount), champion: e.champion,
+        championName: champ?.name ?? null, round: e.inFinal || e.heatIndex == null ? -1 : e.heatIndex,
+        sample: !!data.sample, score: e.score,
+      });
+    }
+    history.sort((x, y) => y.startsAt - x.startsAt);
+    history.splice(20);
+    const bestEntry = history.reduce<(typeof history)[number] | null>((b, h) => (!b || h.score < b.score ? h : b), null);
     return {
       name: player.name ?? null,
-      since: player._creationTime,
+      since: Math.min(player._creationTime, ...history.map((h) => h.startsAt)),
       stats: {
         monsters: hatched.length,
         eggs: mineAll.filter((m) => m.status === "egg").length,
         royales: history.length,
         wins: history.filter((h) => h.champion).length,
-        best,
+        best: bestEntry?.result ?? null,
       },
-      history,
+      history: history.map((h) => ({
+        royaleId: h.royaleId, startsAt: h.startsAt, title: h.title, entrants: h.entrants, monsterId: h.monsterId, monsterName: h.monsterName,
+        element: h.element, golden: h.golden, result: h.result, champion: h.champion, championName: h.championName, round: h.round, sample: h.sample,
+      })),
     };
+  },
+});
+
+// ---------- Beispieldaten für ein Vorführkonto (dev.seedSample) ----------
+// Vier frühere Royales mit je einem eigenen Monster, damit Sammlung, Zahlen und Verlauf im Vorführvideo den täglichen
+// Ablauf zeigen, obwohl es das Spiel erst seit heute gibt. Alles trägt sample: true (Monster) bzw. rounds.sample (Royale):
+// Es erscheint nur in der eigenen Sammlung und im eigenen Profil, nie als "letzte Royale", in keiner öffentlichen Liste,
+// keinem Zähler, keinem Tageslimit und nicht in den Zahlen. Die Kämpfe sind echt gerechnet (gleiche Simulation wie runNow).
+// Zeiten in Pacific: Mi 11.11. 19:40, Do 12.11. 12:15, Fr 13.11. 21:05, Sa 14.11. 16:30. place = angestrebter Platz.
+export const SAMPLE_DAYS = [
+  { at: Date.UTC(2026, 10, 12, 3, 40), place: 3, opponents: 11 },
+  { at: Date.UTC(2026, 10, 12, 20, 15), place: 6, opponents: 9 },
+  { at: Date.UTC(2026, 10, 14, 5, 5), place: 1, opponents: 13 },
+  { at: Date.UTC(2026, 10, 15, 0, 30), place: 2, opponents: 10 },
+];
+// Bevorzugte Vorlagen: Monster aus Adams eigenen Beispielfotos (Auto, Roller, Parkautomat), dann weitere gut erkennbare Dinge.
+// Kein Capybara: Sein echtes Capybara-Ei schlüpft in der echten Royale.
+const SAMPLE_PREFER = [/\bcar\b|crossover|\bsuv\b/i, /scooter/i, /parking|pay station|\bmeter\b/i, /hydrant/i, /traffic cone/i, /teapot/i];
+const SAMPLE_AVOID = /capy/i;
+
+export type SamplePrep = {
+  existing: boolean;
+  monsters: { id: Id<"monsters">; at: number; place: number; opponents: number; fighter: Fighter }[];
+  wild: Fighter[];
+};
+
+async function sampleRoyalesOf(ctx: QueryCtx, m: Doc<"monsters">) {
+  if (typeof m.hatchedAt !== "number") return [];
+  const rows = await ctx.db
+    .query("royales")
+    .withIndex("by_startsAt", (q) => q.eq("startsAt", m.hatchedAt!))
+    .take(5);
+  return rows.filter((r) => (r.rounds as RoyaleData | undefined)?.sample && roundIds((r.rounds as RoyaleData).final).includes(m._id));
+}
+
+// Beispiel-Monster eines Spielers samt ihrer Beispiel-Royales löschen. Die Fotos bleiben: Sie gehören den Vorlagen.
+export async function clearSampleFor(ctx: MutationCtx, deviceId: string) {
+  const player = await ctx.db
+    .query("players")
+    .withIndex("by_deviceId", (q) => q.eq("deviceId", deviceId))
+    .unique();
+  if (!player) throw new Error("Unknown deviceId.");
+  const mine = await ctx.db
+    .query("monsters")
+    .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
+    .take(300);
+  let monsters = 0, royales = 0;
+  for (const m of mine) {
+    if (!m.sample) continue;
+    for (const r of await sampleRoyalesOf(ctx, m)) {
+      await ctx.db.delete("royales", r._id);
+      royales++;
+    }
+    await ctx.db.delete("monsters", m._id);
+    monsters++;
+  }
+  return { monsters, royales };
+}
+
+// Schritt 1 von dev.seedSample: die vier Beispiel-Monster anlegen (Kopien vorhandener Monster von Testspielern,
+// nie von echten Nutzern) und alles zurückgeben, was die Suche nach passenden Kämpfen braucht.
+export const sampleMonsters = internalMutation({
+  args: { deviceId: v.string(), replace: v.optional(v.boolean()), sourceIds: v.optional(v.array(v.id("monsters"))) },
+  handler: async (ctx, a): Promise<SamplePrep> => {
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_deviceId", (q) => q.eq("deviceId", a.deviceId))
+      .unique();
+    if (!player) throw new Error("Unknown deviceId. Open the app on that device first.");
+    if (player.deviceId === WILD_DEVICE) throw new Error("Not for the house player.");
+    const mine = await ctx.db
+      .query("monsters")
+      .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
+      .take(300);
+    if (mine.some((m) => m.sample)) {
+      if (!a.replace) return { existing: true, monsters: [], wild: [] };
+      await clearSampleFor(ctx, a.deviceId);
+    }
+
+    const pool = await wildPool(ctx);
+    const picked: Doc<"monsters">[] = [];
+    const cleanName = (name: string) => name.replace(/ (II|III|IV|V|VI)$/, "");
+    const taken = (m: Doc<"monsters">) => picked.some((p) => p._id === m._id || cleanName(p.name).toLowerCase() === cleanName(m.name).toLowerCase());
+    if (a.sourceIds) {
+      for (const id of a.sourceIds) {
+        const m = await ctx.db.get("monsters", id);
+        if (!m?.genome) throw new Error(`Source ${id} has no monster.`);
+        const owner = await ctx.db.get("players", m.playerId);
+        if (!owner?.isTest) throw new Error(`Source ${id} belongs to a real player.`);
+        if (!taken(m)) picked.push(m);
+      }
+    } else {
+      const recent = await ctx.db.query("monsters").order("desc").take(600);
+      const owners = new Map<Id<"players">, Doc<"players"> | null>();
+      const cands: Doc<"monsters">[] = [];
+      for (const m of recent) {
+        if ((m.status ?? "hatched") !== "hatched" || m.sample || m.golden || m.genome?.golden) continue;
+        if (!m.genome?.blueprint?.parts?.length || !(m.photoId || m.thumbId)) continue;
+        if (SAMPLE_AVOID.test(String(m.genome.object ?? "")) || SAMPLE_AVOID.test(m.name)) continue;
+        if (!owners.has(m.playerId)) owners.set(m.playerId, await ctx.db.get("players", m.playerId));
+        const owner = owners.get(m.playerId);
+        if (!owner?.isTest || owner.deviceId === WILD_DEVICE) continue; // nur Testspieler: nie das Foto eines echten Nutzers kopieren
+        cands.push(m);
+      }
+      const parts = (m: Doc<"monsters">) => m.genome.blueprint.parts.length as number;
+      cands.sort((x, y) => parts(y) - parts(x) || y._creationTime - x._creationTime);
+      for (const re of SAMPLE_PREFER) {
+        if (picked.length >= SAMPLE_DAYS.length) break;
+        const best = cands.find((m) => re.test(String(m.genome.object ?? "")) && !taken(m));
+        if (best) picked.push(best);
+      }
+      for (const m of cands) {
+        if (picked.length >= SAMPLE_DAYS.length) break;
+        if (SAMPLE_PREFER.some((re) => re.test(String(m.genome.object ?? ""))) || taken(m)) continue; // diese Art ist schon vertreten
+        picked.push(m);
+      }
+    }
+    // Reichen die Vorlagen mit Foto nicht, füllen wilde Monster auf (ohne Foto)
+    for (const m of pool) {
+      if (picked.length >= SAMPLE_DAYS.length) break;
+      if (!taken(m) && !SAMPLE_AVOID.test(m.name)) picked.push(m);
+    }
+    if (picked.length < SAMPLE_DAYS.length) throw new Error("Not enough monsters to copy from.");
+
+    const monsters: SamplePrep["monsters"] = [];
+    for (const [i, src] of picked.slice(0, SAMPLE_DAYS.length).entries()) {
+      const day = SAMPLE_DAYS[i];
+      const name = cleanName(src.name);
+      const genome: Record<string, unknown> = { ...(src.genome as Record<string, unknown>), name };
+      delete genome.golden; // ein Beispiel-Monster ist nie ein Goldenes Ei (das würde das Kauflimit des Tages berühren)
+      const id = await ctx.db.insert("monsters", {
+        playerId: player._id,
+        genome,
+        name,
+        element: src.element,
+        stats: statsFromTraits(src.genome.traits), // volle Werte (wilde Vorlagen kämpfen sonst abgeschwächt)
+        stage: src.stage || 1,
+        photoId: src.photoId,
+        thumbId: src.thumbId,
+        status: "hatched",
+        ready: true,
+        sample: true,
+        hatchedAt: day.at,
+      });
+      const doc = await ctx.db.get("monsters", id);
+      monsters.push({ id, at: day.at, place: day.place, opponents: day.opponents, fighter: fighterOf(doc!) });
+    }
+    return { existing: false, monsters, wild: pool.map(fighterOf) };
+  },
+});
+
+// Schritt 2 von dev.seedSample: je Beispiel-Monster eine frühere Royale anlegen. Der Kampf wird hier mit derselben
+// Simulation wie in runNow gerechnet (ids in Kampfreihenfolge, seed aus der Suche in dev.seedSample).
+export const sampleRoyales = internalMutation({
+  args: {
+    deviceId: v.string(),
+    rows: v.array(v.object({ monsterId: v.id("monsters"), ids: v.array(v.id("monsters")), seed: v.number(), at: v.number() })),
+  },
+  handler: async (ctx, a) => {
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_deviceId", (q) => q.eq("deviceId", a.deviceId))
+      .unique();
+    if (!player) throw new Error("Unknown deviceId.");
+    const out: { royaleId: Id<"royales">; at: number; monster: string; place: number; of: number }[] = [];
+    for (const row of a.rows) {
+      const mon = await ctx.db.get("monsters", row.monsterId);
+      if (!mon || !mon.sample || mon.playerId !== player._id) throw new Error("Not a sample monster of this player.");
+      if (!row.ids.includes(row.monsterId)) throw new Error("The sample monster is not among the entrants.");
+      if (mon.hatchedAt !== row.at) await ctx.db.patch("monsters", mon._id, { hatchedAt: row.at });
+      if ((await sampleRoyalesOf(ctx, { ...mon, hatchedAt: row.at })).length) continue; // gibt es schon
+      const fighters: Fighter[] = [];
+      for (const id of row.ids) {
+        const m = await ctx.db.get("monsters", id);
+        if (!m?.genome) throw new Error(`Entrant ${id} is missing.`);
+        fighters.push(fighterOf(m));
+      }
+      const final = simulate(fighters, row.seed, null);
+      const data: RoyaleData = { title: "Royale", dayElement: null, entrantCount: fighters.length, wildCount: fighters.length - 1, sample: true, heats: [], final };
+      const championId = (final.winnerId as Id<"monsters"> | null) ?? undefined;
+      const royaleId = await ctx.db.insert("royales", { startsAt: row.at, status: "done", rounds: data, championId });
+      out.push({ royaleId, at: row.at, monster: mon.name, place: final.placements.indexOf(mon._id) + 1, of: fighters.length });
+    }
+    return out;
+  },
+});
+
+// Was ein Vorführkonto an Beispieldaten hat (für die Ausgabe von dev.seedSample)
+export const sampleList = internalQuery({
+  args: { deviceId: v.string() },
+  handler: async (ctx, { deviceId }) => {
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_deviceId", (q) => q.eq("deviceId", deviceId))
+      .unique();
+    if (!player) return [];
+    const mine = await ctx.db
+      .query("monsters")
+      .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
+      .take(300);
+    const out: { when: string; monster: string; object: string | null; result: string | null; monsterId: Id<"monsters">; royaleId: Id<"royales"> | null }[] = [];
+    for (const m of mine) {
+      if (!m.sample) continue;
+      const r = (await sampleRoyalesOf(ctx, m))[0];
+      const e = r ? entriesOf(r.rounds as RoyaleData, new Map([[m._id as string, m.name]]))[0] : null;
+      out.push({
+        when: new Date((m.hatchedAt ?? m._creationTime) - 8 * 3600 * 1000).toISOString().slice(0, 16).replace("T", " ") + " PST",
+        monster: m.name,
+        object: (m.genome?.object as string | undefined) ?? null,
+        result: r && e ? resultLabel(e, (r.rounds as RoyaleData).entrantCount) : null,
+        monsterId: m._id,
+        royaleId: r?._id ?? null,
+      });
+    }
+    return out.sort((x, y) => (x.when < y.when ? -1 : 1));
   },
 });

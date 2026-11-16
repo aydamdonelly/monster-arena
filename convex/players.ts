@@ -94,7 +94,7 @@ export const me = query({
       .order("desc")
       .take(30);
     const dayStart = royaleDayStart(now);
-    const today = mine.filter((m) => m._creationTime >= dayStart && m.status !== "rejected");
+    const today = mine.filter((m) => m._creationTime >= dayStart && m.status !== "rejected" && !m.sample);
     const hatchedToday = today.filter((m) => !(m.golden ?? m.genome?.golden)).length;
     const goldenToday = today.length - hatchedToday;
     return {

@@ -59,6 +59,9 @@ export default defineSchema({
     hatchedAt: v.optional(v.number()),
     attempts: v.optional(v.number()),
     genAt: v.optional(v.number()), // letzter (geplanter) Bauversuch, für den Aufräum-Cron
+    // Beispiel-Monster eines Vorführkontos (dev.seedSample): gehört nur in die eigene Sammlung und den eigenen Verlauf,
+    // zählt in keiner Zahl, keinem Tageslimit und keiner öffentlichen Liste
+    sample: v.optional(v.boolean()),
   })
     .index("by_playerId", ["playerId"])
     .index("by_status_and_ready", ["status", "ready"]),
@@ -84,7 +87,7 @@ export default defineSchema({
     status: v.string(),
     rounds: v.any(),
     championId: v.optional(v.id("monsters")),
-  }),
+  }).index("by_startsAt", ["startsAt"]), // Verlauf im Profil: Ein Monster schlüpft genau zum Startzeitpunkt seiner Royale
 
   events: defineTable({
     playerId: v.id("players"),

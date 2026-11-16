@@ -113,6 +113,7 @@ const monsterDoc = v.object({
   hatchedAt: v.optional(v.number()),
   attempts: v.optional(v.number()),
   genAt: v.optional(v.number()),
+  sample: v.optional(v.boolean()),
 });
 
 // Nur intern: Von außen entsteht ein Monster ausschließlich über eggs.lay (sonst ließen sich Monster an der Royale vorbei einschleusen).
@@ -162,6 +163,7 @@ const monsterView = v.object({
   hatchedAt: v.optional(v.number()),
   attempts: v.optional(v.number()),
   genAt: v.optional(v.number()),
+  sample: v.optional(v.boolean()),
 });
 
 // Monster plus Foto-URL und Trainername (Testmonster tragen ihr Foto im Genom)
@@ -195,6 +197,9 @@ export const listMine = query({
       .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
       .order("desc")
       .take(200);
+    // Beispiel-Monster eines Vorführkontos tragen ihr (früheres) Schlüpfdatum und stehen deshalb hinter den Einträgen von heute
+    const at = (m: Doc<"monsters">) => (m.sample ? (m.hatchedAt ?? m._creationTime) : m._creationTime);
+    monsters.sort((a, b) => at(b) - at(a));
     return await Promise.all(monsters.map((m) => view(ctx, m, player)));
   },
 });
@@ -214,7 +219,7 @@ export const listToday = query({
       if (out.length >= 30) break;
       const owner = await ctx.db.get("players", m.playerId);
       if (owner?.isTest && !args.includeTest) continue;
-      if (m.status === "rejected") continue;
+      if (m.status === "rejected" || m.sample) continue;
       out.push(await view(ctx, m, owner, true));
     }
     return out;

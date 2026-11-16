@@ -97,7 +97,7 @@ export const lay = mutation({
       }
     }
     const dayStart = royaleDayStart(now);
-    const mineToday = mine.filter((m) => m._creationTime >= dayStart && m.status !== "rejected");
+    const mineToday = mine.filter((m) => m._creationTime >= dayStart && m.status !== "rejected" && !m.sample);
     const freeToday = mineToday.filter((m) => !(m.golden ?? m.genome?.golden)).length;
     const goldenToday = mineToday.length - freeToday;
     // Das erste Ei ist frei. Danach wird ein gekauftes Goldenes Ei benutzt (höchstens eines pro Royale).
@@ -348,6 +348,7 @@ export const adminGallery = query({
       .take(300);
     const out = [];
     for (const m of rows) {
+      if (m.sample) continue; // Beispieldaten eines Vorführkontos sind keine Einträge von heute
       const owner = await ctx.db.get("players", m.playerId);
       out.push({
         id: m._id,

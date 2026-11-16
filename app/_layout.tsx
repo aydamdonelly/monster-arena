@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { DemoEntry } from '@/components/DemoMode';
 import RoyaleClock from '@/components/RoyaleClock';
+import RoyaleNotifications from '@/components/RoyaleNotifications';
 import RoyaleTakeover from '@/components/RoyaleTakeover';
 import { convex } from '@/lib/convex';
 import { DeviceProvider } from '@/lib/device';
@@ -33,6 +34,7 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
         </Stack>
         <RoyaleClock />
+        <RoyaleNotifications />
         <DemoEntry />
         <RoyaleTakeover />
       </DeviceProvider>

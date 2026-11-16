@@ -7,6 +7,7 @@ import { Image } from 'expo-image';
 import { Animated, Easing, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
+import AdminStartButton from '@/components/AdminStartButton';
 import { HatchNowButton } from '@/components/DemoMode';
 import Egg from '@/components/Egg';
 import GoldenEggSheet from '@/components/GoldenEggSheet';
@@ -158,6 +159,7 @@ export default function EggScreen({
           style={demoKey || SMS_NUMBER || offer ? styles.share : undefined}
           labelStyle={demoKey || SMS_NUMBER || offer ? styles.shareLabel : undefined}
         />
+        {me?.admin ? <AdminStartButton onStarted={onClose} /> : null}
       </Appear>
       <GoldenEggSheet visible={sheet} from="egg" onClose={() => setSheet(false)} />
     </Shell>

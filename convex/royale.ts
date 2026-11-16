@@ -597,14 +597,18 @@ export const profile = query({
       const champ = champId ? (byId.get(champId) ?? (await ctx.db.get("monsters", champId))) : null;
       history.push({
         royaleId: r._id, startsAt: r.startsAt, title: data.title, entrants: data.entrantCount, monsterId: e.monsterId, monsterName: e.monsterName,
-        element: m?.element ?? null, golden: !!(m?.golden ?? m?.genome?.golden), result: resultLabel(e, data.entrantCount), champion: e.champion,
+        element: m?.element ?? null, golden: !!(m?.golden ?? m?.genome?.golden),
+        // Beispiel-Royales eines Vorführkontos sind im Text als solche gekennzeichnet, damit sie niemand für echte hält
+        result: data.sample ? `Sample · ${resultLabel(e, data.entrantCount)}` : resultLabel(e, data.entrantCount), champion: e.champion,
         championName: champ?.name ?? null, round: e.inFinal || e.heatIndex == null ? -1 : e.heatIndex,
         sample: !!data.sample, score: e.score,
       });
     }
     history.sort((x, y) => y.startsAt - x.startsAt);
     history.splice(20);
-    const bestEntry = history.reduce<(typeof history)[number] | null>((b, h) => (!b || h.score < b.score ? h : b), null);
+    // Bestes Ergebnis: ein echtes, sobald es eines gibt; sonst das beste Beispiel (mit Kennzeichnung)
+    const counted = history.some((h) => !h.sample) ? history.filter((h) => !h.sample) : history;
+    const bestEntry = counted.reduce<(typeof history)[number] | null>((b, h) => (!b || h.score < b.score ? h : b), null);
     return {
       name: player.name ?? null,
       since: Math.min(player._creationTime, ...history.map((h) => h.startsAt)),

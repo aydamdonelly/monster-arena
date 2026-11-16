@@ -136,6 +136,7 @@
         ['', nf(d.answered), 'Told us their source', pct(d.answered, d.snappers || d.visitors) + (d.snappers ? ' of snappers' : ' of visitors')],
         ['', nf(d.named), 'Gave their name', pct(d.named, d.snappers || d.visitors) + (d.snappers ? ' of snappers' : '')],
         ['', nf(d.returning), 'Came back', 'again 30+ minutes after the first visit'],
+        ['', nf(d.checkouts ?? 0), 'Went to checkout', 'tapped Golden Egg and reached the payment page'],
         ['', nf(d.purchases), 'Golden Eggs sold', d.purchases ? '$' + d.revenueUsd.toFixed(2) : (d.sandboxPurchases ? `payments in test mode · ${nf(d.sandboxPurchases)} test purchase${d.sandboxPurchases === 1 ? '' : 's'}` : 'at $1')],
       ].map(([c, n, l, s]) => `<div class="tile ${c}"><b>${n}</b><span>${l}</span><i>${s}</i></div>`).join('');
       bars('sources', d.sources, d.visitors, true);

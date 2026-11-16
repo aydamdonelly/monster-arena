@@ -22,6 +22,7 @@ export default function RoyaleTakeover() {
 
   useEffect(() => {
     if (!summary || mine === undefined || handled.current === summary._id) return;
+    if (mine && mine.royaleId !== summary._id) return; // beide Abfragen müssen dieselbe Royale meinen
     if (now - summary.startsAt > TAKEOVER_WINDOW_MS) return;
     if (pathname.startsWith('/tv') || pathname.startsWith('/arena/replay') || photoFlowActive()) return;
     handled.current = summary._id;
@@ -29,7 +30,8 @@ export default function RoyaleTakeover() {
     getItem(key).then((v) => {
       if (v === '1') return;
       setItem(key, '1');
-      router.push({ pathname: '/arena/replay', params: { round: replayRound(mine), live: '1' } });
+      // Mit royale = genau diese Royale: Eine spätere Probe- oder Vorführ-Royale wirft den laufenden Kampf nicht um
+      router.push({ pathname: '/arena/replay', params: { round: replayRound(mine), live: '1', royale: summary._id } });
     });
   }, [summary, mine, now, pathname]);
 
@@ -45,7 +47,7 @@ export function useLiveRoyale() {
   const watch = () => {
     if (!summary) return;
     setItem(`snappymon.watched.${summary._id}`, '1');
-    router.push({ pathname: '/arena/replay', params: { round: replayRound(mine), live: '1' } });
+    router.push({ pathname: '/arena/replay', params: { round: replayRound(mine), live: '1', royale: summary._id } });
   };
   return { live, watch };
 }

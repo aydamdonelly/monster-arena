@@ -32,7 +32,10 @@ export const overview = query({
     // Die native App ist noch nicht öffentlich: Dort laufen nur unser eigenes Handy und die Cloud-Geräte von Revyl.
     // Sie zählen nicht als Besucher, werden aber getrennt ausgewiesen.
     const isNative = (p: (typeof rows)[number]) => (p.plat ? p.plat !== "web" : p.source === "ios" || p.source === "android");
-    const real = rows.filter((p) => !p.isTest && !isNative(p));
+    // Die eigenen Geräte des Gründers (Convex-Umgebungsvariable OWNER_DEVICES, kommagetrennt) zählen nicht als Besucher
+    const owners = new Set((process.env.OWNER_DEVICES ?? "").split(",").map((x: string) => x.trim()).filter(Boolean));
+    const real = rows.filter((p) => !p.isTest && !isNative(p) && !owners.has(p.deviceId));
+    const ownerCount = rows.filter((p) => !p.isTest && !isNative(p) && owners.has(p.deviceId)).length;
     const nativeSessions = rows.filter((p) => !p.isTest && isNative(p)).length;
 
     const sourcesAll: Record<string, number> = {};
@@ -81,6 +84,11 @@ export const overview = query({
       .query("monsters")
       .withIndex("by_status_and_ready", (q) => q.eq("status", "egg").eq("ready", false))
       .take(500);
+    // Wer hat "Golden Egg" angetippt und ist bis zur Bezahlseite gekommen? (echte Besucher, jede Person einmal)
+    const realIds = new Set<string>(real.map((p) => p._id));
+    const recentEvents = await ctx.db.query("events").order("desc").take(3000);
+    const atCheckout = new Set<string>();
+    for (const e of recentEvents) if (e.type === "golden_checkout" && e._creationTime >= since && realIds.has(e.playerId)) atCheckout.add(e.playerId);
     const purchases = await ctx.db.query("purchases").order("desc").take(500);
     // Verkauft zählt nur echtes Geld. Käufe aus der Whop-Sandbox (Testkarte) werden getrennt ausgewiesen.
     const recent = purchases.filter((x) => x._creationTime >= since);
@@ -90,7 +98,7 @@ export const overview = query({
       since,
       truncated: rows.length >= 8000,
       visitors: real.length,
-      testVisitors: rows.length - real.length - nativeSessions,
+      testVisitors: rows.length - real.length - nativeSessions - ownerCount,
       nativeSessions,
       snappers,
       eggs,
@@ -99,6 +107,7 @@ export const overview = query({
       named,
       returning,
       building: building.length,
+      checkouts: atCheckout.size,
       purchases: paid.length,
       sandboxPurchases: recent.length - paid.length,
       revenueUsd: paid.reduce((sum, x) => sum + x.amountUsd, 0),

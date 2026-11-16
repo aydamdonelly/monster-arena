@@ -8,6 +8,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, useWindowDi
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
+import AdminStartButton from '@/components/AdminStartButton';
 import CameraButton from '@/components/CameraButton';
 import { HatchNowButton } from '@/components/DemoMode';
 import Egg from '@/components/Egg';
@@ -19,7 +20,7 @@ import { useLiveRoyale } from '@/components/RoyaleTakeover';
 import { Appear, HardShadow, InkSticker, OutlineButton, PrimaryButton, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
-import { clock, royaleHour, royaleIsToday, royaleTimeToday, useNow } from '@/lib/arena';
+import { clock, royaleHour, royaleIsToday, royaleThemes, royaleTimeToday, useNow } from '@/lib/arena';
 import { useDemoKey } from '@/lib/demo';
 import { useDeviceId } from '@/lib/device';
 import { celebrate, tap } from '@/lib/haptics';
@@ -132,7 +133,8 @@ export default function CatchScreen() {
 
           {phase.kind === 'idle' && (!mine || !me) ? <ActivityIndicator color={Palette.ink} style={styles.loading} /> : null}
           {phase.kind === 'idle' && returning && me ? <GoldenReturn ready={goldenReady} onSnap={() => onCatch('camera')} /> : null}
-          {phase.kind === 'idle' && !returning && mine && me && atLimit ? <Limit mine={mine} now={now} canGolden={me.canGolden} onGolden={() => setSheet(true)} /> : null}
+          {phase.kind === 'idle' && returning && me?.admin ? <AdminStartButton /> : null}
+          {phase.kind === 'idle' && !returning && mine && me && atLimit ? <Limit mine={mine} now={now} canGolden={me.canGolden} admin={me.admin} onGolden={() => setSheet(true)} /> : null}
           {phase.kind === 'idle' && !returning && mine && me && !atLimit ? (
             <Idle
               hatched={hatchedToday}
@@ -141,6 +143,7 @@ export default function CatchScreen() {
               dailyLimit={me.dailyLimit}
               goldenEggs={me.goldenEggs}
               eggs={mine.filter((m) => m.status === 'egg')}
+              admin={me.admin}
             />
           ) : null}
 
@@ -172,6 +175,7 @@ function Idle({
   dailyLimit,
   goldenEggs,
   eggs,
+  admin,
 }: {
   hatched?: Entry;
   onCatch: (source: 'camera' | 'library') => void;
@@ -179,6 +183,7 @@ function Idle({
   dailyLimit: number;
   goldenEggs: number;
   eggs: Entry[];
+  admin: boolean;
 }) {
   const demoKey = useDemoKey();
   const { height } = useWindowDimensions();
@@ -196,6 +201,7 @@ function Idle({
           {goldenEggs > 0 ? <InkSticker label="Golden egg ready" rotate={6} style={styles.goldenReady} /> : null}
         </View>
         <Text style={Type.label}>{hatchesLeft === 0 && goldenEggs > 0 ? 'Your golden egg is ready. Snap it.' : 'One egg per royale. Make it count.'}</Text>
+        {admin ? <AdminStartButton /> : null}
       </Appear>
       {demoKey && eggs.length > 0 ? (
         <Appear delay={150} style={styles.hatchNow}>
@@ -234,7 +240,7 @@ function EggTile({ entry }: { entry: Entry }) {
   );
 }
 
-function Limit({ mine, now, canGolden, onGolden }: { mine: Entry[]; now: number; canGolden: boolean; onGolden: () => void }) {
+function Limit({ mine, now, canGolden, admin, onGolden }: { mine: Entry[]; now: number; canGolden: boolean; admin: boolean; onGolden: () => void }) {
   const today = mine.filter((m) => m._creationTime > now - DAY_MS && m.status !== 'rejected').slice(0, 3);
   const { pending, onSnapshot, snapshot } = useSnapshots(today.flatMap((m) => (m.status === 'hatched' ? [m] : [])));
   return (
@@ -275,6 +281,7 @@ function Limit({ mine, now, canGolden, onGolden }: { mine: Entry[]; now: number;
           onPress={onGolden}
         /> : null}
         <OutlineButton label="Watch the arena" onPress={() => router.navigate('/arena')} style={styles.arenaButton} labelStyle={styles.arenaLabel} />
+        {admin ? <AdminStartButton /> : null}
       </Appear>
     </View>
   );
@@ -361,9 +368,18 @@ function HatchClock() {
   );
 }
 
+function DropTitle({ title }: { title: string }) {
+  return (
+    <Text style={[styles.dropTitle, title.length > 12 && styles.dropTitleLong]} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.6}>
+      {title}
+    </Text>
+  );
+}
+
 function DropCard() {
   const now = useNow();
   const left = royaleTimeToday() - now;
+  const themes = royaleThemes();
   if (!royaleIsToday()) {
     return (
       <HardShadow offset={5} radius={Radii.card}>
@@ -371,8 +387,8 @@ function DropCard() {
           <View style={styles.dropTop}>
             <Text style={Type.label}>{"Tomorrow's drop"}</Text>
           </View>
-          <Text style={styles.dropTitle}>Surprise</Text>
-          <Text style={styles.dropLine}>New drop, new time. Snap today, it hatches in tomorrow’s royale.</Text>
+          <DropTitle title={themes.tomorrow} />
+          <Text style={styles.dropLine}>Snap it today. It hatches in tomorrow’s royale, the time is a surprise.</Text>
         </View>
       </HardShadow>
     );
@@ -384,7 +400,7 @@ function DropCard() {
           <Text style={Type.label}>{"Today's drop"}</Text>
           <Text style={styles.timer}>{left > 0 ? `royale in ${clock(left)}` : 'royale live now'}</Text>
         </View>
-        <Text style={styles.dropTitle}>Anything</Text>
+        <DropTitle title={themes.today} />
         <Text style={styles.dropLine}>Snap it. Get an egg. It hatches at {royaleHour()}.</Text>
       </View>
     </HardShadow>
@@ -422,6 +438,7 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   dropTitle: { fontFamily: Fonts.black, fontSize: 52, lineHeight: 50, letterSpacing: -2.08, color: Palette.ink },
+  dropTitleLong: { fontSize: 36, lineHeight: 36, letterSpacing: -1.3 },
   dropLine: { fontFamily: Fonts.medium, fontSize: 15, lineHeight: 20, color: Palette.ink },
   cameraArea: {
     flexGrow: 1,

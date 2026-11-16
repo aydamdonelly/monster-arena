@@ -17,7 +17,7 @@ import GoldenEggSheet from '@/components/GoldenEggSheet';
 import Landing from '@/components/Landing';
 import MonsterSnapshots from '@/components/MonsterSnapshots';
 import { useLiveRoyale } from '@/components/RoyaleTakeover';
-import { Appear, HardShadow, InkSticker, OutlineButton, PrimaryButton, StageBlock } from '@/components/ui';
+import { Appear, HardShadow, InkSticker, MonsterPicture, OutlineButton, PrimaryButton, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import type { Id } from '@/convex/_generated/dataModel';
 import { clock, royaleHour, royaleIsToday, royaleThemes, royaleTimeToday, useNow } from '@/lib/arena';
@@ -242,7 +242,7 @@ function EggTile({ entry }: { entry: Entry }) {
 
 function Limit({ mine, now, canGolden, admin, onGolden }: { mine: Entry[]; now: number; canGolden: boolean; admin: boolean; onGolden: () => void }) {
   const today = mine.filter((m) => m._creationTime > now - DAY_MS && m.status !== 'rejected').slice(0, 3);
-  const { pending, onSnapshot, snapshot } = useSnapshots(today.flatMap((m) => (m.status === 'hatched' ? [m] : [])));
+  const { pending, onSnapshot, snapshot } = useSnapshots(today.flatMap((m) => (m.status === 'hatched' && !m.snapUrl ? [m] : [])));
   return (
     <View style={styles.limit}>
       <MonsterSnapshots items={pending} onSnapshot={onSnapshot} dom={{ style: styles.snapshotter }} />
@@ -250,7 +250,7 @@ function Limit({ mine, now, canGolden, admin, onGolden }: { mine: Entry[]; now: 
         {today.map((m) => (
           <StageBlock key={m._id} radius={Radii.tile} style={styles.thumb}>
             {m.status === 'hatched' ? (
-              snapshot(m._id) ? <Image source={{ uri: snapshot(m._id) }} style={styles.thumbImage} contentFit="cover" transition={200} /> : null
+              <MonsterPicture uri={m.snapUrl ?? snapshot(m._id)} photoUrl={m.photoUrl} imageStyle={styles.thumbImage} photoSize={today.length > 1 ? 48 : 64} />
             ) : (
               <Egg seed={m._id} width={today.length > 1 ? 80 : 104} golden={m.golden} photoUrl={m.photoUrl} rotate={-4} />
             )}
@@ -317,7 +317,7 @@ function GoldenReturn({ ready, onSnap }: { ready: boolean; onSnap: () => void })
 }
 
 function HatchedToday({ monster }: { monster: Entry }) {
-  const { pending, onSnapshot, snapshot } = useSnapshots([monster]);
+  const { pending, onSnapshot, snapshot } = useSnapshots(monster.snapUrl ? [] : [monster]);
   return (
     <Appear style={styles.lane}>
       <MonsterSnapshots items={pending} onSnapshot={onSnapshot} dom={{ style: styles.snapshotter }} />
@@ -326,7 +326,7 @@ function HatchedToday({ monster }: { monster: Entry }) {
         onPress={() => router.push({ pathname: '/monster/[id]', params: { id: monster._id } })}
         style={styles.hatchedRow}>
         <StageBlock radius={18} style={styles.hatchedThumb}>
-          {snapshot(monster._id) ? <Image source={{ uri: snapshot(monster._id) }} style={styles.hatchedImage} contentFit="cover" /> : null}
+          <MonsterPicture uri={monster.snapUrl ?? snapshot(monster._id)} photoUrl={monster.photoUrl} imageStyle={styles.hatchedImage} photoSize={30} />
         </StageBlock>
         <View style={styles.hatchedText}>
           <Text style={[Type.label, styles.mutedLabel]}>Your egg hatched</Text>

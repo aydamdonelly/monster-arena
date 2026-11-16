@@ -1,4 +1,4 @@
-import { Image } from 'expo-image';
+import { Image, type ImageStyle } from 'expo-image';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
@@ -177,6 +177,22 @@ export function Polaroid({
       </View>
     </HardShadow>
   );
+}
+
+export function MonsterPicture({
+  uri,
+  photoUrl,
+  imageStyle,
+  photoSize = 44,
+}: {
+  uri?: string | null;
+  photoUrl?: string | null;
+  imageStyle?: StyleProp<ImageStyle>;
+  photoSize?: number;
+}) {
+  if (uri) return <Image source={{ uri }} style={imageStyle} contentFit="contain" transition={200} />;
+  if (photoUrl) return <Polaroid uri={photoUrl} size={photoSize} rotate={-6} />;
+  return null;
 }
 
 export function Appear({ children, delay = 0, style }: { children: ReactNode; delay?: number; style?: StyleProp<ViewStyle> }) {

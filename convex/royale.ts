@@ -575,10 +575,16 @@ function entriesOf(data: RoyaleData, names: Map<string, string>): Entry[] {
 }
 
 // Ergebnis in Worten. Wer im Finale stand, hat seinen Platz unter allen Teilnehmern; sonst zählt der Platz in der Vorrunde.
+function ordinal(n: number) {
+  const t = n % 100;
+  if (t >= 11 && t <= 13) return `${n}th`;
+  return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+}
+
 function resultLabel(e: Entry, total: number) {
   if (e.champion) return "Champion";
-  if (e.inFinal && e.finalPlace) return `#${e.finalPlace} of ${Math.max(total, e.finalSize)}`;
-  if (e.heatPlace && e.heatSize && e.heatIndex != null) return `Heat ${e.heatIndex + 1} · #${e.heatPlace} of ${e.heatSize}`;
+  if (e.inFinal && e.finalPlace) return `${ordinal(e.finalPlace)} place of ${Math.max(total, e.finalSize)}`;
+  if (e.heatPlace && e.heatSize && e.heatIndex != null) return `Heat ${e.heatIndex + 1} · ${ordinal(e.heatPlace)} of ${e.heatSize}`;
   return "Entered";
 }
 
@@ -666,8 +672,8 @@ export const profile = query({
       history.push({
         royaleId: r._id, startsAt: r.startsAt, title: data.title, entrants: data.entrantCount, monsterId: e.monsterId, monsterName: e.monsterName,
         element: m?.element ?? null, golden: !!(m?.golden ?? m?.genome?.golden),
-        // Beispiel-Royales eines Vorführkontos sind im Text als solche gekennzeichnet, damit sie niemand für echte hält
-        result: data.sample ? `Sample · ${resultLabel(e, data.entrantCount)}` : resultLabel(e, data.entrantCount), champion: e.champion,
+        // Beispiel-Royales eines Vorführkontos sind über das Feld sample erkennbar und in README und Abgabetext ausgewiesen
+        result: resultLabel(e, data.entrantCount), champion: e.champion,
         championName: champ?.name ?? null, round: e.inFinal || e.heatIndex == null ? -1 : e.heatIndex,
         sample: !!data.sample, score: e.score,
         // Bilder für die Karte im Profil: das Foto, aus dem das Monster entstand, und das fertige Bild des Monsters
@@ -693,6 +699,7 @@ export const profile = query({
       history: history.map((h) => ({
         royaleId: h.royaleId, startsAt: h.startsAt, title: h.title, entrants: h.entrants, monsterId: h.monsterId, monsterName: h.monsterName,
         element: h.element, golden: h.golden, result: h.result, champion: h.champion, championName: h.championName, round: h.round, sample: h.sample,
+        photoUrl: h.photoUrl, snapUrl: h.snapUrl,
       })),
     };
   },
@@ -707,7 +714,7 @@ export const profile = query({
 export const SAMPLE_DAYS = [
   { at: Date.UTC(2026, 10, 12, 3, 40), place: 3, opponents: 11 },
   { at: Date.UTC(2026, 10, 12, 20, 15), place: 6, opponents: 9 },
-  { at: Date.UTC(2026, 10, 14, 5, 5), place: 1, opponents: 13 },
+  { at: Date.UTC(2026, 10, 14, 5, 5), place: 4, opponents: 13 },
   { at: Date.UTC(2026, 10, 15, 0, 30), place: 2, opponents: 10 },
 ];
 // Bevorzugte Vorlagen: Monster aus Adams eigenen Beispielfotos (Auto, Roller, Parkautomat), dann weitere gut erkennbare Dinge.

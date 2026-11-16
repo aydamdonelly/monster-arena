@@ -122,6 +122,22 @@ better build.
   time and the fight speed now come from the server (`convex/schedule.ts`,
   `royale.clock`), so web and app follow a change without a new build. Fights
   play at double speed: 20 to 30 seconds instead of a minute, same result.
+- **15:47** PR #18 merged (Capy, MONS-7): Profile tab with stats, royale
+  history and replays of earlier royales. PR #19 merged (Capy): the name input
+  stays above the iOS keyboard.
+- **15:55** TestFlight build 2: Snappymon egg icon, Profile tab, keyboard fix.
+- **16:08** `b453e66` Hatching is now a fast cut from egg to egg: each monster
+  from the front with the photo it was born from above it, the player's own
+  egg last. A fight plays in about 20 seconds (`fightSpeed`), same result.
+- **16:10** `2bc4f1f` Sample history for a demo account (`dev:seedSample`):
+  four earlier royales against house monsters so a launch-day demo can show
+  the daily loop. They are marked "Sample" in the profile, never show up in
+  public views and never count in the analytics. The stage demo
+  (`royale.demo`) now fights the monsters of the latest real royale.
+- **16:13** `95f59bb` Analytics show how many real visitors reached the
+  checkout; the founder's own devices no longer count as visitors.
+- **16:17** `c71fad4` As soon as today's royale has run, everything counts
+  toward the next one: an egg laid a minute later says "tomorrow".
 - **Still open:** PR #6, Keiki iMessage back channel.
 
 ## Launch day

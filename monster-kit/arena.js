@@ -32,6 +32,9 @@ const CSS = `
 .sa-hp > i { display: block; height: 100%; background: #4cc38a; }
 .sa-tag { position: absolute; transform: translate(-50%, -100%); font-size: 1.05em; font-weight: 700; background: rgba(255,255,255,.92); padding: .1em .65em; border-radius: 999px; white-space: nowrap; }
 .sa-tag.me { background: ${INK}; color: #fff; }
+.sa-snap { position: absolute; width: var(--sa-snap, 7.5em); padding: .45em .45em 1.5em; box-sizing: border-box; background: #fff; border: .2em solid ${INK}; border-radius: .5em; box-shadow: .3em .3em 0 ${INK}; transform-origin: 50% 100%; will-change: transform; }
+.sa-snap > i { display: block; width: 100%; padding-top: 100%; background-color: #e8f1ec; background-size: cover; background-position: center; border-radius: .22em; }
+.sa-snap.me { background: #ffd60a; }
 .sa-move { position: absolute; transform: translate(-50%, -100%); font-size: 1.05em; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #fff; padding: .15em .7em; border-radius: .5em; border: .16em solid rgba(255,255,255,.92); white-space: nowrap; animation: sa-pop .18s ease-out; box-shadow: 0 .16em 0 rgba(0,0,0,.2); }
 .sa-move.special { font-size: 1.45em; }
 .sa-dmg { position: absolute; transform: translate(-50%, -50%); font-size: 1.6em; font-weight: 700; color: #fff; -webkit-text-stroke: .22em ${INK}; paint-order: stroke fill; white-space: nowrap; animation: sa-up .8s ease-out forwards; }
@@ -148,7 +151,7 @@ export function createArena(container, opts = {}) {
     return g;
   }
   function buildActors() {
-    actors = new Map(); rosterEl.innerHTML = ''; floatEl.innerHTML = '';
+    actors = new Map(); rosterEl.innerHTML = ''; floatEl.innerHTML = ''; let idx = 0;
     for (const e of entrants) {
       let root; try { root = buildMonster(e.genome || fallbackGenome(e)); } catch { root = buildMonster(fallbackGenome(e)); }
       root.scale.setScalar(S);
@@ -165,7 +168,10 @@ export function createArena(container, opts = {}) {
       const hp = el('div', 'sa-hp', floatEl); const hpFill = el('i', null, hp);
       const tag = el('div', 'sa-tag' + (e.id === followId ? ' me' : ''), floatEl, e.id === followId ? `YOU · ${e.name}` : e.name);
       const egg = o.hatch ? makeEgg(mainColor(e), !!e.genome?.golden) : null; if (egg) { scene.add(egg); holder.visible = false; }
-      actors.set(e.id, { e, root, holder, height, mini, egg, hatched: !o.hatch, pop: o.hatch ? 0 : 1, hatchAt: 0, cell, fillEl, hp, hpFill, tag, yaw: 0, lunge: 0, hurt: 0, dead: 0, shownHp: -1 });
+      // Das Foto, aus dem das Monster entstanden ist: springt beim Schlüpfen als Polaroid über dem Monster auf
+      let snap = null; if (o.hatch && e.photoUrl) { snap = el('div', 'sa-snap' + (e.id === followId ? ' me' : ''), floatEl); el('i', null, snap).style.backgroundImage = `url("${e.photoUrl}")`; snap.style.display = 'none'; }
+      const snapTilt = (idx % 2 ? 1 : -1) * (4 + ((idx * 37) % 5)); idx++;
+      actors.set(e.id, { e, root, holder, height, mini, egg, snap, snapT: -1, snapShown: false, snapTilt, shotAt: 0, order: 0, hatched: !o.hatch, pop: o.hatch ? 0 : 1, hatchAt: 0, cell, fillEl, hp, hpFill, tag, yaw: 0, lunge: 0, hurt: 0, dead: 0, shownHp: -1 });
     }
   }
 
@@ -191,7 +197,7 @@ export function createArena(container, opts = {}) {
   function escapeHtml(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
   // ---------- Ereignisse aus der Simulation ----------
-  let calloutTimer = null; let slowLeft = 0; let slowCool = 0; let eggs = []; let introT = 0; let hatchEnd = 0;
+  let calloutTimer = null; let slowLeft = 0; let slowCool = 0; let eggs = []; let introT = 0; let hatchEnd = 0; let montage = []; let montageCur = null; let hatchedN = 0;
   // Regie-Kamera (Hochformat): merkt sich, wo gerade etwas passiert, und fährt dort nah heran. Die Minimap zeigt den Überblick.
   const hot = []; const focus = { x: 0, z: 0, r: 4, hold: 0, score: 0 };
   const heat = (x, z, w) => { hot.push({ x, z, w, t: simTime }); if (hot.length > 60) hot.shift(); };
@@ -292,15 +298,23 @@ export function createArena(container, opts = {}) {
         }
       } else { pitch = 0.8; dist = fitDist(R, pitch); }
     }
+    let ly = winnerId ? 0.8 : 0.5;
     if (!started) {
       pitch = 0.62; dist = fitDist(R + 0.5, pitch); cx = 0; cz = 0; yaw = rig.userYaw + now * 0.00025;
       const me = o.hatchCam && followId ? sim.state.monsters.find((m) => m.id === followId) : null;
       if (me) { cx = me.x; cz = me.y; pitch = 0.36; dist = 6.2; yaw = rig.userYaw + Math.atan2(-me.x, -me.y) + Math.sin(now * 0.0009) * 0.25; } // Nahaufnahme auf das eigene Ei
-      else if (o.hatch && directing) { // Hochformat: die Kamera wandert am Ring entlang zu dem Ei, das als Nächstes platzt
-        let next = null; for (const a2 of actors.values()) if (!a2.hatched && (!next || a2.hatchAt < next.hatchAt)) next = a2;
-        const m2 = next ? sim.state.monsters.find((m) => m.id === next.e.id) : null;
-        if (m2 && introT > 0.9) { cx = m2.x * 0.72; cz = m2.y * 0.72; pitch = 0.5; dist = fitDist(4.3, pitch); yaw = rig.userYaw + Math.atan2(m2.x, m2.y) + 0.5; }
-        else if (!next) { pitch = 0.62; dist = fitDist(R * 0.8, pitch); }
+      else if (o.hatch && directing) {
+        // Hochformat: harte Schnitte von Ei zu Ei (zack, zack, zack). Jedes Monster von vorn, bildfüllend, sein Foto darüber.
+        let cur = null; for (const a2 of montage) if (introT >= a2.shotAt) cur = a2;
+        const m2 = cur ? sim.state.monsters.find((m) => m.id === cur.e.id) : null;
+        if (m2) {
+          const own = cur.e.id === followId; const since = introT - cur.shotAt;
+          const d0 = Math.max(5.6, cur.height * 2.5 + (own ? 0.9 : 1.7));
+          cx = m2.x; cz = m2.y; pitch = 0.2; ly = Math.max(0.5, cur.height - 0.075 * d0);
+          dist = d0 - Math.min(0.5, since * 0.9); // leichtes Heranfahren in jedem Bild
+          yaw = Math.atan2(-m2.x, -m2.y) + (cur.order % 2 ? 0.32 : -0.32);
+          if (montageCur !== cur) { montageCur = cur; rig.cut = true; }
+        }
       }
     }
     const k = rig.cut ? 1 : 1 - Math.pow(0.0015, dt); rig.cut = false; // weiche Nachführung, bei einem Schnitt sofort
@@ -308,7 +322,8 @@ export function createArena(container, opts = {}) {
     rig.kick = Math.max(0, rig.kick - dt * 3);
     const d = rig.dist * (1 - rig.kick * 0.035); const cp = Math.cos(rig.pitch);
     camera.position.set(rig.cx + Math.sin(rig.yaw) * cp * d, Math.sin(rig.pitch) * d, rig.cz + Math.cos(rig.yaw) * cp * d);
-    camera.lookAt(rig.cx, winnerId ? 0.8 : 0.5, rig.cz);
+    rig.ly = lerp(rig.ly ?? ly, ly, k);
+    camera.lookAt(rig.cx, rig.ly, rig.cz);
   }
   // Ziehen dreht, Rad oder Zwei-Finger-Geste zoomt
   const pointers = new Map(); let pinch = 0;
@@ -335,12 +350,18 @@ export function createArena(container, opts = {}) {
     hot.length = 0; focus.since = undefined; focus.yaw = undefined; focus.score = 0; focus.hold = 0;
     started = false; ended = false; acc = 0; winnerId = null; spectate = null; introLeft = o.intro; rig.kick = 0;
     for (const m of sim.state.monsters) { const a = actors.get(m.id); if (a) a.yaw = Math.atan2(-m.x, -m.y); }
-    drawCamButtons(); introT = 0;
+    drawCamButtons(); introT = 0; hatchedN = 0;
     if (o.hatch) { // Eier stehen an den Startplätzen und platzen nacheinander auf, das eigene zuletzt
-      const order = sim.state.monsters.map((m) => m.id).sort((a, b) => (a === followId ? 1 : 0) - (b === followId ? 1 : 0)); const gap = Math.min(0.26, 3.0 / Math.max(1, order.length));
-      order.forEach((id, i) => { const a = actors.get(id); const m = sim.state.monsters.find((x) => x.id === id); if (!a || !m) return; a.hatchAt = 1.3 + i * gap + (id === followId ? 0.5 : 0); a.egg.position.set(m.x, 0, m.y); a.egg.scale.setScalar(0.001); a.dropAt = i * 0.05; });
-      hatchEnd = 1.3 + order.length * gap + (followId ? 0.5 : 0) + 1.1;
-      banner(o.title || 'THE EGGS ARE IN', 1.4);
+      const order = sim.state.monsters.map((m) => m.id).sort((a, b) => (a === followId ? 1 : 0) - (b === followId ? 1 : 0));
+      const hasOwn = !!followId && order.includes(followId); const others = order.length - (hasOwn ? 1 : 0);
+      const gap = Math.min(0.3, Math.max(0.15, 3.4 / Math.max(1, others))); const t0 = 1.15; montage = []; montageCur = null;
+      order.forEach((id, i) => {
+        const a = actors.get(id); const m = sim.state.monsters.find((x) => x.id === id); if (!a || !m) return; const own = id === followId;
+        a.hatchAt = t0 + i * gap + (own ? 0.4 : 0); a.shotAt = a.hatchAt - (own ? 0.4 : 0.09); a.order = i; montage.push(a);
+        a.egg.position.set(m.x, 0, m.y); a.egg.scale.setScalar(0.001); a.dropAt = i * 0.05;
+      });
+      hatchEnd = t0 + Math.max(0, order.length - 1) * gap + (hasOwn ? 0.4 + 1.2 : 0.7);
+      banner(o.title || 'THE EGGS ARE IN', 1.0);
     } else if (o.intro > 0) banner(o.title || 'CHOOSE YOUR MONSTER!', 0); else start();
   }
   function start() { if (started) return; started = true; introLeft = 0; banner('FIGHT!', 0.9); }
@@ -352,17 +373,20 @@ export function createArena(container, opts = {}) {
     const w = container.clientWidth || 1, h = container.clientHeight || 1;
     if (renderer.domElement.width !== Math.floor(w * renderer.getPixelRatio()) || renderer.domElement.height !== Math.floor(h * renderer.getPixelRatio())) { renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
     const base = Math.max(10, Math.min(20, Math.min(w, h * 1.2) / 52)) * (o.uiScale || 1); if (ui.dataset.base !== String(base)) { ui.dataset.base = String(base); ui.style.fontSize = base + 'px'; }
+    const tallUi = w / h < 0.8; if (ui.dataset.tall !== String(tallUi)) { ui.dataset.tall = String(tallUi); ui.style.setProperty('--sa-snap', tallUi ? '13.5em' : '7.5em'); }
     if (!started && o.hatch) { // Eier fallen herein, wackeln immer stärker und platzen auf
       introT += dt;
       for (const a of actors.values()) {
         if (a.hatched || !a.egg) continue;
+        if (a.snap && !a.snapShown && introT >= a.shotAt) { a.snapShown = true; a.snapT = 0; a.snap.style.display = 'block'; a.snap.style.transform = 'translate(-50%, -100%) scale(0)'; }
         const since = introT - (a.dropAt || 0); const near = Math.max(0, 1 - (a.hatchAt - introT) / 1.2);
         a.egg.scale.setScalar(since <= 0 ? 0.001 : since < 0.35 ? (since / 0.35) * 1.15 : 1 + Math.sin(introT * 9 + a.hatchAt * 7) * 0.02);
         a.egg.rotation.z = Math.sin(introT * (10 + near * 16) + a.hatchAt * 5) * (0.04 + near * 0.2); a.egg.position.y = Math.abs(Math.sin(introT * (8 + near * 10) + a.hatchAt)) * near * 0.14;
         if (introT >= a.hatchAt) {
           a.hatched = true; a.pop = 0.001; a.holder.visible = true; const p = a.egg.position; const c = mainColor(a.e);
           FX.spray('normal', p.x, 0.7, p.z, 14, 4.2, 0.2); FX.stars(p.x, 0.9, p.z, c, 4, 0.55); ring(p.x, p.z, 0.2, 1.3, c, 0.35, 0.9); scene.remove(a.egg); a.egg = null; rig.kick = Math.max(rig.kick, a.e.id === followId ? 1 : 0.25);
-          if (a.e.id === followId) banner(`${escapeHtml(a.e.name)}!<small>your egg hatched</small>`, 1.4);
+          hatchedN++;
+          if (a.e.id === followId) { calloutEl.innerHTML = `<small>your egg hatched</small>${escapeHtml(a.e.name)}!`; calloutEl.style.background = '#ffd60a'; calloutEl.classList.add('on'); cancel(calloutTimer); calloutTimer = later(() => calloutEl.classList.remove('on'), 1400); }
         }
       }
       if (introT >= hatchEnd && o.autoStart !== false) start();
@@ -388,7 +412,7 @@ export function createArena(container, opts = {}) {
       const lx = m.fx * a.lunge * 0.45, lz = m.fy * a.lunge * 0.45;
       a.holder.position.set(x + lx + (a.hurt ? Math.sin(now * 0.09) * 0.05 * a.hurt : 0), y, z + lz);
       a.yaw = lerpAngle(a.yaw, Math.atan2(m.fx, m.fy), Math.min(1, dt * 10)); a.holder.rotation.y = a.yaw;
-      let sc = 1; if (a.pop < 1) { a.pop = Math.min(1, a.pop + dt * 2.6); const k = a.pop; sc = k === 1 ? 1 : 1 + Math.pow(2, -9 * k) * Math.sin((k * 9 - 0.75) * 2.094) * 1.0 - (1 - k) * 0.25; sc = Math.max(0.05, sc); }
+      let sc = 1; if (a.pop < 1) { a.pop = Math.min(1, a.pop + dt * (started ? 2.6 : 5.2)); const k = a.pop; sc = k === 1 ? 1 : 1 + Math.pow(2, -9 * k) * Math.sin((k * 9 - 0.75) * 2.094) * 1.0 - (1 - k) * 0.25; sc = Math.max(0.05, sc); }
       if (m.cast) { const k = 1 - m.cast.t / (m.cast.total || 0.3); sc = 1 + 0.14 * Math.sin(k * Math.PI); }
       if (a.dead) { a.dead = Math.min(1, a.dead + dt * 2.2); sc = Math.max(0.001, 1 - a.dead); a.holder.rotation.y += a.dead * 9; a.holder.position.y = a.dead * 0.8; if (a.dead >= 1) a.holder.visible = false; }
       if (m.id === winnerId) a.holder.position.y = Math.abs(Math.sin(now * 0.008)) * 0.6;
@@ -403,6 +427,19 @@ export function createArena(container, opts = {}) {
       const showTag = m.alive && p.ok && (started ? m.id === followId : a.hatched);
       a.tag.style.display = showTag ? 'block' : 'none';
       if (showTag) { a.tag.style.left = p.x + 'px'; a.tag.style.top = p.y - (started ? 6 : 2) + 'px'; }
+      if (a.snap && a.snapT >= 0) {
+        a.snapT += dt; const own = m.id === followId;
+        const life = tallUi ? (own ? Math.max(1.6, hatchEnd - a.shotAt + 0.3) : 1.1) : 1.9;
+        if (a.snapT >= life) { a.snapT = -1; a.snap.style.display = 'none'; }
+        else {
+          a.snap.style.visibility = p.ok ? 'visible' : 'hidden'; // direkt nach einem Schnitt stammt p noch von der alten Kamera
+          const kin = Math.max(0, a.snapT - 0.034) / 0.08; const pop = kin < 1 ? kin * 1.18 : 1 + 0.18 * Math.max(0, 1 - (a.snapT - 0.114) / 0.09);
+          const sc = pop * Math.max(0, Math.min(1, (life - a.snapT) / 0.16));
+          const snapH = base * (tallUi ? 14.6 : 8.6); const minTop = rosterEl.offsetTop + rosterEl.offsetHeight + snapH + base * 0.6; // nicht in die Teilnehmerleiste ragen
+          a.snap.style.left = p.x + 'px'; a.snap.style.top = Math.max(p.y - base * 2.3, tallUi ? minTop : 0) + 'px';
+          a.snap.style.transform = `translate(-50%, -100%) rotate(${a.snapTilt}deg) scale(${sc.toFixed(3)})`;
+        }
+      }
       if (a.label) { a.labelLife -= dt; if (a.labelLife <= 0 || !m.alive) { a.label.remove(); a.label = null; } else { a.label.style.left = p.x + 'px'; a.label.style.top = p.y - (m.id === followId ? 24 : 6) + 'px'; a.label.style.opacity = Math.min(1, a.labelLife * 4); } }
     }
     // Geschosse
@@ -426,8 +463,9 @@ export function createArena(container, opts = {}) {
       if (focus.since !== undefined) { const x = (focus.x * cs - focus.z * sn) * k, y = (focus.x * sn + focus.z * cs) * k; c.strokeStyle = 'rgba(43,37,35,.75)'; c.lineWidth = 2.5; c.setLineDash([6, 5]); c.beginPath(); c.arc(x, y, focus.r * k, 0, 7); c.stroke(); }
       c.restore();
     }
-    if (leftEl.dataset.n !== String(aliveCount)) { leftEl.dataset.n = String(aliveCount); leftEl.textContent = `${aliveCount} left`; }
-    leftEl.style.display = started && !winnerId && aliveCount > 2 ? 'block' : 'none';
+    const hatching = !started && o.hatch && hatchedN > 0; const leftKey = hatching ? `h${hatchedN}` : String(aliveCount);
+    if (leftEl.dataset.n !== leftKey) { leftEl.dataset.n = leftKey; leftEl.textContent = hatching ? `${hatchedN} / ${sim.state.monsters.length} hatched` : `${aliveCount} left`; }
+    leftEl.style.display = hatching || (started && !winnerId && aliveCount > 2) ? 'block' : 'none';
     updateCamera(dt, now);
     renderer.render(scene, camera);
     if (!o.manual) raf = requestAnimationFrame(frame);

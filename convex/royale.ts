@@ -151,8 +151,11 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
         (owner && !owner.isTest && owner.deviceId !== WILD_DEVICE ? real : rest).push(m);
       }
       const room = Math.max(0, DEMO_ARENA - fighters.length);
-      // Echte Monster zuerst; wilde und Test-Monster der Royale nur, wenn es sonst nicht reicht
-      const picked = [...shuffle(real, rand), ...shuffle(rest, rand)].slice(0, room);
+      // Echte Monster zuerst; wilde und Test-Monster der Royale nur, wenn es sonst nicht reicht.
+      // DEMO_FEATURED (Convex-Umgebungsvariable, Monster-IDs kommagetrennt): diese Monster sind in jedem Vorführ-Kampf dabei.
+      const featured = new Set((process.env.DEMO_FEATURED ?? "").split(",").map((x: string) => x.trim()).filter(Boolean));
+      const order = [...shuffle(real, rand), ...shuffle(rest, rand)];
+      const picked = [...order.filter((m) => featured.has(m._id)), ...order.filter((m) => !featured.has(m._id))].slice(0, room);
       for (const m of picked) {
         if (owners.get(m.playerId)?.deviceId === WILD_DEVICE) wildCount++;
         fighters.push(fighterOf(m));

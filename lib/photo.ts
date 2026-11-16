@@ -1,3 +1,4 @@
+import * as Device from 'expo-device';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import { Platform } from 'react-native';
@@ -21,19 +22,19 @@ export async function pickPhoto(source: 'camera' | 'library'): Promise<Photo | n
 
 async function launchPicker(source: 'camera' | 'library'): Promise<Photo | null> {
   const options: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 1 };
-  let result: ImagePicker.ImagePickerResult;
-  if (source === 'camera' && Platform.OS !== 'web') {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    result = permission.granted
-      ? await ImagePicker.launchCameraAsync(options).catch(() => ImagePicker.launchImageLibraryAsync(options))
-      : await ImagePicker.launchImageLibraryAsync(options);
-  } else if (source === 'camera') {
-    result = await ImagePicker.launchCameraAsync(options);
-  } else {
-    result = await ImagePicker.launchImageLibraryAsync(options);
-  }
+  const result = source === 'camera' ? await launchCamera(options) : await ImagePicker.launchImageLibraryAsync(options);
   const asset = result.canceled ? null : result.assets[0];
   return asset ? { uri: asset.uri, width: asset.width, height: asset.height } : null;
+}
+
+async function launchCamera(options: ImagePicker.ImagePickerOptions): Promise<ImagePicker.ImagePickerResult> {
+  if (Platform.OS === 'web') return ImagePicker.launchCameraAsync(options);
+  if (Device.isDevice === false) return ImagePicker.launchImageLibraryAsync(options);
+  try {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (permission.granted) return await ImagePicker.launchCameraAsync(options);
+  } catch {}
+  return ImagePicker.launchImageLibraryAsync(options);
 }
 
 export async function toUploadJpeg(photo: Photo): Promise<string> {

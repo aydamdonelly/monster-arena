@@ -11,7 +11,7 @@ build:
             ios:
                 app_id: 55307733-a41b-4d3e-bc5e-c131607a188f
                 setup_commands:
-                    - npm ci
+                    - npm ci --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000 --fetch-timeout=600000
                     - npx expo prebuild --platform ios --no-install
                 build_commands:
                     - cd ios && pod install && WS=$(ls -d *.xcworkspace | head -n 1) && xcodebuild -workspace "$WS" -scheme "${WS%.xcworkspace}" -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' ARCHS=arm64 -derivedDataPath build
@@ -27,7 +27,16 @@ pr_review:
             kind: revyl
         always_verify:
             - The app launches to its first screen.
+            - A first-time player can pick a photo and reaches "Your egg is in".
+            - After laying the egg, the home screen shows the egg with its countdown.
         system_prompt: >-
             This app talks to a shared Convex dev deployment, so every proof creates real players.
             Whenever onboarding asks for a trainer name, enter a name that starts with "QA" (for example "QA Revyl");
             those players are marked as test players automatically. Never use a name without the QA prefix.
+            How the app works: the first screen shows a yellow camera button ("Take a photo").
+            On the cloud iPhone, which is a simulator, that button opens the photo library instead of the camera;
+            pick any sample photo. The app lays the egg and shows "Your egg is in" with the question "how did you get here?";
+            tap any source chip (for example "Other"). The egg screen then shows a countdown to 5 PM and a "What's your name?"
+            field: type a trainer name starting with QA and tap Save, then close the screen with the X at the top right.
+            Home then shows "Your egg is in." with the egg, a countdown and a Golden Egg button; never buy a Golden Egg.
+            The Arena tab shows waiting eggs, and the Collection tab shows your egg.

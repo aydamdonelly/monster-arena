@@ -13,7 +13,7 @@ import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { runSim } from "../monster-kit/royale-sim.js";
 import { hashString, statsFromTraits } from "../monster-kit/battle.js";
-import { FIGHT_SPEED, ROYALE_UTC_MIN, fightSpeed } from "./schedule";
+import { FIGHT_SPEED, HATCH_PACE, ROYALE_UTC_MIN, THEME_TODAY, THEME_TOMORROW, fightSpeed, isOwnerDevice } from "./schedule";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const EGG_WINDOW_MS = 3 * DAY_MS; // ein Ei, das zur Royale noch nicht fertig war, schlüpft in der nächsten
@@ -88,7 +88,8 @@ async function wildPool(ctx: QueryCtx): Promise<Doc<"monsters">[]> {
   return pool.filter((m) => !!m.genome);
 }
 
-type RunArgs = { title: string; mode: "live" | "test"; minEntrants: number; force: boolean; onlyPlayer?: Id<"players"> };
+// includeOwner: Das Ei von onlyPlayer schlüpft auch dann, wenn der Spieler kein Testspieler ist (Zusatzkampf des Admins)
+type RunArgs = { title: string; mode: "live" | "test"; minEntrants: number; force: boolean; onlyPlayer?: Id<"players">; includeOwner?: boolean };
 
 async function runNow(ctx: MutationCtx, a: RunArgs) {
   const now = Date.now();
@@ -111,7 +112,8 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
     if (!owners.has(m.playerId)) owners.set(m.playerId, await ctx.db.get("players", m.playerId));
     const owner = owners.get(m.playerId);
     if (!owner || owner.deviceId === WILD_DEVICE) continue;
-    if (a.mode === "live" ? owner.isTest : !owner.isTest) continue;
+    const ownEgg = !!a.includeOwner && m.playerId === a.onlyPlayer;
+    if (!ownEgg && (a.mode === "live" ? owner.isTest : !owner.isTest)) continue;
     if (a.onlyPlayer && m.playerId !== a.onlyPlayer) continue;
     hatching.push(m);
   }
@@ -467,6 +469,7 @@ export const round = query({
     return {
       royaleId: r.doc._id, startsAt: r.doc.startsAt, title: r.data.title, dayElement: r.data.dayElement, isFinal: index < 0,
       speed: fightSpeed(rd.duration), // Abspieltempo für die Apps: jeder Kampf dauert etwa gleich lang
+      hatchPace: HATCH_PACE, // Schlüpfen vor dem Kampf: Zeit je Ei
       ...(await publicRound(ctx, rd, index)),
     };
   },
@@ -476,8 +479,49 @@ export const round = query({
 // Die Apps rechnen daraus Countdown und Uhrzeit-Anzeige; eine Änderung in schedule.ts kommt so ohne neues App-Build an.
 export const clock = query({
   args: {},
-  returns: v.object({ utcMin: v.number(), speed: v.number() }),
-  handler: async () => ({ utcMin: ROYALE_UTC_MIN, speed: FIGHT_SPEED }),
+  returns: v.object({ utcMin: v.number(), speed: v.number(), theme: v.string(), nextTheme: v.string(), hatchPace: v.number() }),
+  handler: async () => ({ utcMin: ROYALE_UTC_MIN, speed: FIGHT_SPEED, theme: THEME_TODAY, nextTheme: THEME_TOMORROW, hatchPace: HATCH_PACE }),
+});
+
+// Der Gründer startet den Kampf von Hand (Knopf "Admin: start fight", nur auf seinen Geräten, siehe schedule.isOwnerDevice).
+// Ist die heutige Royale noch nicht gelaufen, startet genau sie, sofort und für alle; der Cron findet sie danach als gelaufen vor.
+// Ist sie schon gelaufen, gibt es einen Zusatzkampf: sein neuestes Ei gegen Monster der echten Royale, für niemanden sonst sichtbar.
+export const adminStart = mutation({
+  args: { deviceId: v.string() },
+  returns: v.object({ royaleId: v.id("royales"), live: v.boolean(), round: v.number(), entrants: v.number() }),
+  handler: async (ctx, { deviceId }) => {
+    if (!isOwnerDevice(deviceId)) throw new ConvexError({ code: "forbidden", message: "Admins only." });
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_deviceId", (q) => q.eq("deviceId", deviceId))
+      .unique();
+    if (!player) throw new ConvexError({ code: "no_player", message: "Open the app once first." });
+    const mine = await ctx.db
+      .query("monsters")
+      .withIndex("by_playerId", (q) => q.eq("playerId", player._id))
+      .order("desc")
+      .take(200);
+    const now = Date.now();
+    // Das eigene, eben gelegte Ei soll mitkämpfen: erst starten, wenn sein Monster fertig gebaut ist
+    if (mine.some((m) => m.status === "egg" && m.ready !== true && m._creationTime > now - 5 * 60 * 1000)) {
+      throw new ConvexError({ code: "building", message: "Your egg is still being built. Try again in a few seconds." });
+    }
+    const last = await latestRoyale(ctx, false);
+    const liveDone = !!last && now - last.doc.startsAt < LIVE_GAP_MS;
+    const res = liveDone
+      ? await runNow(ctx, { title: "Royale", mode: "test", minEntrants: MIN_ENTRANTS, force: true, onlyPlayer: player._id, includeOwner: true })
+      : await runNow(ctx, { title: "Royale", mode: "live", minEntrants: MIN_ENTRANTS, force: false });
+    if (res.skipped !== null || !res.royaleId) {
+      throw new ConvexError({ code: res.skipped ?? "failed", message: res.skipped === "no_eggs" ? "There are no eggs to hatch yet." : "The fight could not start. Try again." });
+    }
+    const doc = await ctx.db.get("royales", res.royaleId);
+    const data = doc?.rounds as RoyaleData;
+    const names = new Map<string, string>(mine.map((m) => [m._id as string, m.name]));
+    const best = entriesOf(data, names)[0];
+    // Welche Runde soll der Admin sehen: die seines besten Monsters (Finale oder Vorrunde), sonst das Finale
+    const round = best && !best.inFinal && best.heatIndex != null ? best.heatIndex : -1;
+    return { royaleId: res.royaleId, live: !liveDone, round, entrants: res.entrants ?? 0 };
+  },
 });
 
 type Entry = {

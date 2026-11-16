@@ -65,6 +65,7 @@ export const setTest = internalMutation({
 });
 
 import { DAILY_LIMIT, GOLDEN_LIMIT, bumpCounter, royaleDayStart } from "./eggs";
+import { isOwnerDevice } from "./schedule";
 
 // Mein Stand für den Catch-Screen: Fänge heute, Tageslimit, Goldene Eier
 export const me = query({
@@ -80,6 +81,7 @@ export const me = query({
       goldenToday: v.number(),
       canGolden: v.boolean(),
       unlimited: v.boolean(),
+      admin: v.boolean(),
     }),
   ),
   handler: async (ctx, { deviceId, now }) => {
@@ -106,6 +108,7 @@ export const me = query({
       goldenToday,
       canGolden: goldenToday < GOLDEN_LIMIT, // darf heute noch ein Goldenes Ei legen bzw. kaufen
       unlimited: player.isTest,
+      admin: isOwnerDevice(deviceId), // eigenes Gerät des Gründers: sieht den Knopf "Admin: start fight"
     };
   },
 });

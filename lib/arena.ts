@@ -23,10 +23,26 @@ const PACIFIC_OFFSET_MIN = -8 * 60; // Winterzeit, wie der Cron im Backend
 // 120 = 02:00 UTC = 18:00 Uhr Pacific.
 let royaleUtcMin = 120;
 let fightSpeed = 2;
+let hatchPace = 1.5;
+let themeToday = 'Anything';
+let themeTomorrow = 'Something in your kitchen';
 
-export function setRoyaleClock(c: { utcMin: number; speed: number }) {
+export function setRoyaleClock(c: { utcMin: number; speed: number; theme?: string; nextTheme?: string; hatchPace?: number }) {
   if (Number.isFinite(c.utcMin) && c.utcMin >= 0 && c.utcMin < 24 * 60) royaleUtcMin = c.utcMin;
   if (Number.isFinite(c.speed) && c.speed >= 0.5 && c.speed <= 4) fightSpeed = c.speed;
+  if (typeof c.hatchPace === 'number' && c.hatchPace >= 0.5 && c.hatchPace <= 4) hatchPace = c.hatchPace;
+  if (c.theme) themeToday = c.theme;
+  if (c.nextTheme) themeTomorrow = c.nextTheme;
+}
+
+// Thema des Tages (was man fotografieren soll): heute und morgen, vom Server
+export function royaleThemes() {
+  return { today: themeToday, tomorrow: themeTomorrow };
+}
+
+// Schlüpfen vor dem Kampf: Zeit je Ei relativ zum Grundtempo
+export function getHatchPace() {
+  return hatchPace;
 }
 
 export function getFightSpeed() {

@@ -16,6 +16,23 @@ export function fightSpeed(simSeconds: number | undefined) {
   return Math.round(Math.min(3.2, Math.max(1.5, simSeconds / FIGHT_SECONDS)) * 100) / 100;
 }
 
+// Thema des Tages (was man fotografieren soll) für heute und morgen. Die Apps zeigen es auf der Startseite.
+export const THEME_TODAY = "Anything";
+export const THEME_TOMORROW = "Something in your kitchen";
+
+// Schlüpfen vor dem Kampf: Zeit je Ei relativ zum Grundtempo (1 = rund 0,3 s je Ei, 1,5 = etwas ruhiger)
+export const HATCH_PACE = 1.5;
+
+// Eigene Geräte des Gründers (Convex-Umgebungsvariable OWNER_DEVICES, kommagetrennt): zählen nicht in den Zahlen
+// und dürfen die Royale von Hand starten (royale.adminStart).
+export function isOwnerDevice(deviceId: string) {
+  return (process.env.OWNER_DEVICES ?? "")
+    .split(",")
+    .map((x: string) => x.trim())
+    .filter(Boolean)
+    .includes(deviceId);
+}
+
 export function royaleCron() {
   return `${ROYALE_UTC_MIN % 60} ${Math.floor(ROYALE_UTC_MIN / 60)} * * *`;
 }

@@ -51,5 +51,8 @@ export async function syncRoyaleNotifications(royaleAt: number, hasEgg: boolean)
     );
   }
   jobs.push(schedule(royaleAt, 'The royale is live. Your egg is hatching now.'));
+  // Gleich eine erste Mitteilung, damit man sieht, dass der Countdown läuft (z. B. direkt nach dem Foto)
+  const minNow = Math.max(1, Math.round((royaleAt - now) / 60000));
+  jobs.push(schedule(now + 6000, hasEgg ? `Your egg is in. It hatches in ${minNow} min.` : `${minNow} min left to snap something. Every egg hatches at ${hour}.`));
   await Promise.all(jobs);
 }

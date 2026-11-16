@@ -1,0 +1,31 @@
+<!doctype html>
+<html><head><meta charset="utf-8" /><title>monster-kit · Snapshot</title>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }</script></head>
+<body style="margin:0;background:#888">
+<script type="module">
+  // Rendert ein Monster aus seinem Genom als PNG mit transparentem Hintergrund (512 x 512) und gibt es als Data-URL zurück.
+  // Benutzt von prep/video/snapbot.mjs: Der Helfer legt die Bilder in Convex ab (monsters.setSnapshot), damit Listen
+  // in der iPhone-App fertige Bilder zeigen können.
+  import * as THREE from 'three';
+  import { buildMonster, updateMonster } from './monster.js';
+  const SIZE = 512;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(1); renderer.setSize(SIZE, SIZE); renderer.setClearColor(0x000000, 0); document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+  scene.add(new THREE.HemisphereLight('#ffffff', '#cfdcd4', 1.5));
+  const sun = new THREE.DirectionalLight('#ffffff', 2.0); sun.position.set(-3, 5, 4); scene.add(sun);
+  const fill = new THREE.DirectionalLight('#fff4ec', 0.9); fill.position.set(1.5, 1.5, 6); scene.add(fill);
+  window.renderSnap = (genome) => {
+    const m = buildMonster(genome, { outline: 0.045 }); m.rotation.y = -0.3; scene.add(m); updateMonster(m, 0.4);
+    const h = m.userData.monster?.height ?? 2; const tan = Math.tan((camera.fov * Math.PI) / 360);
+    const d = Math.max((h * 1.32) / (2 * tan), 3.4 / (2 * tan));
+    camera.position.set(0, h * 0.62, d); camera.lookAt(0, h * 0.47, 0); camera.updateProjectionMatrix();
+    renderer.render(scene, camera);
+    const url = renderer.domElement.toDataURL('image/png');
+    scene.remove(m);
+    m.traverse((o) => { if (o.isMesh) { o.geometry?.dispose?.(); } });
+    return url;
+  };
+  window.__snapReady = true;
+</script>
+</body></html>

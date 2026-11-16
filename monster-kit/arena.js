@@ -23,6 +23,8 @@ const CSS = `
 .sa-cell { display: flex; align-items: center; gap: .45em; background: rgba(255,255,255,.84); border-radius: .7em; padding: .28em .55em .28em .28em; min-width: 0; transition: opacity .4s; }
 .sa-cell.dead { opacity: .3; }
 .sa-cell.me { outline: .2em solid ${INK}; }
+.sa-cell { pointer-events: auto; cursor: pointer; }
+.sa-cell.watch { outline: .2em solid #ffd60a; background: #fff; }
 .sa-thumb { width: 1.9em; height: 1.9em; border-radius: .5em; background: #ddd center / cover no-repeat; flex: none; }
 .sa-cellbody { flex: 1; min-width: 0; }
 .sa-cellname { font-size: .95em; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }
@@ -52,8 +54,11 @@ const CSS = `
 .sa-callout.on { opacity: 1; transform: translateX(-50%) rotate(-2deg) scale(1); }
 .sa-callout small { display: block; font-size: .42em; letter-spacing: .08em; -webkit-text-stroke: 0; margin-bottom: -.2em; opacity: .95; }
 .sa-cams { position: absolute; right: .8em; bottom: calc(1em + var(--sa-b, 0px)); display: flex; gap: .4em; pointer-events: auto; }
-.sa-cams button { border: 0; border-radius: 999px; padding: .5em .95em; font: 700 1.1em 'Fredoka', system-ui, sans-serif; background: rgba(255,255,255,.88); color: ${INK}; cursor: pointer; }
-.sa-cams button.on { background: ${INK}; color: #fff; }
+.sa-cams button { border: .14em solid ${INK}; border-radius: 999px; padding: .5em 1em; font: 700 1.25em 'Fredoka', system-ui, sans-serif; background: #fff; color: ${INK}; cursor: pointer; box-shadow: .14em .14em 0 ${INK}; }
+.sa-cams button.on { background: #ffd60a; color: ${INK}; }
+.sa-skip { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(5em + var(--sa-b, 0px)); pointer-events: auto; cursor: pointer; border: .14em solid ${INK}; border-radius: 999px; padding: .5em 1.3em; font: 700 1.45em 'Fredoka', system-ui, sans-serif; background: #ffd60a; color: ${INK}; box-shadow: .16em .16em 0 ${INK}; }
+.sa-hint { position: absolute; left: 50%; transform: translateX(-50%); top: 31%; font-size: 1.25em; font-weight: 700; background: rgba(43,37,35,.82); color: #fff; padding: .35em 1em; border-radius: 999px; white-space: nowrap; opacity: 0; transition: opacity .3s; }
+.sa-hint.on { opacity: 1; }
 .sa-map { position: absolute; right: .8em; bottom: calc(1em + var(--sa-b, 0px)); width: 7.4em; height: 7.4em; border-radius: 50%; background: rgba(255,255,255,.82); border: .16em solid ${INK}; box-shadow: .2em .2em 0 ${INK}; }
 .sa-left { position: absolute; right: 1.5em; bottom: calc(9.4em + var(--sa-b, 0px)); font-size: 1.15em; font-weight: 700; background: rgba(255,255,255,.85); padding: .25em .8em; border-radius: 999px; }
 @keyframes sa-pop { from { transform: translate(-50%, -100%) scale(.5); opacity: 0; } to { transform: translate(-50%, -100%) scale(1); opacity: 1; } }
@@ -98,6 +103,9 @@ export function createArena(container, opts = {}) {
   const feedEl = el('div', 'sa-feed', ui);
   const bannerEl = el('div', 'sa-banner', ui);
   const camsEl = el('div', 'sa-cams', ui); if (!o.controls) camsEl.style.display = 'none';
+  // opts.skipIntro: Knopf, der das Schlüpfen überspringt (für Wiederholungen)
+  const skipEl = el('button', 'sa-skip', ui, 'Skip ›'); skipEl.style.display = 'none'; skipEl.onclick = () => skipHatch();
+  const hintEl = el('div', 'sa-hint', ui, 'Tap a monster to follow it');
   const leftEl = el('div', 'sa-left', ui); leftEl.style.display = 'none';
   const calloutEl = el('div', 'sa-callout', ui);
   const mapEl = el('canvas', 'sa-map', ui); mapEl.width = mapEl.height = 160; const mapCtx = mapEl.getContext('2d'); mapEl.style.display = 'none';
@@ -161,7 +169,7 @@ export function createArena(container, opts = {}) {
       let bodyMesh = null; root.traverse((n) => { if (n.isMesh && n.userData.isBody) bodyMesh = n; });
       const model = root.userData.monster?.model; const modelH = model ? (model.userData.bb.max.y - model.userData.bb.min.y) : 2.3;
       const mini = model ? () => { const g = new THREE.Group(); const c = model.clone(true); const k = 2 / modelH; c.scale.multiplyScalar(k); c.position.multiplyScalar(k); c.position.y -= 1; g.add(c); return g; } : bodyMesh ? () => { const g = new THREE.Group(); g.add(new THREE.Mesh(bodyMesh.geometry, bodyMesh.material)); const ol = new THREE.Mesh(bodyMesh.geometry, MINI_OUTLINE); ol.scale.setScalar(1.14); g.add(ol); return g; } : null;
-      const cell = el('div', 'sa-cell' + (e.id === followId ? ' me' : ''), rosterEl);
+      const cell = el('div', 'sa-cell' + (e.id === followId ? ' me' : ''), rosterEl); cell.onclick = () => watch(e.id);
       const thumb = el('div', 'sa-thumb', cell); if (e.photoUrl) thumb.style.backgroundImage = `url("${e.photoUrl}")`; else thumb.style.background = colorOf(e.element);
       const body = el('div', 'sa-cellbody', cell); el('div', 'sa-cellname', body, e.name);
       const fillEl = el('div', 'sa-fill', el('div', 'sa-track', body));
@@ -257,7 +265,21 @@ export function createArena(container, opts = {}) {
   // ---------- Kamera ----------
   const CAMS = [['auto', 'Auto'], ['tilt', '3D'], ['top', 'Top'], ['follow', 'Follow']];
   function drawCamButtons() { camsEl.innerHTML = ''; for (const [k, label] of CAMS) { if (k === 'follow' && !followId && !entrants.length) continue; const b = el('button', mode === k ? 'on' : '', camsEl, label); b.onclick = () => setCamera(k); } }
-  function setCamera(m) { mode = m; spectate = null; drawCamButtons(); }
+  function setCamera(m) { mode = m; spectate = null; markWatched(); drawCamButtons(); }
+  // Einem bestimmten Monster folgen: Antippen in der Leiste oder direkt im Bild
+  function markWatched() { for (const a of actors.values()) a.cell.classList.toggle('watch', !!spectate && a.e.id === spectate && a.e.id !== followId); }
+  function watch(id) {
+    const m = sim.state.monsters.find((x) => x.id === id); if (!m || !m.alive || !started) return;
+    spectate = id === followId ? null : id; mode = 'follow'; rig.cut = false; markWatched(); drawCamButtons(); hintEl.classList.remove('on');
+  }
+  function skipHatch() {
+    if (started || !o.hatch) return;
+    for (const a of actors.values()) {
+      if (!a.hatched) { a.hatched = true; a.pop = 1; a.holder.visible = true; if (a.egg) { scene.remove(a.egg); a.egg = null; } }
+      if (a.snap) { a.snapT = -1; a.snapShown = true; a.snap.style.display = 'none'; }
+    }
+    hatchedN = sim.state.monsters.length; calloutEl.classList.remove('on'); introT = hatchEnd; start();
+  }
   function fitDist(r, pitch) {
     const vf = (camera.fov * Math.PI) / 360; const hf = Math.atan(Math.tan(vf) * camera.aspect);
     return Math.max(r / Math.tan(hf), (r * Math.max(0.45, Math.sin(pitch))) / Math.tan(vf)) * 1.04;
@@ -328,14 +350,27 @@ export function createArena(container, opts = {}) {
   // Ziehen dreht, Rad oder Zwei-Finger-Geste zoomt
   const pointers = new Map(); let pinch = 0;
   const dom = renderer.domElement;
-  const onDown = (e) => { pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); dom.setPointerCapture?.(e.pointerId); };
+  let tap = null;
+  const onDown = (e) => { pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); dom.setPointerCapture?.(e.pointerId); tap = pointers.size === 1 ? { x: e.clientX, y: e.clientY, t: performance.now() } : null; };
   const onMove = (e) => {
     const p = pointers.get(e.pointerId); if (!p) return;
     if (pointers.size === 1) rig.userYaw -= (e.clientX - p.x) * 0.006;
     p.x = e.clientX; p.y = e.clientY;
     if (pointers.size === 2) { const [a, b] = [...pointers.values()]; const d = Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2); if (pinch) rig.zoom = Math.min(2.2, Math.max(0.45, rig.zoom * (pinch / d))); pinch = d; }
   };
-  const onUp = (e) => { pointers.delete(e.pointerId); pinch = 0; };
+  const onUp = (e) => {
+    pointers.delete(e.pointerId); pinch = 0;
+    if (tap && started && !winnerId && performance.now() - tap.t < 350 && Math.abs(e.clientX - tap.x) < 8 && Math.abs(e.clientY - tap.y) < 8) {
+      const box = container.getBoundingClientRect(); const px = e.clientX - box.left, py = e.clientY - box.top; let best = null; let bd = 70 * 70;
+      for (const m of sim.state.monsters) {
+        if (!m.alive) continue; const a = actors.get(m.id); if (!a) continue;
+        const p = toScreen(m.x, a.height * 0.5, m.y); if (!p.ok) continue;
+        const d = (p.x - px) * (p.x - px) + (p.y - py) * (p.y - py); if (d < bd) { bd = d; best = m; }
+      }
+      if (best) watch(best.id);
+    }
+    tap = null;
+  };
   const onWheel = (e) => { e.preventDefault(); rig.zoom = Math.min(2.2, Math.max(0.45, rig.zoom * (1 + e.deltaY * 0.001))); };
   dom.addEventListener('pointerdown', onDown); dom.addEventListener('pointermove', onMove); dom.addEventListener('pointerup', onUp); dom.addEventListener('pointercancel', onUp); dom.addEventListener('wheel', onWheel, { passive: false });
 
@@ -348,7 +383,7 @@ export function createArena(container, opts = {}) {
     sim = createSim({ entrants: entrants.map(({ id, name, element, stats, traits, moves }) => ({ id, name, element, stats, traits, moves })), seed: o.seed, dayElement: o.dayElement });
     R = sim.state.arena.r; world = buildWorld(); buildActors(); shots = new Map(); fx = fx || []; feedEl.innerHTML = ''; calloutEl.classList.remove('on');
     hot.length = 0; focus.since = undefined; focus.yaw = undefined; focus.score = 0; focus.hold = 0;
-    started = false; ended = false; acc = 0; winnerId = null; spectate = null; introLeft = o.intro; rig.kick = 0;
+    started = false; ended = false; acc = 0; winnerId = null; spectate = null; introLeft = o.intro; rig.kick = 0; skipEl.style.display = 'none'; hintEl.classList.remove('on');
     for (const m of sim.state.monsters) { const a = actors.get(m.id); if (a) a.yaw = Math.atan2(-m.x, -m.y); }
     drawCamButtons(); introT = 0; hatchedN = 0;
     if (o.hatch) { // Eier stehen an den Startplätzen und platzen nacheinander auf, das eigene zuletzt
@@ -366,7 +401,10 @@ export function createArena(container, opts = {}) {
       banner(o.title || 'THE EGGS ARE IN', 1.0);
     } else if (o.intro > 0) banner(o.title || 'CHOOSE YOUR MONSTER!', 0); else start();
   }
-  function start() { if (started) return; started = true; introLeft = 0; banner('FIGHT!', 0.9); }
+  function start() {
+    if (started) return; started = true; introLeft = 0; banner('FIGHT!', 0.9); skipEl.style.display = 'none';
+    if (o.controls) { later(() => hintEl.classList.add('on'), 1500); later(() => hintEl.classList.remove('on'), 5200); }
+  }
 
   let last = o.manual ? 0 : performance.now(); let disposed = false; let simTime = 0;
   function frame(now) {
@@ -377,7 +415,7 @@ export function createArena(container, opts = {}) {
     const base = Math.max(10, Math.min(20, Math.min(w, h * 1.2) / 52)) * (o.uiScale || 1); if (ui.dataset.base !== String(base)) { ui.dataset.base = String(base); ui.style.fontSize = base + 'px'; }
     const tallUi = w / h < 0.8; if (ui.dataset.tall !== String(tallUi)) { ui.dataset.tall = String(tallUi); ui.style.setProperty('--sa-snap', tallUi ? '13.5em' : '7.5em'); }
     if (!started && o.hatch) { // Eier fallen herein, wackeln immer stärker und platzen auf
-      introT += dt;
+      introT += dt; if (o.skipIntro && skipEl.style.display === 'none' && introT > 0.4) skipEl.style.display = 'block';
       for (const a of actors.values()) {
         if (a.hatched || !a.egg) continue;
         if (a.snap && !a.snapShown && introT >= a.shotAt) { a.snapShown = true; a.snapT = 0; a.snap.style.display = 'block'; a.snap.style.transform = 'translate(-50%, -100%) scale(0)'; }
@@ -426,7 +464,7 @@ export function createArena(container, opts = {}) {
       a.hp.style.display = showHp ? 'block' : 'none';
       if (showHp) { a.hp.style.left = p.x + 'px'; a.hp.style.top = p.y + 'px'; }
       if (a.shownHp !== m.hp) { a.shownHp = m.hp; const f = Math.max(0, m.hp / m.maxHp); const col = f < 0.3 ? '#ff5a4a' : f < 0.6 ? '#f5c542' : '#4cc38a'; a.hpFill.style.width = a.fillEl.style.width = `${f * 100}%`; a.hpFill.style.background = a.fillEl.style.background = col; }
-      const showTag = m.alive && p.ok && (started ? m.id === followId : a.hatched);
+      const showTag = m.alive && p.ok && (started ? m.id === followId || m.id === spectate : a.hatched);
       a.tag.style.display = showTag ? 'block' : 'none';
       if (showTag) { a.tag.style.left = p.x + 'px'; a.tag.style.top = p.y - (started ? 6 : 2) + 'px'; }
       if (a.snap && a.snapT >= 0) {
@@ -481,6 +519,7 @@ export function createArena(container, opts = {}) {
     setCamera,
     setFollow(id) { followId = id; },
     setSpeed(x) { speed = x; },
+    skip() { skipHatch(); },
     setBottom(px) { ui.style.setProperty('--sa-b', `${Math.max(0, px || 0)}px`); },
     restart() { reset(); },
     later,

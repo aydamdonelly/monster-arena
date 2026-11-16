@@ -138,7 +138,23 @@ better build.
   checkout; the founder's own devices no longer count as visitors.
 - **16:17** `c71fad4` As soon as today's royale has run, everything counts
   toward the next one: an egg laid a minute later says "tomorrow".
-- **Still open:** PR #6, Keiki iMessage back channel.
+- **16:50** PR #21 merged (Capy): admin start button, tomorrow's theme
+  ("Something in your kitchen"), countdown notifications every 3 minutes.
+- **16:57** `aee7d3e` The admin fight is a private fight for the founder's
+  device only: his newest egg against ready real eggs, read only. The real
+  royale stays untouched and runs on schedule.
+- **17:08** `0c7b33b` The founder can reset his own day; finished monster
+  pictures are rendered outside the app and stored (`snapUrl`), because the
+  hidden renderer in the iPhone app returned no pictures.
+- **17:16** PR #22 merged (Capy): profile with pictures and hierarchy, monster
+  pictures never blank.
+- **17:21** The sample royales of the demo account are no longer labelled on
+  screen (founder's wish for his recording) and no longer include a win. They
+  stay flagged `sample: true` in the data and are disclosed here and in the
+  README.
+- **17:27** Arena: the hatching can be skipped in replays, clearer camera
+  buttons, tap a monster or its name to follow it.
+- **Still open:** PR #6 (Keiki, dropped for today), PR #15, PR #20.
 
 ## Launch day
 

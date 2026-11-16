@@ -195,7 +195,6 @@ function Idle({
         <DropCard />
       </Appear>
       <Appear delay={120} style={styles.cameraArea}>
-        <Image source={require('@/assets/images/renders/bp-cuddlebara.png')} style={styles.mascot} contentFit="contain" />
         <View>
           <CameraButton size={size} onPress={() => onCatch('camera')} />
           {goldenEggs > 0 ? <InkSticker label="Golden egg ready" rotate={6} style={styles.goldenReady} /> : null}

@@ -24,6 +24,7 @@ type Props = {
   followId?: string | null;
   speed?: number;
   hatchPace?: number;
+  skipIntro?: boolean;
   bottom?: number;
   intro?: number;
   title?: string;
@@ -34,7 +35,7 @@ type Props = {
 
 type Arena = ReturnType<typeof createArena>;
 
-export default function ArenaView({ entrants, seed, dayElement, camera = 'auto', followId, speed = 1, hatchPace = 1, bottom = 0, intro = 3, title, controls = true, onEnd }: Props) {
+export default function ArenaView({ entrants, seed, dayElement, camera = 'auto', followId, speed = 1, hatchPace = 1, skipIntro = false, bottom = 0, intro = 3, title, controls = true, onEnd }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const arena = useRef<Arena | null>(null);
   const entrantsKey = JSON.stringify(entrants);
@@ -51,6 +52,7 @@ export default function ArenaView({ entrants, seed, dayElement, camera = 'auto',
       followId: followId ?? null,
       speed,
       hatchPace,
+      skipIntro,
       bottom,
       intro,
       title,

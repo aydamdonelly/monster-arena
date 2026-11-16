@@ -38,7 +38,7 @@ flowchart LR
 
 For live demos after 6 PM there is a key-protected demo mode: a demo device's egg gets a **Hatch now** button and fights the monsters of the latest real royale right away (#14). Before the first royale it fights house monsters.
 
-The **Profile** tab keeps every royale you were in, with your result and a replay (#18). On launch day there is only one real royale, so the demo account in the video carries four sample royales against house monsters to show the daily loop. They are marked "Sample" in the profile, never appear in public views and never count in the analytics ([convex/dev.ts](convex/dev.ts), `seedSample`).
+The **Profile** tab keeps every royale you were in, with your result and a replay (#18). On launch day there is only one real royale, so the demo account in the video carries four sample royales against house monsters to show the daily loop. They are flagged as sample data on the server (`sample: true`), never appear in public views and never count in the analytics ([convex/dev.ts](convex/dev.ts), `seedSample`).
 
 ## Stack
 

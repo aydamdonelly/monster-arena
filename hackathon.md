@@ -4,7 +4,7 @@
 - **Event:** YC Consumer Mobile Hackathon
 - **What it does:** Snap a photo of anything to get an egg; at 6 PM Pacific every egg hatches live in a 3D arena and the monsters fight a free-for-all royale, then live in your collection with a replay of the fight.
 - **Live app:** https://snappymon.com
-- **Repo:** https://github.com/aydamdonelly/monster-arena
+- **Repo:** https://github.com/aydamdonelly/snappymon
 - **Frontend:** Vercel
 - **Convex deployment:** https://superb-buzzard-616.convex.cloud
 - **Components:** none

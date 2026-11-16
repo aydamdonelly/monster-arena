@@ -7,7 +7,7 @@ import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import { GENOME_SCHEMA, genomeInstructions, genomeFromAI } from "../monster-kit/genome-spec.js";
 import { statsFromTraits, hashString } from "../monster-kit/battle.js";
-import { ROYALE_UTC_MIN } from "./schedule";
+import { ROYALE_UTC_MIN, isOwnerDevice } from "./schedule";
 
 const MODELS = ["gpt-6.1-sol", "gpt-6-luna"]; // erst das große Modell, bei Fehlern das schnelle
 export const DAILY_LIMIT = 1; // ein Ei pro Royale; ein zweites gibt es nur als Goldenes Ei (gekauft)
@@ -102,7 +102,7 @@ export const lay = mutation({
     const goldenToday = mineToday.length - freeToday;
     // Das erste Ei ist frei. Danach wird ein gekauftes Goldenes Ei benutzt (höchstens eines pro Royale).
     const golden = freeToday >= DAILY_LIMIT && (player.goldenEggs ?? 0) > 0;
-    if (!player.isTest) {
+    if (!player.isTest && !isOwnerDevice(deviceId)) {
       if (golden && goldenToday >= GOLDEN_LIMIT) {
         throw new ConvexError({ code: "limit", message: "Both your eggs are in. See you in the arena." });
       }

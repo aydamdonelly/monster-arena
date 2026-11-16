@@ -39,6 +39,7 @@ type RoyaleData = {
   entrantCount: number;
   wildCount?: number;
   test?: boolean;
+  preview?: boolean; // Vorab-Kampf des Admins (nur für sein Gerät): steht in seinem Profil, sonst nirgends
   sample?: boolean; // Beispiel-Royale eines Vorführkontos (dev.seedSample): nur über ihre ID und im Profil des Besitzers sichtbar
   heats: Round[];
   final: Round;
@@ -89,7 +90,11 @@ async function wildPool(ctx: QueryCtx): Promise<Doc<"monsters">[]> {
 }
 
 // includeOwner: Das Ei von onlyPlayer schlüpft auch dann, wenn der Spieler kein Testspieler ist (Zusatzkampf des Admins)
-type RunArgs = { title: string; mode: "live" | "test"; minEntrants: number; force: boolean; onlyPlayer?: Id<"players">; includeOwner?: boolean };
+// onlyEgg: von onlyPlayer schlüpft nur dieses eine Ei. preview: Vorab-Kampf des Admins, Gegner sind die fertigen echten Eier (nur gelesen).
+type RunArgs = {
+  title: string; mode: "live" | "test"; minEntrants: number; force: boolean;
+  onlyPlayer?: Id<"players">; includeOwner?: boolean; onlyEgg?: Id<"monsters">; preview?: boolean;
+};
 
 async function runNow(ctx: MutationCtx, a: RunArgs) {
   const now = Date.now();
@@ -105,6 +110,7 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
     .take(1500);
   const owners = new Map<Id<"players">, Doc<"players"> | null>();
   const hatching: Doc<"monsters">[] = [];
+  const waitingReal: Doc<"monsters">[] = [];
   for (const m of recent) {
     if (!m.genome) continue;
     // Nur fertige Eier schlüpfen. Einträge ohne Status (alter Sofort-Ablauf) gibt es nicht mehr.
@@ -113,8 +119,12 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
     const owner = owners.get(m.playerId);
     if (!owner || owner.deviceId === WILD_DEVICE) continue;
     const ownEgg = !!a.includeOwner && m.playerId === a.onlyPlayer;
-    if (!ownEgg && (a.mode === "live" ? owner.isTest : !owner.isTest)) continue;
+    if (!ownEgg && (a.mode === "live" ? owner.isTest : !owner.isTest)) {
+      if (a.mode === "test" && !owner.isTest) waitingReal.push(m); // fertige Eier echter Spieler: mögliche Gegner im Vorab-Kampf
+      continue;
+    }
     if (a.onlyPlayer && m.playerId !== a.onlyPlayer) continue;
+    if (a.onlyEgg && m._id !== a.onlyEgg) continue;
     hatching.push(m);
   }
   // Ohne ein einziges echtes Ei gibt es keine echte Royale (sonst würde eine zweite Auslösung das Ergebnis des Tages verdrängen)
@@ -162,6 +172,14 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
         if (owners.get(m.playerId)?.deviceId === WILD_DEVICE) wildCount++;
         fighters.push(fighterOf(m));
       }
+    } else if (a.preview) {
+      // Vor der echten Royale: Gegner sind die fertigen Eier echter Spieler, Stand jetzt. Sie werden nur gelesen,
+      // bleiben Eier und schlüpfen wie geplant in der echten Royale.
+      const featured = new Set((process.env.DEMO_FEATURED ?? "").split(",").map((x: string) => x.trim()).filter(Boolean));
+      const order = shuffle([...waitingReal].sort((x, y) => (x._id < y._id ? -1 : 1)), rand);
+      const room = Math.max(0, DEMO_ARENA - fighters.length);
+      const picked = [...order.filter((m) => featured.has(m._id)), ...order.filter((m) => !featured.has(m._id))].slice(0, room);
+      for (const m of picked) fighters.push(fighterOf(m));
     }
   }
   if (fighters.length < a.minEntrants) {
@@ -201,7 +219,7 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
     });
   }
   const final = simulate(finalists, hashString(`${seed}:final`), dayElement);
-  const data: RoyaleData = { title: a.title, dayElement, entrantCount: fighters.length, wildCount, test: a.mode === "test", heats, final };
+  const data: RoyaleData = { title: a.title, dayElement, entrantCount: fighters.length, wildCount, test: a.mode === "test", ...(a.preview ? { preview: true } : {}), heats, final };
   const championId = (final.winnerId as Id<"monsters"> | null) ?? undefined;
   const royaleId = await ctx.db.insert("royales", { startsAt: now, status: "done", rounds: data, championId });
   // Jetzt schlüpfen alle: Erst ab hier zeigen die Abfragen Namen und Aussehen der Monster
@@ -483,9 +501,10 @@ export const clock = query({
   handler: async () => ({ utcMin: ROYALE_UTC_MIN, speed: FIGHT_SPEED, theme: THEME_TODAY, nextTheme: THEME_TOMORROW, hatchPace: HATCH_PACE }),
 });
 
-// Der Gründer startet den Kampf von Hand (Knopf "Admin: start fight", nur auf seinen Geräten, siehe schedule.isOwnerDevice).
-// Ist die heutige Royale noch nicht gelaufen, startet genau sie, sofort und für alle; der Cron findet sie danach als gelaufen vor.
-// Ist sie schon gelaufen, gibt es einen Zusatzkampf: sein neuestes Ei gegen Monster der echten Royale, für niemanden sonst sichtbar.
+// Der Gründer startet einen Kampf von Hand (Knopf "Admin: start fight", nur auf seinen Geräten, siehe schedule.isOwnerDevice).
+// Das ist nie die echte Royale: Sein neuestes Ei schlüpft und kämpft in einem eigenen Kampf, den nur sein Gerät sieht.
+// Vor der echten Royale sind die Gegner die fertigen Eier echter Spieler (nur gelesen, sie schlüpfen weiter wie geplant),
+// danach Monster der echten Royale. Die echte Royale läuft unverändert nach Zeitplan.
 export const adminStart = mutation({
   args: { deviceId: v.string() },
   returns: v.object({ royaleId: v.id("royales"), live: v.boolean(), round: v.number(), entrants: v.number() }),
@@ -506,13 +525,14 @@ export const adminStart = mutation({
     if (mine.some((m) => m.status === "egg" && m.ready !== true && m._creationTime > now - 5 * 60 * 1000)) {
       throw new ConvexError({ code: "building", message: "Your egg is still being built. Try again in a few seconds." });
     }
-    const last = await latestRoyale(ctx, false);
-    const liveDone = !!last && now - last.doc.startsAt < LIVE_GAP_MS;
-    const res = liveDone
-      ? await runNow(ctx, { title: "Royale", mode: "test", minEntrants: MIN_ENTRANTS, force: true, onlyPlayer: player._id, includeOwner: true })
-      : await runNow(ctx, { title: "Royale", mode: "live", minEntrants: MIN_ENTRANTS, force: false });
+    const egg = mine.find((m) => m.status === "egg" && m.ready === true && !!m.genome && !m.sample); // das neueste fertige eigene Ei
+    if (!egg) throw new ConvexError({ code: "no_egg", message: "Snap something first, then start the fight." });
+    const res = await runNow(ctx, {
+      title: "Royale", mode: "test", minEntrants: MIN_ENTRANTS, force: true,
+      onlyPlayer: player._id, includeOwner: true, onlyEgg: egg._id, preview: true,
+    });
     if (res.skipped !== null || !res.royaleId) {
-      throw new ConvexError({ code: res.skipped ?? "failed", message: res.skipped === "no_eggs" ? "There are no eggs to hatch yet." : "The fight could not start. Try again." });
+      throw new ConvexError({ code: res.skipped ?? "failed", message: "The fight could not start. Try again." });
     }
     const doc = await ctx.db.get("royales", res.royaleId);
     const data = doc?.rounds as RoyaleData;
@@ -520,7 +540,7 @@ export const adminStart = mutation({
     const best = entriesOf(data, names)[0];
     // Welche Runde soll der Admin sehen: die seines besten Monsters (Finale oder Vorrunde), sonst das Finale
     const round = best && !best.inFinal && best.heatIndex != null ? best.heatIndex : -1;
-    return { royaleId: res.royaleId, live: !liveDone, round, entrants: res.entrants ?? 0 };
+    return { royaleId: res.royaleId, live: false, round, entrants: res.entrants ?? 0 };
   },
 });
 
@@ -635,7 +655,7 @@ export const profile = query({
     }
     for (const r of rows) {
       const data = r.rounds as RoyaleData | undefined;
-      if (!data?.final || (data.test && !test)) continue;
+      if (!data?.final || (data.test && !test && !data.preview)) continue;
       const entries = entriesOf(data, names);
       if (!entries.length) continue;
       const e = entries[0];

@@ -2,7 +2,8 @@ import { useQuery } from 'convex/react';
 import { useEffect } from 'react';
 
 import { api } from '@/convex/_generated/api';
-import { setLastRoyale, setRoyaleClock } from '@/lib/arena';
+import { setLastRoyale, setRoyaleClock, setRoyalePreview } from '@/lib/arena';
+import { getItem } from '@/lib/kv';
 
 // Holt Startzeit und Kampftempo der täglichen Royale live vom Server. So folgen Web und App einer Änderung
 // des Zeitplans (convex/schedule.ts) ohne neues Build; die Countdown-Anzeigen rechnen jede Sekunde neu.
@@ -16,5 +17,9 @@ export default function RoyaleClock() {
   useEffect(() => {
     if (last) setLastRoyale(last.startsAt);
   }, [last]);
+  useEffect(() => {
+    // Vorab-Kampf des Admins auf diesem Gerät (siehe AdminStartButton): übersteht einen Neustart der App
+    getItem('snappymon.preview').then((v) => v && setRoyalePreview(Number(v)));
+  }, []);
   return null;
 }

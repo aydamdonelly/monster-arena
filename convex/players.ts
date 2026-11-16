@@ -107,7 +107,7 @@ export const me = query({
       goldenEggs: player.goldenEggs ?? 0,
       goldenToday,
       canGolden: goldenToday < GOLDEN_LIMIT, // darf heute noch ein Goldenes Ei legen bzw. kaufen
-      unlimited: player.isTest,
+      unlimited: player.isTest || isOwnerDevice(deviceId), // Testspieler und der Gründer dürfen beliebig viele Eier legen
       admin: isOwnerDevice(deviceId), // eigenes Gerät des Gründers: sieht den Knopf "Admin: start fight"
     };
   },

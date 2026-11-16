@@ -7,10 +7,11 @@ import { Alert, Platform, StyleSheet } from 'react-native';
 import { OutlineButton } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import { useDeviceId } from '@/lib/device';
+import { setRoyalePreview } from '@/lib/arena';
 import { setItem } from '@/lib/kv';
 
 const TITLE = 'Start the fight now?';
-const TEXT = "This starts today's real royale for every egg, right now.";
+const TEXT = 'Your newest egg hatches and fights now. Only you see this fight. The real royale still runs at its normal time.';
 
 function confirmStart(): Promise<boolean> {
   if (Platform.OS === 'web') return Promise.resolve(window.confirm(`${TITLE}\n\n${TEXT}`));
@@ -38,6 +39,10 @@ export default function AdminStartButton({ onStarted }: { onStarted?: () => void
     try {
       const { royaleId, round } = await adminStart({ deviceId });
       await setItem(`snappymon.watched.${royaleId}`, '1');
+      // Auf diesem Gerät gilt die heutige Royale ab jetzt als gelaufen: Die App zeigt danach das Thema von morgen
+      const at = Date.now();
+      setRoyalePreview(at);
+      await setItem('snappymon.preview', String(at));
       onStarted?.();
       router.push({ pathname: '/arena/replay', params: { royale: royaleId, round: String(round), live: '1' } });
     } catch (e) {

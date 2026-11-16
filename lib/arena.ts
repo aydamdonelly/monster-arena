@@ -56,6 +56,14 @@ export function setLastRoyale(startsAt: number) {
   if (Number.isFinite(startsAt)) lastRoyaleAt = startsAt;
 }
 
+// Vorab-Kampf des Admins (Knopf "Admin: start fight"): Auf seinem Gerät gilt die heutige Royale danach als gelaufen,
+// bis die echte Startzeit erreicht ist. So zeigt seine App schon "morgen", ohne dass sich für andere etwas ändert.
+let previewAt = 0;
+
+export function setRoyalePreview(at: number) {
+  if (Number.isFinite(at)) previewAt = at;
+}
+
 function pacificMinutes() {
   return (((royaleUtcMin + PACIFIC_OFFSET_MIN) % 1440) + 1440) % 1440;
 }
@@ -82,7 +90,8 @@ export function royaleTimeToday() {
   const d = new Date(now);
   d.setUTCHours(0, royaleUtcMin, 0, 0);
   let t = d.getTime();
-  if (now > t + GRACE_MS || lastRoyaleAt >= t - 60 * 1000) t += DAY_MS;
+  const previewed = previewAt > t - DAY_MS && previewAt < t && now < t;
+  if (now > t + GRACE_MS || lastRoyaleAt >= t - 60 * 1000 || previewed) t += DAY_MS;
   return t;
 }
 

@@ -7,7 +7,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import MonsterSnapshots from '@/components/MonsterSnapshots';
 import Egg from '@/components/Egg';
-import { Appear, HardShadow, InkSticker, StageBlock } from '@/components/ui';
+import { Appear, HardShadow, InkSticker, MonsterPicture, StageBlock } from '@/components/ui';
 import { api } from '@/convex/_generated/api';
 import { clock, royaleHour, royaleIsToday, royaleTimeToday, useNow } from '@/lib/arena';
 import { useDeviceId } from '@/lib/device';
@@ -19,7 +19,7 @@ export default function CollectionScreen() {
   const monsters = useQuery(api.monsters.listMine, { deviceId });
   const hatched = monsters?.filter((m) => m.status === 'hatched').length ?? 0;
   const eggs = monsters?.filter((m) => m.status === 'egg').length ?? 0;
-  const { pending, onSnapshot, snapshot } = useSnapshots(monsters?.flatMap((m) => (m.status === 'hatched' ? [m] : [])));
+  const { pending, onSnapshot, snapshot } = useSnapshots(monsters?.flatMap((m) => (m.status === 'hatched' && !m.snapUrl ? [m] : [])));
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -67,9 +67,7 @@ export default function CollectionScreen() {
                 onPress={() => router.push({ pathname: '/monster/[id]', params: { id: item._id } })}
                 style={({ pressed }) => [styles.tile, pressed && styles.tilePressed]}>
                 <StageBlock radius={Radii.tile} style={styles.thumb}>
-                  {snapshot(item._id) ? (
-                    <Image source={{ uri: snapshot(item._id) }} style={styles.render} contentFit="cover" transition={200} />
-                  ) : null}
+                  <MonsterPicture uri={item.snapUrl ?? snapshot(item._id)} photoUrl={item.photoUrl} imageStyle={styles.render} photoSize={64} />
                   {item.golden ? (
                     <HardShadow offset={2} radius={Radii.chip} rotate={-6} style={styles.newTag}>
                       <View style={styles.newTagBody}>

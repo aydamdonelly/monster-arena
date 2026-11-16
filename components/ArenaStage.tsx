@@ -66,7 +66,7 @@ export default function ArenaStage({ entrants, seed, dayElement, followId, title
           camera={followId ? 'follow' : 'auto'}
           speed={speed ?? getFightSpeed()}
           hatchPace={hatchPace ?? getHatchPace()}
-          skipIntro={!live}
+          skipIntro
           bottom={!children && caption ? insets.bottom + 88 : 0}
           title={title}
           onEnd={async (r) => onEnd(r)}

@@ -41,7 +41,8 @@ export async function syncRoyaleNotifications(royaleAt: number, hasEgg: boolean)
   if (!(await ensurePermission())) return;
   await cancelRoyaleNotifications();
   const now = Date.now();
-  if (royaleAt <= now) return;
+  // Wer schon ein Ei abgeschickt hat, bekommt keine Erinnerungen mehr: Sie sollen nur ans Fotografieren erinnern
+  if (royaleAt <= now || hasEgg) return;
   const hour = royaleHour();
   const jobs: Promise<string>[] = [];
   for (let t = now + STEP_MS, n = 0; t < royaleAt && n < MAX_COUNTDOWN; t += STEP_MS, n++) {

@@ -22,6 +22,11 @@ const SINGLE_MAX = 24; // bis hierhin eine einzige Arena (mit 24 im Hochformat g
 const HEAT_SIZE = 16;
 const MIN_ENTRANTS = 8;
 const DEMO_ARENA = 14; // Vorführmodus nach der echten Royale: das eigene Ei plus 13 Monster dieser Royale
+// Vorab-Kampf des Admins: alle fertigen echten Eier in einer einzigen Arena (Convex-Umgebungsvariable ADMIN_ARENA senkt die Zahl)
+function adminArena() {
+  const n = Number(process.env.ADMIN_ARENA ?? 60);
+  return Number.isFinite(n) ? Math.min(60, Math.max(8, Math.round(n))) : 60;
+}
 const LATE_WINDOW_MS = 3 * 60 * 1000; // auf Eier warten, die in den letzten 3 Minuten gelegt wurden
 const KICKOFF_WAIT_MS = 5000;
 const KICKOFF_TRIES = 9; // höchstens 45 Sekunden Verzögerung
@@ -177,7 +182,7 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
       // bleiben Eier und schlüpfen wie geplant in der echten Royale.
       const featured = new Set((process.env.DEMO_FEATURED ?? "").split(",").map((x: string) => x.trim()).filter(Boolean));
       const order = shuffle([...waitingReal].sort((x, y) => (x._id < y._id ? -1 : 1)), rand);
-      const room = Math.max(0, DEMO_ARENA - fighters.length);
+      const room = Math.max(0, adminArena() - fighters.length);
       const picked = [...order.filter((m) => featured.has(m._id)), ...order.filter((m) => !featured.has(m._id))].slice(0, room);
       for (const m of picked) fighters.push(fighterOf(m));
     }
@@ -203,7 +208,7 @@ async function runNow(ctx: MutationCtx, a: RunArgs) {
 
   const heats: Round[] = [];
   let finalists = fighters;
-  if (fighters.length > SINGLE_MAX) {
+  if (fighters.length > SINGLE_MAX && !a.preview) { // der Vorab-Kampf des Admins bleibt eine einzige Arena
     const heatCount = Math.ceil(fighters.length / HEAT_SIZE);
     const groups: Fighter[][] = Array.from({ length: heatCount }, () => []);
     fighters.forEach((f, i) => groups[i % heatCount].push(f));

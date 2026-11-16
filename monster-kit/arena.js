@@ -25,6 +25,12 @@ const CSS = `
 .sa-cell.me { outline: .2em solid ${INK}; }
 .sa-cell { pointer-events: auto; cursor: pointer; }
 .sa-cell.watch { outline: .2em solid #ffd60a; background: #fff; }
+.sa-roster.big { grid-template-columns: repeat(auto-fill, minmax(2.5em, 1fr)); gap: .25em; }
+.sa-roster.big .sa-cell { padding: .18em; justify-content: center; position: relative; border-radius: .55em; }
+.sa-roster.big .sa-cellbody { position: absolute; left: .2em; right: .2em; bottom: .12em; }
+.sa-roster.big .sa-cellname { display: none; }
+.sa-roster.big .sa-thumb { width: 2.1em; height: 2.1em; }
+.sa-roster.big .sa-track { height: .32em; margin: 0; background: rgba(43,37,35,.45); }
 .sa-thumb { width: 1.9em; height: 1.9em; border-radius: .5em; background: #ddd center / cover no-repeat; flex: none; }
 .sa-cellbody { flex: 1; min-width: 0; }
 .sa-cellname { font-size: .95em; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }
@@ -53,7 +59,7 @@ const CSS = `
 .sa-callout { position: absolute; left: 50%; bottom: 24%; transform: translateX(-50%) rotate(-2deg) scale(.5); opacity: 0; transition: opacity .12s, transform .22s cubic-bezier(.2,1.7,.4,1); font-size: 2.3em; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; color: #fff; padding: .12em .7em .16em; border-radius: .32em; border: .13em solid ${INK}; box-shadow: .18em .18em 0 ${INK}; -webkit-text-stroke: .05em ${INK}; paint-order: stroke fill; }
 .sa-callout.on { opacity: 1; transform: translateX(-50%) rotate(-2deg) scale(1); }
 .sa-callout small { display: block; font-size: .42em; letter-spacing: .08em; -webkit-text-stroke: 0; margin-bottom: -.2em; opacity: .95; }
-.sa-cams { position: absolute; right: .8em; bottom: calc(1em + var(--sa-b, 0px)); display: flex; gap: .4em; pointer-events: auto; }
+.sa-cams { position: absolute; right: .8em; bottom: calc(1em + var(--sa-b, 0px)); display: flex; gap: .35em; pointer-events: auto; }
 .sa-cams button { border: .14em solid ${INK}; border-radius: 999px; padding: .5em 1em; font: 700 1.25em 'Fredoka', system-ui, sans-serif; background: #fff; color: ${INK}; cursor: pointer; box-shadow: .14em .14em 0 ${INK}; }
 .sa-cams button.on { background: #ffd60a; color: ${INK}; }
 .sa-skip { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(5em + var(--sa-b, 0px)); pointer-events: auto; cursor: pointer; border: .14em solid ${INK}; border-radius: 999px; padding: .5em 1.3em; font: 700 1.45em 'Fredoka', system-ui, sans-serif; background: #ffd60a; color: ${INK}; box-shadow: .16em .16em 0 ${INK}; }
@@ -159,7 +165,7 @@ export function createArena(container, opts = {}) {
     return g;
   }
   function buildActors() {
-    actors = new Map(); rosterEl.innerHTML = ''; floatEl.innerHTML = ''; let idx = 0;
+    actors = new Map(); rosterEl.innerHTML = ''; floatEl.innerHTML = ''; let idx = 0; rosterEl.classList.toggle('big', entrants.length > 24);
     for (const e of entrants) {
       let root; try { root = buildMonster(e.genome || fallbackGenome(e)); } catch { root = buildMonster(fallbackGenome(e)); }
       root.scale.setScalar(S);
@@ -177,7 +183,7 @@ export function createArena(container, opts = {}) {
       const tag = el('div', 'sa-tag' + (e.id === followId ? ' me' : ''), floatEl, e.id === followId ? `YOU · ${e.name}` : e.name);
       const egg = o.hatch ? makeEgg(mainColor(e), !!e.genome?.golden) : null; if (egg) { scene.add(egg); holder.visible = false; }
       // Das Foto, aus dem das Monster entstanden ist: springt beim Schlüpfen als Polaroid über dem Monster auf
-      let snap = null; if (o.hatch && e.photoUrl) { snap = el('div', 'sa-snap' + (e.id === followId ? ' me' : ''), floatEl); el('i', null, snap).style.backgroundImage = `url("${e.photoUrl}")`; snap.style.display = 'none'; }
+      let snap = null; if (o.hatch && e.photoUrl) { snap = el('div', 'sa-snap' + (e.id === followId ? ' me' : ''), floatEl); el('i', null, snap).style.backgroundImage = `url("${e.photoUrl}")`; snap.style.display = 'none'; if (e.id === followId) snap.style.width = 'var(--sa-snap-own, var(--sa-snap, 7.5em))'; }
       const snapTilt = (idx % 2 ? 1 : -1) * (4 + ((idx * 37) % 5)); idx++;
       actors.set(e.id, { e, root, holder, height, mini, egg, snap, snapT: -1, snapShown: false, snapTilt, shotAt: 0, order: 0, hatched: !o.hatch, pop: o.hatch ? 0 : 1, hatchAt: 0, cell, fillEl, hp, hpFill, tag, yaw: 0, lunge: 0, hurt: 0, dead: 0, shownHp: -1 });
     }
@@ -205,7 +211,7 @@ export function createArena(container, opts = {}) {
   function escapeHtml(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
   // ---------- Ereignisse aus der Simulation ----------
-  let calloutTimer = null; let slowLeft = 0; let slowCool = 0; let eggs = []; let introT = 0; let hatchEnd = 0; let montage = []; let montageCur = null; let hatchedN = 0;
+  let calloutTimer = null; let slowLeft = 0; let slowCool = 0; let eggs = []; let introT = 0; let hatchEnd = 0; let montage = []; let montageCur = null; let hatchedN = 0; let introBig = false; let ff = 1;
   // Regie-Kamera (Hochformat): merkt sich, wo gerade etwas passiert, und fährt dort nah heran. Die Minimap zeigt den Überblick.
   const hot = []; const focus = { x: 0, z: 0, r: 4, hold: 0, score: 0 };
   const heat = (x, z, w) => { hot.push({ x, z, w, t: simTime }); if (hot.length > 60) hot.shift(); };
@@ -264,7 +270,11 @@ export function createArena(container, opts = {}) {
 
   // ---------- Kamera ----------
   const CAMS = [['auto', 'Auto'], ['tilt', '3D'], ['top', 'Top'], ['follow', 'Follow']];
-  function drawCamButtons() { camsEl.innerHTML = ''; for (const [k, label] of CAMS) { if (k === 'follow' && !followId && !entrants.length) continue; const b = el('button', mode === k ? 'on' : '', camsEl, label); b.onclick = () => setCamera(k); } }
+  function drawCamButtons() {
+    camsEl.innerHTML = '';
+    const f = el('button', ff > 1 ? 'on' : '', camsEl, '⏩'); f.title = 'Fast forward'; f.onclick = () => { ff = ff > 1 ? 1 : 2.5; drawCamButtons(); };
+    for (const [k, label] of CAMS) { if (k === 'follow' && !followId && !entrants.length) continue; const b = el('button', mode === k ? 'on' : '', camsEl, label); b.onclick = () => setCamera(k); }
+  }
   function setCamera(m) { mode = m; spectate = null; markWatched(); drawCamButtons(); }
   // Einem bestimmten Monster folgen: Antippen in der Leiste oder direkt im Bild
   function markWatched() { for (const a of actors.values()) a.cell.classList.toggle('watch', !!spectate && a.e.id === spectate && a.e.id !== followId); }
@@ -336,6 +346,11 @@ export function createArena(container, opts = {}) {
           dist = d0 - Math.min(0.5, since * 0.9); // leichtes Heranfahren in jedem Bild
           yaw = Math.atan2(-m2.x, -m2.y) + (cur.order % 2 ? 0.32 : -0.32);
           if (montageCur !== cur) { montageCur = cur; rig.cut = true; }
+        } else if (introBig && introT > 0.8) {
+          // Viele Eier: schneller Schwenk aus der Mitte entlang des Rings, immer auf das Ei, das als Nächstes platzt
+          let next = null; for (const a2 of actors.values()) if (!a2.hatched && a2.e.id !== followId && (!next || a2.hatchAt < next.hatchAt)) next = a2;
+          const m3 = next ? sim.state.monsters.find((m) => m.id === next.e.id) : null;
+          if (m3) { cx = m3.x; cz = m3.y; pitch = 0.22; ly = 1.15; dist = 9.2; yaw = Math.atan2(-m3.x, -m3.y) + 0.22; }
         }
       }
     }
@@ -383,18 +398,19 @@ export function createArena(container, opts = {}) {
     sim = createSim({ entrants: entrants.map(({ id, name, element, stats, traits, moves }) => ({ id, name, element, stats, traits, moves })), seed: o.seed, dayElement: o.dayElement });
     R = sim.state.arena.r; world = buildWorld(); buildActors(); shots = new Map(); fx = fx || []; feedEl.innerHTML = ''; calloutEl.classList.remove('on');
     hot.length = 0; focus.since = undefined; focus.yaw = undefined; focus.score = 0; focus.hold = 0;
-    started = false; ended = false; acc = 0; winnerId = null; spectate = null; introLeft = o.intro; rig.kick = 0; skipEl.style.display = 'none'; hintEl.classList.remove('on');
+    started = false; ended = false; acc = 0; winnerId = null; spectate = null; introLeft = o.intro; rig.kick = 0; skipEl.style.display = 'none'; hintEl.classList.remove('on'); ff = 1;
     for (const m of sim.state.monsters) { const a = actors.get(m.id); if (a) a.yaw = Math.atan2(-m.x, -m.y); }
     drawCamButtons(); introT = 0; hatchedN = 0;
     if (o.hatch) { // Eier stehen an den Startplätzen und platzen nacheinander auf, das eigene zuletzt
       const order = sim.state.monsters.map((m) => m.id).sort((a, b) => (a === followId ? 1 : 0) - (b === followId ? 1 : 0));
       const hasOwn = !!followId && order.includes(followId); const others = order.length - (hasOwn ? 1 : 0);
       // opts.hatchPace: Zeit je Ei relativ zum Grundtempo (1 = rund 0,3 s je Ei; 1,5 = etwas ruhiger, kommt vom Server)
-      const pace = Math.min(3, Math.max(0.6, o.hatchPace || 1)); const lead = 0.09 * pace;
-      const gap = Math.min(0.3 * pace, Math.max(0.15 * pace, (3.4 * pace) / Math.max(1, others))); const t0 = 1.15; montage = []; montageCur = null;
+      const pace = Math.min(3, Math.max(0.6, o.hatchPace || 1)); introBig = others > 24; const lead = introBig ? 0.05 : 0.09 * pace;
+      // Ab 25 Monstern: schneller Schwenk am Ring entlang statt einzelner Schnitte, nur das eigene Ei bekommt sein eigenes Bild
+      const gap = introBig ? Math.min(0.14, Math.max(0.07, 4.8 / others)) : Math.min(0.3 * pace, Math.max(0.15 * pace, (3.4 * pace) / Math.max(1, others))); const t0 = 1.15; montage = []; montageCur = null;
       order.forEach((id, i) => {
         const a = actors.get(id); const m = sim.state.monsters.find((x) => x.id === id); if (!a || !m) return; const own = id === followId;
-        a.hatchAt = t0 + i * gap + (own ? 0.45 : 0); a.shotAt = a.hatchAt - (own ? 0.45 : lead); a.order = i; montage.push(a);
+        a.hatchAt = t0 + i * gap + (own ? 0.45 : 0); a.shotAt = a.hatchAt - (own ? 0.45 : lead); a.order = i; if (!introBig || own) montage.push(a);
         a.egg.position.set(m.x, 0, m.y); a.egg.scale.setScalar(0.001); a.dropAt = i * 0.05;
       });
       hatchEnd = t0 + Math.max(0, order.length - 1) * gap + (hasOwn ? 0.45 + 1.3 : 0.8);
@@ -413,9 +429,10 @@ export function createArena(container, opts = {}) {
     const w = container.clientWidth || 1, h = container.clientHeight || 1;
     if (renderer.domElement.width !== Math.floor(w * renderer.getPixelRatio()) || renderer.domElement.height !== Math.floor(h * renderer.getPixelRatio())) { renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
     const base = Math.max(10, Math.min(20, Math.min(w, h * 1.2) / 52)) * (o.uiScale || 1); if (ui.dataset.base !== String(base)) { ui.dataset.base = String(base); ui.style.fontSize = base + 'px'; }
-    const tallUi = w / h < 0.8; if (ui.dataset.tall !== String(tallUi)) { ui.dataset.tall = String(tallUi); ui.style.setProperty('--sa-snap', tallUi ? '13.5em' : '7.5em'); }
+    const tallUi = w / h < 0.8; if (ui.dataset.tall !== String(tallUi)) { ui.dataset.tall = String(tallUi); ui.style.setProperty('--sa-snap-own', tallUi ? '13.5em' : '7.5em'); }
+    const snapKey = `${tallUi}|${introBig && !started}`; if (ui.dataset.snap !== snapKey) { ui.dataset.snap = snapKey; ui.style.setProperty('--sa-snap', introBig && !started && tallUi ? '8.5em' : tallUi ? '13.5em' : '7.5em'); }
     if (!started && o.hatch) { // Eier fallen herein, wackeln immer stärker und platzen auf
-      introT += dt; if (o.skipIntro && skipEl.style.display === 'none' && introT > 0.4) skipEl.style.display = 'block';
+      introT += dt * ff; if (o.skipIntro && skipEl.style.display === 'none' && introT > 0.4) skipEl.style.display = 'block';
       for (const a of actors.values()) {
         if (a.hatched || !a.egg) continue;
         if (a.snap && !a.snapShown && introT >= a.shotAt) { a.snapShown = true; a.snapT = 0; a.snap.style.display = 'block'; a.snap.style.transform = 'translate(-50%, -100%) scale(0)'; }
@@ -433,8 +450,8 @@ export function createArena(container, opts = {}) {
     } else if (!started && o.intro > 0 && o.autoStart !== false) { introLeft -= dt; if (introLeft <= 0) start(); }
     slowCool -= dt; const sdt = slowLeft > 0 ? dt * 0.3 : dt; slowLeft -= dt; // kurze Zeitlupe bei großen Angriffen
     if (started && !sim.state.done) {
-      acc += sdt * speed; let guard = 0;
-      while (acc >= DT && guard++ < 12 && !sim.state.done) { acc -= DT; for (const e of sim.step()) handle(e); }
+      acc += sdt * speed * ff; let guard = 0;
+      while (acc >= DT && guard++ < 20 && !sim.state.done) { acc -= DT; for (const e of sim.step()) handle(e); }
       if (sim.state.done && !ended) { ended = true; const placements = sim.state.monsters.slice().sort((a, b) => (a.place ?? 1) - (b.place ?? 1)).map((m) => m.id); o.onEnd?.({ winnerId: sim.state.winnerId, placements }); }
     }
     const alpha = started && !sim.state.done ? acc / DT : 1; simTime += sdt;
@@ -469,13 +486,13 @@ export function createArena(container, opts = {}) {
       if (showTag) { a.tag.style.left = p.x + 'px'; a.tag.style.top = p.y - (started ? 6 : 2) + 'px'; }
       if (a.snap && a.snapT >= 0) {
         a.snapT += dt; const own = m.id === followId;
-        const life = tallUi ? (own ? Math.max(1.6, hatchEnd - a.shotAt + 0.3) : 1.1) : 1.9;
+        const life = tallUi ? (own ? Math.max(1.6, hatchEnd - a.shotAt + 0.3) : introBig ? 0.75 : 1.1) : 1.9;
         if (a.snapT >= life) { a.snapT = -1; a.snap.style.display = 'none'; }
         else {
           a.snap.style.visibility = p.ok ? 'visible' : 'hidden'; // direkt nach einem Schnitt stammt p noch von der alten Kamera
           const kin = Math.max(0, a.snapT - 0.034) / 0.08; const pop = kin < 1 ? kin * 1.18 : 1 + 0.18 * Math.max(0, 1 - (a.snapT - 0.114) / 0.09);
           const sc = pop * Math.max(0, Math.min(1, (life - a.snapT) / 0.16));
-          const snapH = base * (tallUi ? 14.6 : 8.6); const minTop = rosterEl.offsetTop + rosterEl.offsetHeight + snapH + base * 0.6; // nicht in die Teilnehmerleiste ragen
+          const snapH = base * (!tallUi ? 8.6 : introBig && !own ? 9.6 : 14.6); const minTop = rosterEl.offsetTop + rosterEl.offsetHeight + snapH + base * 0.6; // nicht in die Teilnehmerleiste ragen
           a.snap.style.left = p.x + 'px'; a.snap.style.top = Math.max(p.y - base * 2.3, tallUi ? minTop : 0) + 'px';
           a.snap.style.transform = `translate(-50%, -100%) rotate(${a.snapTilt}deg) scale(${sc.toFixed(3)})`;
         }
